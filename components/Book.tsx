@@ -4,12 +4,13 @@ import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { CoverFront, InnerCover, CoverBack, TitlePage, OriginLeft, OriginTerminal, ExperienceLeft, ExperienceRight, ToolsLeft, ToolsRight, ProjectsLeft, ProjectsRight, FocusTerminal, ContactRight } from './PageContents';
 
-export default function Book({ isActive, onStateChange, playTurn, playClick, playMulti }: {
+export default function Book({ isActive, onStateChange, playTurn, playClick, playMulti, startTheme }: {
   isActive: boolean;
   onStateChange: (state: 'closed' | 'opening' | 'reading' | 'closing') => void;
   playTurn: () => void;
   playClick: () => void;
   playMulti: () => void;
+  startTheme: () => void;
 }) {
   const [bookState, setBookState] = useState<'closed' | 'opening' | 'reading' | 'closing'>('closed');
   const [pageIndex, setPageIndex] = useState(0);
@@ -101,6 +102,7 @@ export default function Book({ isActive, onStateChange, playTurn, playClick, pla
     if (bookState !== 'closed') return;
     setBookState('opening');
     onStateChange('opening');
+    startTheme();
     playMulti();
     
     gsap.killTweensOf(bookRef.current);

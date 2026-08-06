@@ -46,11 +46,13 @@ export default function Home() {
     };
   }, []);
 
-  // Start theme once loader is done
-  useEffect(() => {
-    if (!loaded) return;
-    themeRef.current?.play().catch(() => {});
-  }, [loaded]);
+  // Start theme on first user gesture after loading — autoplay policy blocks it otherwise
+  const themePlayed = useRef(false);
+  const startTheme = useCallback(() => {
+    if (themePlayed.current || !themeRef.current) return;
+    themePlayed.current = true;
+    themeRef.current.play().catch(() => {});
+  }, []);
 
   // Sync mute state
   useEffect(() => {
@@ -231,7 +233,7 @@ export default function Home() {
                 <h1 className="font-cinzel text-[#f0d089] text-2xl tracking-widest">Favour Ejiofor</h1>
                 <p className="font-kalam text-[#a8b5a8] text-base italic">software engineer · systems designer</p>
                 <button
-                  onClick={() => { playClick(); setAppState('reading'); }}
+                  onClick={() => { startTheme(); playClick(); setAppState('reading'); }}
                   className="mt-4 font-caveat text-[#2eb36f] text-xl border border-[#2eb36f]/40 px-6 py-3 rounded-sm hover:bg-[#2eb36f]/10 transition-colors"
                 >
                   open grimoire
@@ -254,7 +256,7 @@ export default function Home() {
 
             {appState === 'closed' && (
               <button
-                onClick={() => { playClick(); setAppState('summary'); }}
+                onClick={() => { startTheme(); playClick(); setAppState('summary'); }}
                 className="absolute top-6 right-6 z-50 text-[#a8b5a8] hover:text-[#f0d089] font-mono text-[12px] tracking-wider transition-all duration-300 opacity-60 hover:opacity-100"
               >
                 [ skip intro ]
@@ -274,11 +276,12 @@ export default function Home() {
                 playTurn={playTurn}
                 playClick={playClick}
                 playMulti={playMulti}
+                startTheme={startTheme}
               />
             </div>
 
             <button
-              onClick={() => { playClick(); setAppState('summary'); }}
+              onClick={() => { startTheme(); playClick(); setAppState('summary'); }}
               className={`absolute top-6 right-8 z-50 text-[#a8b5a8] hover:text-[#f0d089] font-mono text-[13px] tracking-wider transition-all duration-300
               ${appState === 'closed' ? 'opacity-60 hover:opacity-100' : 'opacity-0 pointer-events-none'}`}
             >
