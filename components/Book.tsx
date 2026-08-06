@@ -4,7 +4,13 @@ import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { CoverFront, InnerCover, CoverBack, TitlePage, OriginLeft, OriginTerminal, ExperienceLeft, ExperienceRight, ToolsLeft, ToolsRight, ProjectsLeft, ProjectsRight, FocusTerminal, ContactRight } from './PageContents';
 
-export default function Book({ isActive, onStateChange }: { isActive: boolean, onStateChange: (state: 'closed' | 'opening' | 'reading' | 'closing') => void }) {
+export default function Book({ isActive, onStateChange, playTurn, playClick, playMulti }: {
+  isActive: boolean;
+  onStateChange: (state: 'closed' | 'opening' | 'reading' | 'closing') => void;
+  playTurn: () => void;
+  playClick: () => void;
+  playMulti: () => void;
+}) {
   const [bookState, setBookState] = useState<'closed' | 'opening' | 'reading' | 'closing'>('closed');
   const [pageIndex, setPageIndex] = useState(0);
   const [scale, setScale] = useState(1);
@@ -95,6 +101,7 @@ export default function Book({ isActive, onStateChange }: { isActive: boolean, o
     if (bookState !== 'closed') return;
     setBookState('opening');
     onStateChange('opening');
+    playMulti();
     
     gsap.killTweensOf(bookRef.current);
     const total = leafRefs.current.length;
@@ -140,6 +147,7 @@ export default function Book({ isActive, onStateChange }: { isActive: boolean, o
     if (bookState !== 'reading') return;
     setBookState('closing');
     onStateChange('closing');
+    playMulti();
     
     const total = leafRefs.current.length;
     
@@ -189,6 +197,7 @@ export default function Book({ isActive, onStateChange }: { isActive: boolean, o
 
   const turnNext = () => {
     if (bookState !== 'reading') return;
+    playTurn();
     if (pageIndex < leavesContent.length) {
       setPageIndex(p => p + 1);
     } else if (pageIndex === leavesContent.length) {
@@ -198,6 +207,7 @@ export default function Book({ isActive, onStateChange }: { isActive: boolean, o
 
   const turnPrev = () => {
     if (bookState !== 'reading') return;
+    playTurn();
     if (pageIndex > 3) {
       setPageIndex(p => p - 1);
     } else if (pageIndex === 3) {
@@ -241,6 +251,7 @@ export default function Book({ isActive, onStateChange }: { isActive: boolean, o
   const activeSection = catalogue.reduce((best, entry) =>
     pageIndex >= entry.index ? entry : best, catalogue[0]);
   const jumpTo = (target: number) => {
+    playMulti();
     if (bookState === 'closed') { handleOpen(); setTimeout(() => setPageIndex(target), 1400); }
     else if (bookState === 'reading') setPageIndex(target);
   };
@@ -362,7 +373,7 @@ export default function Book({ isActive, onStateChange }: { isActive: boolean, o
       <div 
         className={`absolute right-16 w-8 bg-[#a31a1a] shadow-lg z-40 transform hover:-translate-y-2 cursor-pointer flex flex-col items-center pt-2 transition-all duration-700 ease-in-out
           ${bookState === 'reading' ? 'top-0 h-32 translate-y-0 opacity-100' : '-top-10 h-0 opacity-0 pointer-events-none'}`}
-        onClick={handleClose}
+        onClick={() => { playClick(); handleClose(); }}
         title="Close Grimoire"
       >
         <div className="w-4 h-4 rounded-full border border-[#ffae00]/40 flex items-center justify-center text-[10px] text-[#ffae00] mb-1">✕</div>

@@ -37,9 +37,15 @@ const CATALOGUE = [
 export default function MobileReader({
   onClose,
   onStateChange,
+  playTurn,
+  playClick,
+  playMulti,
 }: {
   onClose: () => void;
   onStateChange: (state: 'reading' | 'closing') => void;
+  playTurn: () => void;
+  playClick: () => void;
+  playMulti: () => void;
 }) {
   const [index, setIndex] = useState(0);
   const [dir, setDir] = useState<'left' | 'right' | null>(null);
@@ -48,9 +54,10 @@ export default function MobileReader({
 
   const navigate = (direction: 'next' | 'prev') => {
     if (animating) return;
-    if (direction === 'next' && index >= PAGES.length - 1) { onClose(); return; }
-    if (direction === 'prev' && index <= 0) { onClose(); return; }
+    if (direction === 'next' && index >= PAGES.length - 1) { playTurn(); onClose(); return; }
+    if (direction === 'prev' && index <= 0) { playTurn(); onClose(); return; }
 
+    playTurn();
     setDir(direction === 'next' ? 'left' : 'right');
     setAnimating(true);
     setTimeout(() => {
@@ -62,6 +69,7 @@ export default function MobileReader({
 
   const jumpTo = (i: number) => {
     if (animating || i === index) return;
+    playMulti();
     setDir(i > index ? 'left' : 'right');
     setAnimating(true);
     setTimeout(() => {
@@ -101,7 +109,7 @@ export default function MobileReader({
           {index + 1} / {PAGES.length}
         </span>
         <button
-          onClick={() => { onStateChange('closing'); onClose(); }}
+          onClick={() => { playClick(); onStateChange('closing'); onClose(); }}
           className="font-cinzel text-[#a31a1a] text-[11px] tracking-widest border border-[#a31a1a]/30 px-2 py-0.5 rounded-sm"
         >
           ✕
