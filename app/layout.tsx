@@ -38,7 +38,7 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: 'Favour Ejiofor', url: 'https://github.com/cipher-d-dev' }],
   creator: 'Favour Ejiofor',
-  metadataBase: new URL('https://favourejiofor.dev'),
+  metadataBase: new URL('https://iamcipher.dev'),
   openGraph: {
     type: 'website',
     title: 'Favour Ejiofor — Software Engineer',

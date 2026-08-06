@@ -1,20 +1,15 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
+# Cipher
 
-# Run and deploy your AI Studio app
+Some people write code. I write systems that think.
 
-This contains everything you need to run your app locally.
+I go by Favour — or Cipher, depending on who's asking and what they need built. I started at 12, chasing the kind of effortless brilliance I saw on a screen and decided I wanted it for myself. Scratch gave way to Python. Python gave way to the web. The web gave way to everything underneath it.
 
-View your app in AI Studio: https://ai.studio/apps/522b1a4b-baa4-4d1c-9973-bd77cb2ca53b
+These days I sit at the intersection of backend architecture, security, and machine intelligence. I design systems that don't just work — they hold. Zero-Trust by default. Resilient under pressure. Clean where it counts.
 
-## Run Locally
+CTFs, production infrastructure, auth SDKs, neural networks not a résumé, just a record of questions I couldn't leave unanswered.
 
-**Prerequisites:**  Node.js
+The grimoire is never finished.
 
+---
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+*If you're here, you already know where to find me.*
