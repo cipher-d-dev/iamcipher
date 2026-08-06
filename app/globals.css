@@ -12,8 +12,8 @@
 
 @layer base {
   :root {
-    --paper: #efe3c4;
-    --paper-shadow: #dccb9d;
+    --paper: #d9c89a;
+    --paper-shadow: #c4ae78;
     --ink: #2b2013;
     --ink-soft: #5c4d33;
     --pen: #a4302a;
@@ -21,7 +21,7 @@
     --term-bg: #161210;
     --term-green: #8fd694;
     --term-amber: #e8b969;
-    --rule: #c9b783;
+    --rule: #b8a06a;
     --gold: #d4af6a;
     --gold-bright: #f0d089;
     --deep: #080c09;
@@ -29,7 +29,7 @@
     --violet: #2eb36f;
     --leather: #141715;
     --leather-dark: #090a09;
-    --edge: #e8d9ae;
+    --edge: #d4c48a;
   }
 }
 
@@ -58,7 +58,13 @@
 .bg-parchment-left {
   background-color: var(--paper);
   background-image: 
-    radial-gradient(ellipse at 15% 10%, rgba(212,175,106,.06), transparent 40%),
+    /* Rough grain — same noise filter as the cover, dialled down */
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E"),
+    /* Inner-edge (right side = spine) darkens, fades toward outer left edge */
+    linear-gradient(to left, rgba(60,35,10,.18) 0%, rgba(60,35,10,.08) 18%, transparent 55%),
+    /* Subtle top/bottom corner burns */
+    radial-gradient(ellipse at 0% 0%,    rgba(139,90,40,.12), transparent 55%),
+    radial-gradient(ellipse at 100% 100%, rgba(80,50,20,.10), transparent 50%),
     url('https://www.transparenttextures.com/patterns/handmade-paper.png');
   color: var(--ink);
 }
@@ -66,7 +72,13 @@
 .bg-parchment-right {
   background-color: var(--paper);
   background-image: 
-    radial-gradient(ellipse at 85% 10%, rgba(212,175,106,.06), transparent 40%),
+    /* Rough grain */
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E"),
+    /* Inner-edge (left side = spine) darkens, fades toward outer right edge */
+    linear-gradient(to right, rgba(60,35,10,.18) 0%, rgba(60,35,10,.08) 18%, transparent 55%),
+    /* Subtle top/bottom corner burns */
+    radial-gradient(ellipse at 100% 0%,  rgba(139,90,40,.12), transparent 55%),
+    radial-gradient(ellipse at 0%   100%, rgba(80,50,20,.10), transparent 50%),
     url('https://www.transparenttextures.com/patterns/handmade-paper.png');
   color: var(--ink);
 }
