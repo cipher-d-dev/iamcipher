@@ -1,13 +1,16 @@
 'use client';
 import { useState } from 'react';
 import Book from '@/components/Book';
+import MobileReader from '@/components/MobileReader';
 import MagicCircle from '@/components/MagicCircle';
 import Particles from '@/components/Particles';
 import MagicalLoader from '@/components/MagicalLoader';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export default function Home() {
   const [loaded, setLoaded] = useState(false);
   const [appState, setAppState] = useState<'closed' | 'opening' | 'reading' | 'closing' | 'summary'>('closed');
+  const isMobile = useIsMobile();
 
   if (appState === 'summary') {
     return (
@@ -140,21 +143,63 @@ export default function Home() {
       >
         {/* Background ambient lighting */}
         <div className="absolute inset-0 opacity-40 bg-[radial-gradient(circle_at_50%_50%,#112b1c_0%,transparent_70%)] pointer-events-none" />
-        
-        <MagicCircle isActive={appState !== 'closed'} />
-        <Particles isActive={appState !== 'closed'} />
-        
-        <div className="absolute inset-0 z-20">
-          <Book isActive={appState !== 'closed'} onStateChange={(state) => setAppState(state as any)} />
-        </div>
 
-        <button 
-          onClick={() => setAppState('summary')}
-          className={`absolute top-6 right-8 z-50 text-[#a8b5a8] hover:text-[#f0d089] font-mono text-[13px] tracking-wider transition-all duration-300
-          ${appState === 'closed' ? 'opacity-60 hover:opacity-100' : 'opacity-0 pointer-events-none'}`}
-        >
-          [ skip intro ]
-        </button>
+        {isMobile ? (
+          /* ── Mobile: full-screen parchment reader ── */
+          <>
+            {appState === 'closed' && (
+              /* Landing prompt — tap to open the grimoire */
+              <div className="relative z-20 flex flex-col items-center justify-center gap-6 px-8 text-center">
+                <span className="text-5xl text-[#2eb36f]" style={{ textShadow: '0 0 20px rgba(46,179,111,0.7)' }}>✧</span>
+                <h1 className="font-cinzel text-[#f0d089] text-2xl tracking-widest">Favour Ejiofor</h1>
+                <p className="font-kalam text-[#a8b5a8] text-base italic">software engineer · systems designer</p>
+                <button
+                  onClick={() => setAppState('reading')}
+                  className="mt-4 font-caveat text-[#2eb36f] text-xl border border-[#2eb36f]/40 px-6 py-3 rounded-sm hover:bg-[#2eb36f]/10 transition-colors"
+                >
+                  open grimoire
+                </button>
+              </div>
+            )}
+
+            {(appState === 'reading' || appState === 'opening' || appState === 'closing') && (
+              <MobileReader
+                onClose={() => setAppState('closed')}
+                onStateChange={(state) => setAppState(state)}
+              />
+            )}
+
+            <MagicCircle isActive={appState !== 'closed'} />
+            <Particles isActive={appState !== 'closed'} />
+
+            {appState === 'closed' && (
+              <button
+                onClick={() => setAppState('summary')}
+                className="absolute top-6 right-6 z-50 text-[#a8b5a8] hover:text-[#f0d089] font-mono text-[12px] tracking-wider transition-all duration-300 opacity-60 hover:opacity-100"
+              >
+                [ skip intro ]
+              </button>
+            )}
+          </>
+        ) : (
+          /* ── Desktop: 3-D book ── */
+          <>
+            <MagicCircle isActive={appState !== 'closed'} />
+            <Particles isActive={appState !== 'closed'} />
+
+            <div className="absolute inset-0 z-20">
+              <Book isActive={appState !== 'closed'} onStateChange={(state) => setAppState(state as any)} />
+            </div>
+
+            <button
+              onClick={() => setAppState('summary')}
+              className={`absolute top-6 right-8 z-50 text-[#a8b5a8] hover:text-[#f0d089] font-mono text-[13px] tracking-wider transition-all duration-300
+              ${appState === 'closed' ? 'opacity-60 hover:opacity-100' : 'opacity-0 pointer-events-none'}`}
+            >
+              [ skip intro ]
+            </button>
+          </>
+        )}
       </main>
     </>
   );

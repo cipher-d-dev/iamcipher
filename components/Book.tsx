@@ -293,7 +293,7 @@ export default function Book({ isActive, onStateChange }: { isActive: boolean, o
           style={{ transform: 'translateZ(-13px)' }}
         >
           <div className="absolute inset-0 backface-hidden rounded-[2px_8px_8px_2px] overflow-hidden">
-            <InnerCover right />
+            <InnerCover />
           </div>
           <div className="absolute inset-0 backface-hidden rotate-y-180 rounded-[2px_8px_8px_2px] overflow-hidden">
             <CoverBack />

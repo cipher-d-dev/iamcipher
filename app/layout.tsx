@@ -18,8 +18,53 @@ const cinzelDec = Cinzel_Decorative({ weight: ['400', '700'], subsets: ['latin']
 const cinzel = Cinzel({ weight: ['500', '700'], subsets: ['latin'], variable: '--font-cinzel' });
 
 export const metadata: Metadata = {
-  title: 'Grimoire Portfolio',
-  description: 'A magical spellbook portfolio site.',
+  title: {
+    default: 'Favour Ejiofor — Software Engineer',
+    template: '%s | Favour Ejiofor',
+  },
+  description:
+    'Portfolio of Favour Ejiofor (Cipher) — Systems Engineer & Digital Alchemist specialising in TypeScript, Node.js, Zero-Trust security, and neural intelligence.',
+  keywords: [
+    'Favour Ejiofor',
+    'Cipher',
+    'Software Engineer',
+    'Systems Engineer',
+    'Fullstack Developer',
+    'TypeScript',
+    'Node.js',
+    'React',
+    'Zero-Trust Security',
+    'Portfolio',
+  ],
+  authors: [{ name: 'Favour Ejiofor', url: 'https://github.com/cipher-d-dev' }],
+  creator: 'Favour Ejiofor',
+  metadataBase: new URL('https://favourejiofor.dev'),
+  openGraph: {
+    type: 'website',
+    title: 'Favour Ejiofor — Software Engineer',
+    description:
+      'Systems Engineer & Digital Alchemist. Scalable backends, neural intelligence, Zero-Trust security.',
+    siteName: 'Favour Ejiofor',
+    images: [{ url: '/photo1.jpg', width: 1200, height: 630, alt: 'Favour Ejiofor' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Favour Ejiofor — Software Engineer',
+    description:
+      'Systems Engineer & Digital Alchemist. Scalable backends, neural intelligence, Zero-Trust security.',
+    images: ['/photo1.jpg'],
+    creator: '@cipher_d_dev',
+  },
+  icons: {
+    icon: '/star.png',
+    shortcut: '/star.png',
+    apple: '/star.png',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true },
+  },
 };
 
 export default function RootLayout({children}: {children: React.ReactNode}) {

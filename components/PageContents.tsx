@@ -60,6 +60,20 @@ export function InnerCover({ right = false }: { right?: boolean }) {
   if (right) {
     return (
       <div className="w-full h-full bg-cover-texture flex items-center justify-center relative shadow-[inset_20px_0_20px_rgba(0,0,0,0.8)] border-y border-[#d4c5a0]/10 overflow-hidden">
+        <style>{`
+          @keyframes grimoire-pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+          }
+          @keyframes grimoire-pulse-slow {
+            0%, 100% { opacity: 0.85; }
+            50% { opacity: 0.3; }
+          }
+          .grimoire-pulse { animation: grimoire-pulse 2.5s ease-in-out infinite; }
+          .grimoire-pulse-slow { animation: grimoire-pulse-slow 4s ease-in-out infinite; }
+          .grimoire-pulse-xslow { animation: grimoire-pulse-slow 6s ease-in-out infinite 1s; }
+        `}</style>
+
         <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent pointer-events-none" />
 
         {/* Faint background runes */}
@@ -71,10 +85,9 @@ export function InnerCover({ right = false }: { right?: boolean }) {
         {/* Glowing closing inscription */}
         <div className="relative z-10 flex flex-col items-center justify-center gap-4 px-10 text-center">
 
-          {/* Sigil — uses Tailwind animate-pulse */}
           <span
-            className="text-4xl text-[#2eb36f] animate-pulse"
-            style={{ textShadow: '0 0 20px rgba(46,179,111,0.9), 0 0 40px rgba(46,179,111,0.5), 0 0 60px rgba(46,179,111,0.2)' }}
+            className="grimoire-pulse text-4xl text-[#2eb36f]"
+            style={{ textShadow: '0 0 20px rgba(46,179,111,0.9), 0 0 40px rgba(46,179,111,0.5)' }}
           >
             ✦
           </span>
@@ -82,14 +95,14 @@ export function InnerCover({ right = false }: { right?: boolean }) {
           <div className="w-16 h-[1px] bg-gradient-to-r from-transparent via-[#2eb36f]/40 to-transparent" />
 
           <p
-            className="font-cinzel text-[#a8c8b0] text-[12px] tracking-[0.15em] leading-relaxed"
+            className="grimoire-pulse-slow font-cinzel text-[#a8c8b0] text-[12px] tracking-[0.15em] leading-relaxed"
             style={{ textShadow: '0 0 14px rgba(46,179,111,0.6), 0 0 28px rgba(46,179,111,0.3)' }}
           >
             You&apos;ve reached the end —
           </p>
 
           <p
-            className="font-caveat text-[#7ab88a] text-[20px] animate-pulse"
+            className="grimoire-pulse font-caveat text-[#7ab88a] text-[20px]"
             style={{ textShadow: '0 0 10px rgba(46,179,111,0.5)', animationDuration: '3s' }}
           >
             for now.
@@ -113,8 +126,8 @@ export function InnerCover({ right = false }: { right?: boolean }) {
           <div className="w-16 h-[1px] bg-gradient-to-r from-transparent via-[#2eb36f]/20 to-transparent mt-1" />
 
           <span
-            className="text-base text-[#ffae00]/50 animate-pulse"
-            style={{ textShadow: '0 0 12px rgba(255,174,0,0.5)', animationDuration: '4s', animationDelay: '1s' }}
+            className="grimoire-pulse-xslow text-base text-[#ffae00]/60"
+            style={{ textShadow: '0 0 12px rgba(255,174,0,0.5)' }}
           >
             ᛟ
           </span>
@@ -178,64 +191,85 @@ export function CoverBack() {
   );
 }
 
-export function TitlePage() {
+export function TitlePage({ mobile = false }: { mobile?: boolean }) {
   return (
-    <div className="w-full h-full bg-parchment-right rounded-r-md p-6 relative shadow-[inset_-10px_0_20px_rgba(0,0,0,0.1)] border-l-2 border-[#d4c5a0]">
+    <div className={`w-full h-full bg-parchment-right p-6 relative overflow-auto
+      ${mobile ? '' : 'rounded-r-md shadow-[inset_-10px_0_20px_rgba(0,0,0,0.1)] border-l-2 border-[#d4c5a0]'}`}>
       <span className="absolute top-6 right-6 text-[#8b6b4e] text-2xl opacity-40 font-cinzel">ᛉ</span>
       <span className="absolute bottom-6 right-6 text-[#8b6b4e] text-2xl opacity-40 font-cinzel">ᛏ</span>
-      
+
       <div className="h-full border border-[#8b6b4e]/40 rounded p-8 flex flex-col items-center justify-center text-center">
-        <h2 className="text-4xl font-cinzel text-[#1a0f05] mb-2 font-semibold tracking-widest">Favour Ejiofor</h2>
-        <h3 className="text-xl font-cinzel text-[#a4302a] mb-4 tracking-wide">"Cipher"</h3>
+        <h2 className={`font-cinzel text-[#1a0f05] mb-2 font-semibold tracking-widest ${mobile ? 'text-3xl' : 'text-4xl'}`}>Favour Ejiofor</h2>
+        <h3 className={`font-cinzel text-[#a4302a] mb-4 tracking-wide ${mobile ? 'text-lg' : 'text-xl'}`}>&ldquo;Cipher&rdquo;</h3>
         <div className="w-24 h-[2px] bg-[#8b6b4e]/60 mb-8" />
-        <p className="text-[14px] font-semibold text-[#1a0f05] mb-4 font-serif">
-          Digital Alchemist & Systems Engineer
+        <p className={`font-semibold text-[#1a0f05] mb-4 font-serif ${mobile ? 'text-base' : 'text-[14px]'}`}>
+          Digital Alchemist &amp; Systems Engineer
         </p>
-        <p className="text-[12.5px] italic text-[#3d2b1f] leading-loose max-w-[90%] font-serif">
+        <p className={`italic text-[#3d2b1f] leading-loose max-w-[90%] font-serif ${mobile ? 'text-sm' : 'text-[12.5px]'}`}>
           Crafting scalable backends, embedding neural intelligence, and enforcing Zero-Trust security.
         </p>
         <div className="mt-12 opacity-40">
-           <span className="text-2xl text-[#1a0f05] font-cinzel">✦</span>
+          <span className="text-2xl text-[#1a0f05] font-cinzel">✦</span>
         </div>
       </div>
     </div>
   );
 }
 
-export function OriginLeft() {
+export function OriginLeft({ mobile = false }: { mobile?: boolean }) {
   return (
-    <div className="w-full h-full bg-parchment-left rounded-l-md p-10 relative shadow-[inset_10px_0_20px_rgba(0,0,0,0.15)] flex flex-col justify-center border-r-2 border-[#d4c5a0]">
-      <h2 className="text-2xl font-cinzel font-semibold text-[#1a0f05] mb-6 border-b border-[#8b6b4e]/30 pb-4 inline-block self-start">The Origin Incantation</h2>
-      
-      <div className="float-right ml-4 mb-2 w-32 h-40 bg-[#f4ebd0] p-2 shadow-md rotate-2 border border-[#d4c5a0] flex flex-col">
-        {/* Placeholder for Photo 1 */}
-        <div className="w-full flex-1 bg-[#d0c6a8]/40 border border-[#a4302a]/20 flex items-center justify-center relative overflow-hidden group cursor-pointer">
-          <div className="text-center p-2 text-[#8b6b4e]">
-             <p className="font-kalam text-[10px] leading-tight group-hover:hidden">Upload your photo to <br/><span className="font-mono bg-[#d4c5a0]/40 px-1">/public/photo1.jpg</span></p>
-          </div>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/photo1.jpg" alt="Profile 1" className="absolute inset-0 w-full h-full object-cover transition-opacity duration-300" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement?.classList.remove('group'); }} />
-        </div>
-        <p className="font-caveat text-center text-[#5c4d33] text-[13px] mt-1 -mb-1">Me</p>
-      </div>
+    <div className={`w-full h-full bg-parchment-left flex flex-col justify-center overflow-auto
+      ${mobile ? 'p-6' : 'rounded-l-md p-10 shadow-[inset_10px_0_20px_rgba(0,0,0,0.15)] border-r-2 border-[#d4c5a0]'}`}>
+      <h2 className={`font-cinzel font-semibold text-[#1a0f05] mb-6 border-b border-[#8b6b4e]/30 pb-4 inline-block self-start
+        ${mobile ? 'text-xl' : 'text-2xl'}`}>
+        The Origin Incantation
+      </h2>
 
-      <div className="text-[#3d2b1f] space-y-4 text-[12.5px] leading-[1.5] font-serif">
-        <p>
-          <span className="font-cinzel-dec text-4xl float-left leading-[0.8] pt-1 pr-2 text-[#a4302a]">A</span>
-          t age 12, inspired by Kenzi’s effortless tech brilliance on <span className="italic">Game Shakers</span>, the obsession began. First came the logical playgrounds of Scratch, which quickly sparked a jump into raw Python scripts to see how real software came to life.
-        </p>
-        <p>
-          As basic scripts turned into visual projects, web development opened the door to building interfaces and handling real-world data flow.
-        </p>
-        <p>
-          But as complexity grew, so did the fascination with what went on under the hood—moving past basic code to design resilient, beautifully structured, and properly architected systems.
-        </p>
-      </div>
+      {mobile ? (
+        <>
+          <div className="flex justify-center mb-4">
+            <div className="w-28 h-36 bg-[#f4ebd0] p-2 shadow-md rotate-2 border border-[#d4c5a0] flex flex-col">
+              <div className="w-full flex-1 bg-[#d0c6a8]/40 border border-[#a4302a]/20 flex items-center justify-center relative overflow-hidden">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/photo1.jpg" alt="Profile" className="absolute inset-0 w-full h-full object-cover" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+              </div>
+              <p className="font-caveat text-center text-[#5c4d33] text-[13px] mt-1 -mb-1">Me</p>
+            </div>
+          </div>
+          <div className="text-[#3d2b1f] space-y-4 text-sm leading-relaxed font-serif">
+            <p>
+              <span className="font-cinzel-dec text-4xl float-left leading-[0.8] pt-1 pr-2 text-[#a4302a]">A</span>
+              t age 12, inspired by Kenzi&apos;s effortless tech brilliance on <span className="italic">Game Shakers</span>, the obsession began. First came Scratch, which quickly sparked a jump into raw Python scripts.
+            </p>
+            <p>As basic scripts turned into visual projects, web development opened the door to building interfaces and handling real-world data flow.</p>
+            <p>But as complexity grew, so did the fascination with what went on under the hood — moving past basic code to design resilient, beautifully structured systems.</p>
+          </div>
+        </>
+      ) : (
+        <div className="text-[#3d2b1f] space-y-4 text-[12.5px] leading-[1.5] font-serif">
+          <div className="float-right ml-4 mb-2 w-32 h-40 bg-[#f4ebd0] p-2 shadow-md rotate-2 border border-[#d4c5a0] flex flex-col">
+            <div className="w-full flex-1 bg-[#d0c6a8]/40 border border-[#a4302a]/20 flex items-center justify-center relative overflow-hidden group cursor-pointer">
+              <div className="text-center p-2 text-[#8b6b4e]">
+                <p className="font-kalam text-[10px] leading-tight group-hover:hidden">Upload your photo to <br/><span className="font-mono bg-[#d4c5a0]/40 px-1">/public/photo1.jpg</span></p>
+              </div>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/photo1.jpg" alt="Profile 1" className="absolute inset-0 w-full h-full object-cover transition-opacity duration-300" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement?.classList.remove('group'); }} />
+            </div>
+            <p className="font-caveat text-center text-[#5c4d33] text-[13px] mt-1 -mb-1">Me</p>
+          </div>
+          <p>
+            <span className="font-cinzel-dec text-4xl float-left leading-[0.8] pt-1 pr-2 text-[#a4302a]">A</span>
+            t age 12, inspired by Kenzi&apos;s effortless tech brilliance on <span className="italic">Game Shakers</span>, the obsession began. First came the logical playgrounds of Scratch, which quickly sparked a jump into raw Python scripts to see how real software came to life.
+          </p>
+          <p>As basic scripts turned into visual projects, web development opened the door to building interfaces and handling real-world data flow.</p>
+          <p>But as complexity grew, so did the fascination with what went on under the hood—moving past basic code to design resilient, beautifully structured, and properly architected systems.</p>
+        </div>
+      )}
     </div>
   );
 }
 
-export function OriginTerminal({ active }: { active: boolean }) {
+export function OriginTerminal({ active, mobile = false }: { active: boolean; mobile?: boolean }) {
   const logText = `> Executing initiation sequence...
 > Loading chronos_logs.dat...
 > [USER] identified: Cipher
@@ -247,17 +281,19 @@ export function OriginTerminal({ active }: { active: boolean }) {
 > Ready for deployment.`;
 
   return (
-    <div className="w-full h-full bg-parchment-right rounded-r-md p-10 relative shadow-[inset_-10px_0_20px_rgba(0,0,0,0.15)] border-l-2 border-[#d4c5a0]">
-       <div className="bg-[#161210] p-6 rounded-sm border border-[#d4af6a]/25 h-[80%] my-4 shadow-xl flex flex-col relative overflow-hidden -rotate-1">
+    <div className={`w-full h-full bg-parchment-right flex flex-col overflow-hidden
+      ${mobile ? 'p-4' : 'rounded-r-md p-10 shadow-[inset_-10px_0_20px_rgba(0,0,0,0.15)] border-l-2 border-[#d4c5a0]'}`}>
+       <div className={`bg-[#161210] p-6 rounded-sm border border-[#d4af6a]/25 shadow-xl flex flex-col relative overflow-hidden
+         ${mobile ? 'flex-1 my-2' : 'h-[80%] my-4 -rotate-1'}`}>
          {/* Scanline overlay */}
          <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_4px,3px_100%] pointer-events-none" />
-         
          <div className="flex gap-2 mb-4 bg-[#0d0b09] -mt-6 -mx-6 p-3 border-b border-[#3d2b1f] relative z-10">
            <div className="w-2 h-2 rounded-full bg-[#413a2e]" />
            <div className="w-2 h-2 rounded-full bg-[#413a2e]" />
            <div className="w-2 h-2 rounded-full bg-[#413a2e]" />
          </div>
-         <div className="flex-1 overflow-y-auto text-[10.8px] leading-[1.65] relative z-10 font-mono" style={{ transform: 'translateZ(0)', WebkitFontSmoothing: 'subpixel-antialiased' }}>
+         <div className={`flex-1 overflow-y-auto leading-[1.65] relative z-10 font-mono
+           ${mobile ? 'text-[13px]' : 'text-[10.8px]'}`} style={{ transform: 'translateZ(0)', WebkitFontSmoothing: 'subpixel-antialiased' }}>
            <Typewriter text={logText} active={active} delay={800} />
          </div>
        </div>
@@ -265,21 +301,24 @@ export function OriginTerminal({ active }: { active: boolean }) {
   );
 }
 
-export function ExperienceLeft() {
+export function ExperienceLeft({ mobile = false }: { mobile?: boolean }) {
   return (
-    <div className="w-full h-full bg-parchment-left rounded-l-md p-10 shadow-[inset_10px_0_20px_rgba(0,0,0,0.15)] flex flex-col border-r-2 border-[#d4c5a0]">
+    <div className={`w-full h-full bg-parchment-left flex flex-col overflow-auto
+      ${mobile ? 'p-6' : 'rounded-l-md p-10 shadow-[inset_10px_0_20px_rgba(0,0,0,0.15)] border-r-2 border-[#d4c5a0]'}`}>
       <div className="w-16 h-16 rounded-full border-2 border-[#a4302a] flex items-center justify-center mb-6 shrink-0 relative">
         <div className="absolute inset-1 rounded-full border border-[#d4af6a]/50 border-dashed animate-[spin_20s_linear_infinite]" />
         <span className="font-cinzel text-xl text-[#1a0f05]">Exp</span>
       </div>
 
-      <div className="text-[#3d2b1f] space-y-4 text-[13.5px] leading-[1.62] font-serif pr-2">
-        <h2 className="text-2xl font-cinzel font-semibold text-[#1a0f05] mb-2 border-b border-[#a4302a] pb-1">Journeys & Quests</h2>
+      <div className={`text-[#3d2b1f] space-y-4 leading-[1.62] font-serif pr-2
+        ${mobile ? 'text-sm' : 'text-[13.5px]'}`}>
+        <h2 className={`font-cinzel font-semibold text-[#1a0f05] mb-2 border-b border-[#a4302a] pb-1
+          ${mobile ? 'text-xl' : 'text-2xl'}`}>Journeys &amp; Quests</h2>
         <p>
           The path of a developer is paved with trials. Herein lies the record of my past campaigns, from small skirmishes to grand sieges on legacy codebases.
         </p>
-        
-        <div className="mt-6 space-y-5">
+
+        <div className="mt-4 space-y-5">
           <div className="border-l-2 border-[#a4302a]/40 pl-3 relative">
             <div className="absolute w-2 h-2 rounded-full bg-[#a4302a] -left-[5px] top-1.5" />
             <h3 className="font-bold text-[#1a0f05]">Senior Fullstack Engineer</h3>
@@ -299,27 +338,30 @@ export function ExperienceLeft() {
   );
 }
 
-export function ExperienceRight() {
+export function ExperienceRight({ mobile = false }: { mobile?: boolean }) {
   return (
-    <div className="w-full h-full bg-parchment-right rounded-r-md p-10 shadow-[inset_-10px_0_20px_rgba(0,0,0,0.15)] flex flex-col border-l-2 border-[#d4c5a0]">
-      <div className="w-full h-8 border-b border-[#a4302a] mb-6 opacity-0" />
-      
-      <div className="text-[#3d2b1f] space-y-5 text-[13.5px] leading-[1.62] font-serif pr-2 mt-2">
+    <div className={`w-full h-full bg-parchment-right flex flex-col overflow-auto
+      ${mobile ? 'p-6' : 'rounded-r-md p-10 shadow-[inset_-10px_0_20px_rgba(0,0,0,0.15)] border-l-2 border-[#d4c5a0]'}`}>
+      {!mobile && <div className="w-full h-8 border-b border-[#a4302a] mb-6 opacity-0" />}
+      {mobile && <h2 className="text-xl font-cinzel font-semibold text-[#1a0f05] mb-4 border-b border-[#a4302a] pb-1">Journeys &amp; Quests (cont.)</h2>}
+
+      <div className={`text-[#3d2b1f] space-y-5 leading-[1.62] font-serif pr-2 mt-2
+        ${mobile ? 'text-sm' : 'text-[13.5px]'}`}>
         <div className="border-l-2 border-[#5c4d33]/40 pl-3 relative">
-            <div className="absolute w-2 h-2 rounded-full bg-[#5c4d33] -left-[5px] top-1.5" />
-            <h3 className="font-bold text-[#1a0f05]">CTF Winner</h3>
-            <p className="text-[#a4302a] text-xs font-mono mb-1">2026 | Go2Cyber</p>
-            <p className="text-sm">Secured first place in a competitive capture-the-flag tournament by exploiting system vulnerabilities and executing real-time threat analysis under timed conditions.</p>
+          <div className="absolute w-2 h-2 rounded-full bg-[#5c4d33] -left-[5px] top-1.5" />
+          <h3 className="font-bold text-[#1a0f05]">CTF Winner</h3>
+          <p className="text-[#a4302a] text-xs font-mono mb-1">2026 | Go2Cyber</p>
+          <p className="text-sm">Secured first place in a competitive capture-the-flag tournament by exploiting system vulnerabilities and executing real-time threat analysis under timed conditions.</p>
         </div>
 
         <div className="border-l-2 border-[#5c4d33]/40 pl-3 relative">
-            <div className="absolute w-2 h-2 rounded-full border border-[#5c4d33] bg-transparent -left-[5px] top-1.5" />
-            <h3 className="font-bold text-[#1a0f05]">Software Engineering Intern</h3>
-            <p className="text-[#a4302a] text-xs font-mono mb-1">2024 | HNG</p>
-            <p className="text-sm">Collaborated with cross-functional teams to build, test, and ship full-stack web features in a fast-paced agile development environment.</p>
+          <div className="absolute w-2 h-2 rounded-full border border-[#5c4d33] bg-transparent -left-[5px] top-1.5" />
+          <h3 className="font-bold text-[#1a0f05]">Software Engineering Intern</h3>
+          <p className="text-[#a4302a] text-xs font-mono mb-1">2024 | HNG</p>
+          <p className="text-sm">Collaborated with cross-functional teams to build, test, and ship full-stack web features in a fast-paced agile development environment.</p>
         </div>
-        
-        <p className="italic text-[#5c4d33] pt-4 border-t border-[#d4c5a0] mt-6">
+
+        <p className="italic text-[#5c4d33] pt-4 border-t border-[#d4c5a0] mt-4">
           &quot;Experience is not merely time spent, but the wisdom distilled from countless compiled errors.&quot;
         </p>
       </div>
@@ -327,15 +369,17 @@ export function ExperienceRight() {
   );
 }
 
-export function ToolsLeft() {
+export function ToolsLeft({ mobile = false }: { mobile?: boolean }) {
   return (
-    <div className="w-full h-full bg-parchment-left rounded-l-md p-10 shadow-[inset_10px_0_20px_rgba(0,0,0,0.15)] flex flex-col border-r-2 border-[#d4c5a0]">
-      <h2 className="text-2xl font-cinzel font-semibold text-[#1a0f05] mb-6 border-b border-[#a4302a] pb-2 inline-block self-start">Core & Frontend Runes</h2>
-      
-      <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-6" style={{ transform: 'translateZ(0)', WebkitFontSmoothing: 'subpixel-antialiased' }}>
+    <div className={`w-full h-full bg-parchment-left flex flex-col overflow-auto
+      ${mobile ? 'p-6' : 'rounded-l-md p-10 shadow-[inset_10px_0_20px_rgba(0,0,0,0.15)] border-r-2 border-[#d4c5a0]'}`}>
+      <h2 className={`font-cinzel font-semibold text-[#1a0f05] mb-6 border-b border-[#a4302a] pb-2 inline-block self-start
+        ${mobile ? 'text-xl' : 'text-2xl'}`}>Core &amp; Frontend Runes</h2>
+
+      <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-4" style={{ transform: 'translateZ(0)', WebkitFontSmoothing: 'subpixel-antialiased' }}>
         <div className="space-y-4 text-[13px] font-serif">
           <div className="group relative border border-[#c9b783] bg-[#f4ebd0]/50 p-3 shadow-sm hover:shadow-md transition-shadow">
-            <h3 className="font-semibold font-cinzel text-[15px] text-[#1a0f05] mb-2 flex items-center gap-2">
+            <h3 className={`font-semibold font-cinzel text-[#1a0f05] mb-2 flex items-center gap-2 ${mobile ? 'text-base' : 'text-[15px]'}`}>
               <span className="text-[#a4302a] text-lg">✦</span> Core Languages
             </h3>
             <div className="flex flex-wrap gap-2">
@@ -352,12 +396,12 @@ export function ToolsLeft() {
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/kotlin/kotlin-original.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="Kotlin" title="Kotlin" />
             </div>
-            <p className="text-[#5c4d33] leading-relaxed mt-2 text-xs">Primary incantations: TypeScript, JavaScript, Python. Systems: Go, Java, Kotlin.</p>
+            <p className={`text-[#5c4d33] leading-relaxed mt-2 ${mobile ? 'text-sm' : 'text-xs'}`}>Primary incantations: TypeScript, JavaScript, Python. Systems: Go, Java, Kotlin.</p>
           </div>
 
           <div className="group relative border border-[#c9b783] bg-[#f4ebd0]/50 p-3 shadow-sm hover:shadow-md transition-shadow">
-            <h3 className="font-semibold font-cinzel text-[15px] text-[#1a0f05] mb-2 flex items-center gap-2">
-              <span className="text-[#a4302a] text-lg">⚛</span> Web & Mobile Frontend
+            <h3 className={`font-semibold font-cinzel text-[#1a0f05] mb-2 flex items-center gap-2 ${mobile ? 'text-base' : 'text-[15px]'}`}>
+              <span className="text-[#a4302a] text-lg">⚛</span> Web &amp; Mobile Frontend
             </h3>
             <div className="flex flex-wrap gap-2">
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -369,7 +413,7 @@ export function ToolsLeft() {
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/androidstudio/androidstudio-original.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="Android Studio" title="Android Studio" />
             </div>
-            <p className="text-[#5c4d33] leading-relaxed mt-2 text-xs">Visual manifestation: React, React Native, Vite, Tailwind CSS, Android Studio.</p>
+            <p className={`text-[#5c4d33] leading-relaxed mt-2 ${mobile ? 'text-sm' : 'text-xs'}`}>Visual manifestation: React, React Native, Vite, Tailwind CSS, Android Studio.</p>
           </div>
         </div>
       </div>
@@ -377,17 +421,19 @@ export function ToolsLeft() {
   );
 }
 
-export function ToolsRight() {
+export function ToolsRight({ mobile = false }: { mobile?: boolean }) {
   return (
-    <div className="w-full h-full bg-parchment-right rounded-r-md p-10 shadow-[inset_-10px_0_20px_rgba(0,0,0,0.15)] flex flex-col border-l-2 border-[#d4c5a0]">
-      <div className="w-full h-8 border-b border-[#a4302a] mb-6 opacity-0" />
-      
-      <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-6" style={{ transform: 'translateZ(0)', WebkitFontSmoothing: 'subpixel-antialiased' }}>
-        <h2 className="text-2xl font-cinzel font-semibold text-[#1a0f05] mb-2 border-b border-[#a4302a] pb-2 inline-block self-start">Backend & Systems</h2>
-        
+    <div className={`w-full h-full bg-parchment-right flex flex-col overflow-auto
+      ${mobile ? 'p-6' : 'rounded-r-md p-10 shadow-[inset_-10px_0_20px_rgba(0,0,0,0.15)] border-l-2 border-[#d4c5a0]'}`}>
+      {!mobile && <div className="w-full h-8 border-b border-[#a4302a] mb-6 opacity-0" />}
+
+      <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-4" style={{ transform: 'translateZ(0)', WebkitFontSmoothing: 'subpixel-antialiased' }}>
+        <h2 className={`font-cinzel font-semibold text-[#1a0f05] mb-2 border-b border-[#a4302a] pb-2 inline-block self-start
+          ${mobile ? 'text-xl' : 'text-2xl'}`}>Backend &amp; Systems</h2>
+
         <div className="space-y-4 text-[13px] font-serif mt-4">
           <div className="group relative border border-[#c9b783] bg-[#f4ebd0]/50 p-3 shadow-sm hover:shadow-md transition-shadow">
-            <h3 className="font-semibold font-cinzel text-[15px] text-[#1a0f05] mb-2 flex items-center gap-2">
+            <h3 className={`font-semibold font-cinzel text-[#1a0f05] mb-2 flex items-center gap-2 ${mobile ? 'text-base' : 'text-[15px]'}`}>
               <span className="text-[#a4302a] text-lg">⚡</span> Backend Architecture
             </h3>
             <div className="flex flex-wrap gap-2 mb-2">
@@ -402,11 +448,11 @@ export function ToolsRight() {
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/supabase/supabase-original.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="Supabase" title="Supabase" />
             </div>
-            <p className="text-[#5c4d33] leading-relaxed text-xs">Distributed Systems, Zero-Trust Architecture, REST APIs, Microservices, P2P / Mesh Networking.</p>
+            <p className={`text-[#5c4d33] leading-relaxed ${mobile ? 'text-sm' : 'text-xs'}`}>Distributed Systems, Zero-Trust Architecture, REST APIs, Microservices, P2P / Mesh Networking.</p>
           </div>
 
           <div className="group relative border border-[#c9b783] bg-[#f4ebd0]/50 p-3 shadow-sm hover:shadow-md transition-shadow">
-            <h3 className="font-semibold font-cinzel text-[15px] text-[#1a0f05] mb-2 flex items-center gap-2">
+            <h3 className={`font-semibold font-cinzel text-[#1a0f05] mb-2 flex items-center gap-2 ${mobile ? 'text-base' : 'text-[15px]'}`}>
               <span className="text-[#a4302a] text-lg">🗄</span> Data Infrastructure
             </h3>
             <div className="flex flex-wrap gap-2 mb-2">
@@ -419,12 +465,12 @@ export function ToolsRight() {
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/prisma/prisma-original.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="Prisma" title="Prisma" />
             </div>
-            <p className="text-[#5c4d33] leading-relaxed text-xs">Relational DBs, ORMs, and AI Data Layers (pgvector, Qdrant).</p>
+            <p className={`text-[#5c4d33] leading-relaxed ${mobile ? 'text-sm' : 'text-xs'}`}>Relational DBs, ORMs, and AI Data Layers (pgvector, Qdrant).</p>
           </div>
 
           <div className="group relative border border-[#c9b783] bg-[#f4ebd0]/50 p-3 shadow-sm hover:shadow-md transition-shadow">
-            <h3 className="font-semibold font-cinzel text-[15px] text-[#1a0f05] mb-2 flex items-center gap-2">
-              <span className="text-[#a4302a] text-lg">🛡</span> DevOps & Security
+            <h3 className={`font-semibold font-cinzel text-[#1a0f05] mb-2 flex items-center gap-2 ${mobile ? 'text-base' : 'text-[15px]'}`}>
+              <span className="text-[#a4302a] text-lg">🛡</span> DevOps &amp; Security
             </h3>
             <div className="flex flex-wrap gap-2 mb-2">
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -434,7 +480,7 @@ export function ToolsRight() {
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/linux/linux-original.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="Linux" title="Linux" />
             </div>
-            <p className="text-[#5c4d33] leading-relaxed text-xs">CI/CD, Cryptographic libraries, Token Rotation/mTLS, Pentesting & Local LLMs.</p>
+            <p className={`text-[#5c4d33] leading-relaxed ${mobile ? 'text-sm' : 'text-xs'}`}>CI/CD, Cryptographic libraries, Token Rotation/mTLS, Pentesting &amp; Local LLMs.</p>
           </div>
         </div>
       </div>
@@ -442,134 +488,128 @@ export function ToolsRight() {
   );
 }
 
-export function ProjectsLeft() {
+export function ProjectsLeft({ mobile = false }: { mobile?: boolean }) {
+  const linkClass = `inline-block font-kalam text-[#2f5d8a] hover:text-[#1a0f05] border-b border-dashed border-[#2f5d8a] transition-colors relative z-10 ${mobile ? 'text-sm' : 'text-[12.5px]'}`;
+  const metaClass = `text-[#5c4d33] font-mono tracking-[0.03em] mb-2 ${mobile ? 'text-[11px]' : 'text-[9px]'}`;
+  const bodyClass = `text-[#1a0f05] leading-[1.62] mb-2 font-serif ${mobile ? 'text-sm' : 'text-[13.5px]'}`;
+  const titleClass = `font-semibold font-cinzel text-[#1a0f05] mb-1 ${mobile ? 'text-lg' : 'text-[17px]'}`;
+
   return (
-    <div className="w-full h-full bg-parchment-left rounded-l-md p-10 shadow-[inset_10px_0_20px_rgba(0,0,0,0.15)] flex flex-col border-r-2 border-[#d4c5a0]">
-      <h2 className="text-2xl font-cinzel font-semibold text-[#1a0f05] mb-6 border-b border-[#a4302a] pb-2 inline-block self-start">Arcane Constructs (I)</h2>
-      
+    <div className={`w-full h-full bg-parchment-left flex flex-col overflow-auto
+      ${mobile ? 'p-6' : 'rounded-l-md p-10 shadow-[inset_10px_0_20px_rgba(0,0,0,0.15)] border-r-2 border-[#d4c5a0]'}`}>
+      <h2 className={`font-cinzel font-semibold text-[#1a0f05] mb-6 border-b border-[#a4302a] pb-2 inline-block self-start
+        ${mobile ? 'text-xl' : 'text-2xl'}`}>Arcane Constructs (I)</h2>
+
       <div className="flex-1 overflow-y-auto pr-4 custom-scrollbar space-y-6 pb-8" style={{ transform: 'translateZ(0)', WebkitFontSmoothing: 'subpixel-antialiased' }}>
         <div className="group relative">
-           <div className="flex items-center justify-between mb-1">
-             <h3 className="font-semibold font-cinzel text-[17px] text-[#1a0f05] flex items-center gap-2">
-               Quillex
-             </h3>
-             <span className="font-caveat text-[#a4302a] text-sm rotate-[3deg]">open-source →</span>
-           </div>
-           <p className="text-[#5c4d33] font-mono text-[9px] tracking-[0.03em] mb-2">2026 · Creator & Lead Developer · TS / React / Express / Prisma / PostgreSQL</p>
-           <p className="text-[#1a0f05] text-[13.5px] leading-[1.62] mb-2 font-serif">
-              An opinionated open-source authentication SDK designed for React, providing drop-in UI components, custom hooks, and a pre-configured backend. Eliminates auth setup overhead for developers.
-           </p>
-           <div className="flex gap-4">
-             <a href="https://github.com/cipher-d-dev/quillex.git" target="_blank" rel="noreferrer" className="inline-block font-kalam text-[#2f5d8a] hover:text-[#1a0f05] border-b border-dashed border-[#2f5d8a] text-[12.5px] transition-colors relative z-10">→ GitHub</a>
-           </div>
+          <div className="flex items-center justify-between mb-1">
+            <h3 className={titleClass}>Quillex</h3>
+            <span className="font-caveat text-[#a4302a] text-sm rotate-[3deg]">open-source →</span>
+          </div>
+          <p className={metaClass}>2026 · Creator &amp; Lead Developer · TS / React / Express / Prisma / PostgreSQL</p>
+          <p className={bodyClass}>An opinionated open-source authentication SDK designed for React, providing drop-in UI components, custom hooks, and a pre-configured backend. Eliminates auth setup overhead for developers.</p>
+          <div className="flex gap-4">
+            <a href="https://github.com/cipher-d-dev/quillex.git" target="_blank" rel="noreferrer" className={linkClass}>→ GitHub</a>
+          </div>
         </div>
 
         <div className="group relative">
-           <h3 className="font-semibold font-cinzel text-[17px] text-[#1a0f05] mb-1">Clarion</h3>
-           <p className="text-[#5c4d33] font-mono text-[9px] tracking-[0.03em] mb-2">2026 · Fullstack & AI Engineer · TS / React / AI Pipelines / Express / PostgreSQL</p>
-           <p className="text-[#1a0f05] text-[13.5px] leading-[1.62] mb-2 font-serif">
-              An AI-powered complaint, report, and issue management platform for tertiary institutions. Automates ticket classification, intelligent routing, and real-time tracking with administrative analytics.
-           </p>
-           <div className="flex gap-4">
-             <a href="https://github.com/cipher-d-dev/clarion.git" target="_blank" rel="noreferrer" className="inline-block font-kalam text-[#2f5d8a] hover:text-[#1a0f05] border-b border-dashed border-[#2f5d8a] text-[12.5px] transition-colors relative z-10">→ GitHub</a>
-             <a href="https://clarion-schools.vercel.app" target="_blank" rel="noreferrer" className="inline-block font-kalam text-[#2f5d8a] hover:text-[#1a0f05] border-b border-dashed border-[#2f5d8a] text-[12.5px] transition-colors relative z-10">→ Live</a>
-           </div>
+          <h3 className={titleClass}>Clarion</h3>
+          <p className={metaClass}>2026 · Fullstack &amp; AI Engineer · TS / React / AI Pipelines / Express / PostgreSQL</p>
+          <p className={bodyClass}>An AI-powered complaint, report, and issue management platform for tertiary institutions. Automates ticket classification, intelligent routing, and real-time tracking with administrative analytics.</p>
+          <div className="flex gap-4">
+            <a href="https://github.com/cipher-d-dev/clarion.git" target="_blank" rel="noreferrer" className={linkClass}>→ GitHub</a>
+            <a href="https://clarion-schools.vercel.app" target="_blank" rel="noreferrer" className={linkClass}>→ Live</a>
+          </div>
         </div>
 
         <div className="group relative">
-           <h3 className="font-semibold font-cinzel text-[17px] text-[#1a0f05] mb-1">cipher_auth</h3>
-           <p className="text-[#5c4d33] font-mono text-[9px] tracking-[0.03em] mb-2">2026 · Backend & Security Engineer · JS / TS / Node.js / Passport.js</p>
-           <p className="text-[#1a0f05] text-[13.5px] leading-[1.62] mb-2 font-serif">
-              Modern authentication infrastructure built on top of Passport for JS/TS applications. Engineered to be secure by default and customizable by design.
-           </p>
-           <div className="flex gap-4">
-             <a href="https://github.com/cipher-d-dev/cipher_auth.git" target="_blank" rel="noreferrer" className="inline-block font-kalam text-[#2f5d8a] hover:text-[#1a0f05] border-b border-dashed border-[#2f5d8a] text-[12.5px] transition-colors relative z-10">→ GitHub</a>
-           </div>
+          <h3 className={titleClass}>cipher_auth</h3>
+          <p className={metaClass}>2026 · Backend &amp; Security Engineer · JS / TS / Node.js / Passport.js</p>
+          <p className={bodyClass}>Modern authentication infrastructure built on top of Passport for JS/TS applications. Engineered to be secure by default and customizable by design.</p>
+          <div className="flex gap-4">
+            <a href="https://github.com/cipher-d-dev/cipher_auth.git" target="_blank" rel="noreferrer" className={linkClass}>→ GitHub</a>
+          </div>
         </div>
 
         <div className="group relative">
-           <h3 className="font-semibold font-cinzel text-[17px] text-[#1a0f05] mb-1">Aetheris</h3>
-           <p className="text-[#5c4d33] font-mono text-[9px] tracking-[0.03em] mb-2">2026 · Systems & Security Developer · TS / Crypto / P2P Mesh Protocols</p>
-           <p className="text-[#1a0f05] text-[13.5px] leading-[1.62] mb-2 font-serif">
-              An encrypted messaging platform enabling secure data transfers over local peer-to-peer mesh network discovery without requiring internet connectivity. Features E2E encryption.
-           </p>
-           <div className="flex gap-4">
-             <a href="https://github.com/cipher-d-dev/Aetheris.git" target="_blank" rel="noreferrer" className="inline-block font-kalam text-[#2f5d8a] hover:text-[#1a0f05] border-b border-dashed border-[#2f5d8a] text-[12.5px] transition-colors relative z-10">→ GitHub</a>
-           </div>
+          <h3 className={titleClass}>Aetheris</h3>
+          <p className={metaClass}>2026 · Systems &amp; Security Developer · TS / Crypto / P2P Mesh Protocols</p>
+          <p className={bodyClass}>An encrypted messaging platform enabling secure data transfers over local peer-to-peer mesh network discovery without requiring internet connectivity. Features E2E encryption.</p>
+          <div className="flex gap-4">
+            <a href="https://github.com/cipher-d-dev/Aetheris.git" target="_blank" rel="noreferrer" className={linkClass}>→ GitHub</a>
+          </div>
         </div>
 
         <div className="group relative">
-           <h3 className="font-semibold font-cinzel text-[17px] text-[#1a0f05] mb-1">ISBMPA</h3>
-           <p className="text-[#5c4d33] font-mono text-[9px] tracking-[0.03em] mb-2">2025 – Present · Senior Fullstack Engineer · TS / React / Appwrite</p>
-           <p className="text-[#1a0f05] text-[13.5px] leading-[1.62] mb-2 font-serif">
-              Official government liaison website serving institutional media and information. Architected media gallery hosting, configured custom domain routing, and optimized backend limits.
-           </p>
-           <div className="flex gap-4">
-             <a href="https://github.com/cipher-d-dev/isbmpa.git" target="_blank" rel="noreferrer" className="inline-block font-kalam text-[#2f5d8a] hover:text-[#1a0f05] border-b border-dashed border-[#2f5d8a] text-[12.5px] transition-colors relative z-10">→ GitHub</a>
-             <a href="https://isbmpa.com" target="_blank" rel="noreferrer" className="inline-block font-kalam text-[#2f5d8a] hover:text-[#1a0f05] border-b border-dashed border-[#2f5d8a] text-[12.5px] transition-colors relative z-10">→ Live</a>
-           </div>
+          <h3 className={titleClass}>ISBMPA</h3>
+          <p className={metaClass}>2025 – Present · Senior Fullstack Engineer · TS / React / Appwrite</p>
+          <p className={bodyClass}>Official government liaison website serving institutional media and information. Architected media gallery hosting, configured custom domain routing, and optimized backend limits.</p>
+          <div className="flex gap-4">
+            <a href="https://github.com/cipher-d-dev/isbmpa.git" target="_blank" rel="noreferrer" className={linkClass}>→ GitHub</a>
+            <a href="https://isbmpa.com" target="_blank" rel="noreferrer" className={linkClass}>→ Live</a>
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
-export function ProjectsRight() {
+export function ProjectsRight({ mobile = false }: { mobile?: boolean }) {
+  const linkClass = `inline-block font-kalam text-[#2f5d8a] hover:text-[#1a0f05] border-b border-dashed border-[#2f5d8a] transition-colors relative z-10 ${mobile ? 'text-sm' : 'text-[12.5px]'}`;
+  const metaClass = `text-[#5c4d33] font-mono tracking-[0.03em] mb-2 ${mobile ? 'text-[11px]' : 'text-[9px]'}`;
+  const bodyClass = `text-[#1a0f05] leading-[1.62] mb-2 font-serif ${mobile ? 'text-sm' : 'text-[13.5px]'}`;
+  const titleClass = `font-semibold font-cinzel text-[#1a0f05] mb-1 ${mobile ? 'text-lg' : 'text-[17px]'}`;
+
   return (
-    <div className="w-full h-full bg-parchment-right rounded-r-md p-10 shadow-[inset_-10px_0_20px_rgba(0,0,0,0.15)] flex flex-col border-l-2 border-[#d4c5a0]">
-      <h2 className="text-2xl font-cinzel font-semibold text-[#1a0f05] mb-6 border-b border-[#a4302a] pb-2 inline-block self-start">Arcane Constructs (II)</h2>
-      
+    <div className={`w-full h-full bg-parchment-right flex flex-col overflow-auto
+      ${mobile ? 'p-6' : 'rounded-r-md p-10 shadow-[inset_-10px_0_20px_rgba(0,0,0,0.15)] border-l-2 border-[#d4c5a0]'}`}>
+      <h2 className={`font-cinzel font-semibold text-[#1a0f05] mb-6 border-b border-[#a4302a] pb-2 inline-block self-start
+        ${mobile ? 'text-xl' : 'text-2xl'}`}>Arcane Constructs (II)</h2>
+
       <div className="flex-1 overflow-y-auto pr-4 custom-scrollbar space-y-6 pb-8" style={{ transform: 'translateZ(0)', WebkitFontSmoothing: 'subpixel-antialiased' }}>
         <div className="group relative">
-           <h3 className="font-semibold font-cinzel text-[17px] text-[#1a0f05] mb-1">Weft</h3>
-           <p className="text-[#5c4d33] font-mono text-[9px] tracking-[0.03em] mb-2">2026 · Android Developer · Kotlin / Android SDK / System Architecture</p>
-           <p className="text-[#1a0f05] text-[13.5px] leading-[1.62] mb-2 font-serif">
-              A functional Android home screen launcher demonstrating a live design token architecture. Designed to showcase dynamic UI state management and custom system-level customization.
-           </p>
-           <div className="flex gap-4">
-             <a href="https://github.com/cipher-d-dev/weft.git" target="_blank" rel="noreferrer" className="inline-block font-kalam text-[#2f5d8a] hover:text-[#1a0f05] border-b border-dashed border-[#2f5d8a] text-[12.5px] transition-colors relative z-10">→ GitHub</a>
-           </div>
+          <h3 className={titleClass}>Weft</h3>
+          <p className={metaClass}>2026 · Android Developer · Kotlin / Android SDK / System Architecture</p>
+          <p className={bodyClass}>A functional Android home screen launcher demonstrating a live design token architecture. Designed to showcase dynamic UI state management and custom system-level customization.</p>
+          <div className="flex gap-4">
+            <a href="https://github.com/cipher-d-dev/weft.git" target="_blank" rel="noreferrer" className={linkClass}>→ GitHub</a>
+          </div>
         </div>
 
         <div className="group relative">
-           <h3 className="font-semibold font-cinzel text-[17px] text-[#1a0f05] mb-1">Hopper</h3>
-           <p className="text-[#5c4d33] font-mono text-[9px] tracking-[0.03em] mb-2">2026 · Systems Developer · C# / C++ / Windows API</p>
-           <p className="text-[#1a0f05] text-[13.5px] leading-[1.62] mb-2 font-serif">
-              A lightweight Windows automation tool built for keyboard-driven productivity workflows, streamlining system navigation and quick execution tasks for power users.
-           </p>
-           <div className="flex gap-4">
-             <a href="https://github.com/cipher-d-dev/hopper.git" target="_blank" rel="noreferrer" className="inline-block font-kalam text-[#2f5d8a] hover:text-[#1a0f05] border-b border-dashed border-[#2f5d8a] text-[12.5px] transition-colors relative z-10">→ GitHub</a>
-           </div>
+          <h3 className={titleClass}>Hopper</h3>
+          <p className={metaClass}>2026 · Systems Developer · C# / C++ / Windows API</p>
+          <p className={bodyClass}>A lightweight Windows automation tool built for keyboard-driven productivity workflows, streamlining system navigation and quick execution tasks for power users.</p>
+          <div className="flex gap-4">
+            <a href="https://github.com/cipher-d-dev/hopper.git" target="_blank" rel="noreferrer" className={linkClass}>→ GitHub</a>
+          </div>
         </div>
 
         <div className="group relative">
-           <h3 className="font-semibold font-cinzel text-[17px] text-[#1a0f05] mb-1">fslens</h3>
-           <p className="text-[#5c4d33] font-mono text-[9px] tracking-[0.03em] mb-2">2026 · Frontend Engineer · TS / React / Next.js / Tailwind CSS</p>
-           <p className="text-[#1a0f05] text-[13.5px] leading-[1.62] mb-2 font-serif">
-              A cinematic portfolio website developed for a professional videographer, featuring high-performance media delivery, responsive galleries, and dynamic visual layouts.
-           </p>
-           <div className="flex gap-4">
-             <a href="https://github.com/cipher-d-dev/fslens.git" target="_blank" rel="noreferrer" className="inline-block font-kalam text-[#2f5d8a] hover:text-[#1a0f05] border-b border-dashed border-[#2f5d8a] text-[12.5px] transition-colors relative z-10">→ GitHub</a>
-             <a href="https://fslens.vercel.app" target="_blank" rel="noreferrer" className="inline-block font-kalam text-[#2f5d8a] hover:text-[#1a0f05] border-b border-dashed border-[#2f5d8a] text-[12.5px] transition-colors relative z-10">→ Live</a>
-           </div>
+          <h3 className={titleClass}>fslens</h3>
+          <p className={metaClass}>2026 · Frontend Engineer · TS / React / Next.js / Tailwind CSS</p>
+          <p className={bodyClass}>A cinematic portfolio website developed for a professional videographer, featuring high-performance media delivery, responsive galleries, and dynamic visual layouts.</p>
+          <div className="flex gap-4">
+            <a href="https://github.com/cipher-d-dev/fslens.git" target="_blank" rel="noreferrer" className={linkClass}>→ GitHub</a>
+            <a href="https://fslens.vercel.app" target="_blank" rel="noreferrer" className={linkClass}>→ Live</a>
+          </div>
         </div>
 
         <div className="group relative">
-           <h3 className="font-semibold font-cinzel text-[17px] text-[#1a0f05] mb-1">Traverse Programming</h3>
-           <p className="text-[#5c4d33] font-mono text-[9px] tracking-[0.03em] mb-2">2025 · Desktop Developer · VB.NET / Windows Forms / Algorithmic Comp.</p>
-           <p className="text-[#1a0f05] text-[13.5px] leading-[1.62] mb-2 font-serif">
-              A closed-traverse computation program for Surveying (SVY 323). Computes forward/back bearings, Bowditch adjustments, final coordinates, linear accuracy, and enclosed areas.
-           </p>
-           <div className="flex gap-4">
-             <a href="https://github.com/cipher-d-dev/Tranverse-Programming-Surverying.git" target="_blank" rel="noreferrer" className="inline-block font-kalam text-[#2f5d8a] hover:text-[#1a0f05] border-b border-dashed border-[#2f5d8a] text-[12.5px] transition-colors relative z-10">→ GitHub</a>
-           </div>
+          <h3 className={titleClass}>Traverse Programming</h3>
+          <p className={metaClass}>2025 · Desktop Developer · VB.NET / Windows Forms / Algorithmic Comp.</p>
+          <p className={bodyClass}>A closed-traverse computation program for Surveying (SVY 323). Computes forward/back bearings, Bowditch adjustments, final coordinates, linear accuracy, and enclosed areas.</p>
+          <div className="flex gap-4">
+            <a href="https://github.com/cipher-d-dev/Tranverse-Programming-Surverying.git" target="_blank" rel="noreferrer" className={linkClass}>→ GitHub</a>
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
-export function FocusTerminal({ active }: { active: boolean }) {
+export function FocusTerminal({ active, mobile = false }: { active: boolean; mobile?: boolean }) {
   const focusText = `$ status --current
 > focus: Mesh Networks & Cryptography
 > learning: Vector DBs & LLM Runners
@@ -577,68 +617,94 @@ export function FocusTerminal({ active }: { active: boolean }) {
 > status: compiling runes...`;
 
   return (
-    <div className="w-full h-full bg-parchment-left rounded-l-md p-10 relative shadow-[inset_10px_0_20px_rgba(0,0,0,0.15)] border-r-2 border-[#d4c5a0]">
-       <div className="bg-[#161210] p-6 rounded-sm border border-[#d4af6a]/25 h-[80%] my-4 shadow-xl flex flex-col relative overflow-hidden -rotate-1">
-         <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_4px,3px_100%] pointer-events-none" />
-         <div className="flex gap-2 mb-4 bg-[#0d0b09] -mt-6 -mx-6 p-3 border-b border-[#3d2b1f] relative z-10">
-           <div className="w-2 h-2 rounded-full bg-[#413a2e]" />
-           <div className="w-2 h-2 rounded-full bg-[#413a2e]" />
-           <div className="w-2 h-2 rounded-full bg-[#413a2e]" />
-         </div>
-         <div className="flex-1 overflow-y-auto text-[10.8px] leading-[1.65] relative z-10 font-mono" style={{ transform: 'translateZ(0)', WebkitFontSmoothing: 'subpixel-antialiased' }}>
-           <Typewriter text={focusText} active={active} delay={400} />
-         </div>
-       </div>
+    <div className={`w-full h-full bg-parchment-left flex flex-col overflow-hidden
+      ${mobile ? 'p-4' : 'rounded-l-md p-10 shadow-[inset_10px_0_20px_rgba(0,0,0,0.15)] border-r-2 border-[#d4c5a0]'}`}>
+      <div className={`bg-[#161210] p-6 rounded-sm border border-[#d4af6a]/25 shadow-xl flex flex-col relative overflow-hidden
+        ${mobile ? 'flex-1 my-2' : 'h-[80%] my-4 -rotate-1'}`}>
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_4px,3px_100%] pointer-events-none" />
+        <div className="flex gap-2 mb-4 bg-[#0d0b09] -mt-6 -mx-6 p-3 border-b border-[#3d2b1f] relative z-10">
+          <div className="w-2 h-2 rounded-full bg-[#413a2e]" />
+          <div className="w-2 h-2 rounded-full bg-[#413a2e]" />
+          <div className="w-2 h-2 rounded-full bg-[#413a2e]" />
+        </div>
+        <div className={`flex-1 overflow-y-auto leading-[1.65] relative z-10 font-mono
+          ${mobile ? 'text-[13px]' : 'text-[10.8px]'}`} style={{ transform: 'translateZ(0)', WebkitFontSmoothing: 'subpixel-antialiased' }}>
+          <Typewriter text={focusText} active={active} delay={400} />
+        </div>
+      </div>
     </div>
   );
 }
 
-export function ContactRight() {
+export function ContactRight({ mobile = false }: { mobile?: boolean }) {
+  const rowClass = `flex items-center gap-3 py-3 border-b border-dashed border-[#c9b783] font-mono ${mobile ? 'text-sm' : 'text-[11.5px]'}`;
+  const labelClass = `text-[#5c4d33] ${mobile ? 'w-20' : 'min-w-[68px]'}`;
+  const linkClass = 'text-[#1a0f05] hover:text-[#2f5d8a] transition-colors relative z-10';
+
   return (
-    <div className="w-full h-full bg-parchment-right rounded-r-md p-10 relative shadow-[inset_-10px_0_20px_rgba(0,0,0,0.15)] flex flex-col justify-center border-l-2 border-[#d4c5a0]" style={{ transform: 'translateZ(0)', WebkitFontSmoothing: 'subpixel-antialiased' }}>
+    <div className={`w-full h-full bg-parchment-right flex flex-col justify-center overflow-auto
+      ${mobile ? 'p-6' : 'rounded-r-md p-10 shadow-[inset_-10px_0_20px_rgba(0,0,0,0.15)] border-l-2 border-[#d4c5a0]'}`}
+      style={{ transform: 'translateZ(0)', WebkitFontSmoothing: 'subpixel-antialiased' }}>
       <span className="absolute top-6 right-6 text-[#8b6b4e] text-2xl opacity-40 font-cinzel">ᛃ</span>
       <span className="absolute bottom-6 left-6 text-[#8b6b4e] text-2xl opacity-40 font-cinzel">ᛗ</span>
 
-      <div className="flex justify-between items-start mb-6">
-        <div>
-          <h2 className="text-[17px] font-cinzel font-semibold text-[#1a0f05] mb-2 border-b border-[#a4302a] pb-2 inline-block">Contact</h2>
-          <p className="text-[#5c4d33] text-[11.5px] font-serif">
-            Only what I actually check.
-          </p>
-        </div>
-        
-        <div className="w-24 h-32 bg-[#f4ebd0] p-1.5 shadow-sm -rotate-3 border border-[#d4c5a0] flex flex-col mt-2 mr-4">
-          <div className="w-full flex-1 bg-[#d0c6a8]/40 border border-[#a4302a]/20 flex items-center justify-center relative overflow-hidden group cursor-pointer">
-            <div className="text-center p-1 text-[#8b6b4e]">
-               <p className="font-kalam text-[8px] leading-tight group-hover:hidden">Upload to <br/><span className="font-mono bg-[#d4c5a0]/40 px-1">/public/photo2.jpg</span></p>
+      {mobile ? (
+        /* Mobile: stacked header + photo centred, then contact rows */
+        <>
+          <div className="flex flex-col items-center mb-6 gap-3">
+            <div className="w-24 h-32 bg-[#f4ebd0] p-1.5 shadow-sm -rotate-3 border border-[#d4c5a0] flex flex-col">
+              <div className="w-full flex-1 bg-[#d0c6a8]/40 border border-[#a4302a]/20 flex items-center justify-center relative overflow-hidden">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/photo2.jpg" alt="Profile" className="absolute inset-0 w-full h-full object-cover" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+              </div>
             </div>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/photo2.jpg" alt="Profile 2" className="absolute inset-0 w-full h-full object-cover transition-opacity duration-300" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement?.classList.remove('group'); }} />
+            <div className="text-center">
+              <h2 className="text-xl font-cinzel font-semibold text-[#1a0f05] mb-1 border-b border-[#a4302a] pb-2 inline-block">Contact</h2>
+              <p className="text-[#5c4d33] text-sm font-serif mt-1">Only what I actually check.</p>
+            </div>
           </div>
+        </>
+      ) : (
+        <div className="flex justify-between items-start mb-6">
+          <div>
+            <h2 className="text-[17px] font-cinzel font-semibold text-[#1a0f05] mb-2 border-b border-[#a4302a] pb-2 inline-block">Contact</h2>
+            <p className="text-[#5c4d33] text-[11.5px] font-serif">Only what I actually check.</p>
+          </div>
+          <div className="w-24 h-32 bg-[#f4ebd0] p-1.5 shadow-sm -rotate-3 border border-[#d4c5a0] flex flex-col mt-2 mr-4">
+            <div className="w-full flex-1 bg-[#d0c6a8]/40 border border-[#a4302a]/20 flex items-center justify-center relative overflow-hidden group cursor-pointer">
+              <div className="text-center p-1 text-[#8b6b4e]">
+                <p className="font-kalam text-[8px] leading-tight group-hover:hidden">Upload to <br/><span className="font-mono bg-[#d4c5a0]/40 px-1">/public/photo2.jpg</span></p>
+              </div>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/photo2.jpg" alt="Profile 2" className="absolute inset-0 w-full h-full object-cover transition-opacity duration-300" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement?.classList.remove('group'); }} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="w-full space-y-0">
+        <div className={rowClass}>
+          <span className={labelClass}>email</span>
+          <a href="mailto:faveejiofor2009@gmail.com" className={linkClass}>faveejiofor2009@gmail.com</a>
+        </div>
+        <div className={rowClass}>
+          <span className={labelClass}>github</span>
+          <a href="https://github.com/cipher-d-dev" target="_blank" rel="noreferrer" className={linkClass}>github.com/cipher-d-dev</a>
+        </div>
+        <div className={rowClass}>
+          <span className={labelClass}>linkedin</span>
+          <a href="https://www.linkedin.com/in/fave-ejiofor-a05bab260" target="_blank" rel="noreferrer" className={`${linkClass} ${mobile ? 'truncate' : ''}`}>
+            {mobile ? 'linkedin/fave-ejiofor' : 'linkedin.com/in/fave-ejiofor-a05bab260'}
+          </a>
+        </div>
+        <div className={rowClass}>
+          <span className={labelClass}>resume</span>
+          <a href="/resume.pdf" download="resume.pdf" target="_blank" rel="noreferrer" className={linkClass}>/resume.pdf</a>
         </div>
       </div>
 
-      <div className="w-full max-w-[90%] space-y-0">
-        <div className="flex items-center gap-3 py-3 border-b border-dashed border-[#c9b783] font-mono text-[11.5px]">
-          <span className="text-[#5c4d33] min-w-[68px]">email</span>
-          <a href="mailto:faveejiofor2009@gmail.com" className="text-[#1a0f05] hover:text-[#2f5d8a] transition-colors relative z-10">faveejiofor2009@gmail.com</a>
-        </div>
-        <div className="flex items-center gap-3 py-3 border-b border-dashed border-[#c9b783] font-mono text-[11.5px]">
-          <span className="text-[#5c4d33] min-w-[68px]">github</span>
-          <a href="https://github.com/cipher-d-dev" target="_blank" rel="noreferrer" className="text-[#1a0f05] hover:text-[#2f5d8a] transition-colors relative z-10">github.com/cipher-d-dev</a>
-        </div>
-        <div className="flex items-center gap-3 py-3 border-b border-dashed border-[#c9b783] font-mono text-[11.5px]">
-          <span className="text-[#5c4d33] min-w-[68px]">linkedin</span>
-          <a href="https://www.linkedin.com/in/fave-ejiofor-a05bab260" target="_blank" rel="noreferrer" className="text-[#1a0f05] hover:text-[#2f5d8a] transition-colors relative z-10">linkedin.com/in/fave-ejiofor-a05bab260</a>
-        </div>
-        <div className="flex items-center gap-3 py-3 border-b border-dashed border-[#c9b783] font-mono text-[11.5px]">
-          <span className="text-[#5c4d33] min-w-[68px]">resume</span>
-          <a href="/resume.pdf" download="resume.pdf" target="_blank" rel="noreferrer" className="text-[#1a0f05] hover:text-[#2f5d8a] transition-colors relative z-10">/resume.pdf</a>
-        </div>
-      </div>
-      
       <div className="mt-8 text-center w-full">
-         <span className="font-caveat text-[19px] text-[#5c4d33]">— fin —</span>
+        <span className="font-caveat text-[19px] text-[#5c4d33]">— fin —</span>
       </div>
     </div>
   );
