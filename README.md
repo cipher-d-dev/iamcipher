@@ -6,7 +6,7 @@ I go by Favour — or Cipher, depending on who's asking and what they need built
 
 These days I sit at the intersection of backend architecture, security, and machine intelligence. I design systems that don't just work — they hold. Zero-Trust by default. Resilient under pressure. Clean where it counts.
 
-CTFs, production infrastructure, auth SDKs, neural networks not a résumé, just a record of questions I couldn't leave unanswered.
+CTFs, production infrastructure, auth SDKs, neural networks, not a résumé, just a record of questions I couldn't leave unanswered.
 
 The grimoire is never finished.
 

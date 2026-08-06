@@ -293,7 +293,7 @@ export function OriginTerminal({ active, mobile = false }: { active: boolean; mo
            <div className="w-2 h-2 rounded-full bg-[#413a2e]" />
          </div>
          <div className={`flex-1 overflow-y-auto leading-[1.65] relative z-10 font-mono
-           ${mobile ? 'text-[13px]' : 'text-[10.8px]'}`} style={{ transform: 'translateZ(0)', WebkitFontSmoothing: 'subpixel-antialiased' }}>
+           ${mobile ? 'text-[13px]' : 'text-[10.8px]'}`} style={{ isolation: 'isolate' }}>
            <Typewriter text={logText} active={active} delay={800} />
          </div>
        </div>
@@ -376,7 +376,7 @@ export function ToolsLeft({ mobile = false }: { mobile?: boolean }) {
       <h2 className={`font-cinzel font-semibold text-[#1a0f05] mb-6 border-b border-[#a4302a] pb-2 inline-block self-start
         ${mobile ? 'text-xl' : 'text-2xl'}`}>Core &amp; Frontend Runes</h2>
 
-      <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-4" style={{ transform: 'translateZ(0)', WebkitFontSmoothing: 'subpixel-antialiased' }}>
+      <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-4" style={{ isolation: 'isolate' }}>
         <div className="space-y-4 text-[13px] font-serif">
           <div className="group relative border border-[#c9b783] bg-[#f4ebd0]/50 p-3 shadow-sm hover:shadow-md transition-shadow">
             <h3 className={`font-semibold font-cinzel text-[#1a0f05] mb-2 flex items-center gap-2 ${mobile ? 'text-base' : 'text-[15px]'}`}>
@@ -427,7 +427,7 @@ export function ToolsRight({ mobile = false }: { mobile?: boolean }) {
       ${mobile ? 'p-6' : 'rounded-r-md p-10 shadow-[inset_-10px_0_20px_rgba(0,0,0,0.15)] border-l-2 border-[#d4c5a0]'}`}>
       {!mobile && <div className="w-full h-8 border-b border-[#a4302a] mb-6 opacity-0" />}
 
-      <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-4" style={{ transform: 'translateZ(0)', WebkitFontSmoothing: 'subpixel-antialiased' }}>
+      <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-4" style={{ isolation: 'isolate' }}>
         <h2 className={`font-cinzel font-semibold text-[#1a0f05] mb-2 border-b border-[#a4302a] pb-2 inline-block self-start
           ${mobile ? 'text-xl' : 'text-2xl'}`}>Backend &amp; Systems</h2>
 
@@ -500,7 +500,7 @@ export function ProjectsLeft({ mobile = false }: { mobile?: boolean }) {
       <h2 className={`font-cinzel font-semibold text-[#1a0f05] mb-6 border-b border-[#a4302a] pb-2 inline-block self-start
         ${mobile ? 'text-xl' : 'text-2xl'}`}>Arcane Constructs (I)</h2>
 
-      <div className="flex-1 overflow-y-auto pr-4 custom-scrollbar space-y-6 pb-8" style={{ transform: 'translateZ(0)', WebkitFontSmoothing: 'subpixel-antialiased' }}>
+      <div className="flex-1 overflow-y-auto pr-4 custom-scrollbar space-y-6 pb-8" style={{ isolation: 'isolate' }}>
         <div className="group relative">
           <div className="flex items-center justify-between mb-1">
             <h3 className={titleClass}>Quillex</h3>
@@ -567,7 +567,7 @@ export function ProjectsRight({ mobile = false }: { mobile?: boolean }) {
       <h2 className={`font-cinzel font-semibold text-[#1a0f05] mb-6 border-b border-[#a4302a] pb-2 inline-block self-start
         ${mobile ? 'text-xl' : 'text-2xl'}`}>Arcane Constructs (II)</h2>
 
-      <div className="flex-1 overflow-y-auto pr-4 custom-scrollbar space-y-6 pb-8" style={{ transform: 'translateZ(0)', WebkitFontSmoothing: 'subpixel-antialiased' }}>
+      <div className="flex-1 overflow-y-auto pr-4 custom-scrollbar space-y-6 pb-8" style={{ isolation: 'isolate' }}>
         <div className="group relative">
           <h3 className={titleClass}>Weft</h3>
           <p className={metaClass}>2026 · Android Developer · Kotlin / Android SDK / System Architecture</p>
@@ -628,7 +628,7 @@ export function FocusTerminal({ active, mobile = false }: { active: boolean; mob
           <div className="w-2 h-2 rounded-full bg-[#413a2e]" />
         </div>
         <div className={`flex-1 overflow-y-auto leading-[1.65] relative z-10 font-mono
-          ${mobile ? 'text-[13px]' : 'text-[10.8px]'}`} style={{ transform: 'translateZ(0)', WebkitFontSmoothing: 'subpixel-antialiased' }}>
+          ${mobile ? 'text-[13px]' : 'text-[10.8px]'}`} style={{ isolation: 'isolate' }}>
           <Typewriter text={focusText} active={active} delay={400} />
         </div>
       </div>
@@ -644,7 +644,7 @@ export function ContactRight({ mobile = false }: { mobile?: boolean }) {
   return (
     <div className={`w-full h-full bg-parchment-right flex flex-col justify-center overflow-auto
       ${mobile ? 'p-6' : 'rounded-r-md p-10 shadow-[inset_-10px_0_20px_rgba(0,0,0,0.15)] border-l-2 border-[#d4c5a0]'}`}
-      style={{ transform: 'translateZ(0)', WebkitFontSmoothing: 'subpixel-antialiased' }}>
+      style={{ isolation: 'isolate' }}>
       <span className="absolute top-6 right-6 text-[#8b6b4e] text-2xl opacity-40 font-cinzel">ᛃ</span>
       <span className="absolute bottom-6 left-6 text-[#8b6b4e] text-2xl opacity-40 font-cinzel">ᛗ</span>
 
