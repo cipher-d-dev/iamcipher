@@ -1,0 +1,139 @@
+@import "tailwindcss";
+
+@theme {
+  --font-serif: var(--font-source-serif);
+  --font-mono: var(--font-jetbrains);
+  --font-kalam: var(--font-kalam);
+  --font-caveat: var(--font-caveat);
+  --font-cinzel-dec: var(--font-cinzel-dec);
+  --font-cinzel: var(--font-cinzel);
+  --font-noto-jp: var(--font-noto-jp);
+}
+
+@layer base {
+  :root {
+    --paper: #efe3c4;
+    --paper-shadow: #dccb9d;
+    --ink: #2b2013;
+    --ink-soft: #5c4d33;
+    --pen: #a4302a;
+    --pencil: #2f5d8a;
+    --term-bg: #161210;
+    --term-green: #8fd694;
+    --term-amber: #e8b969;
+    --rule: #c9b783;
+    --gold: #d4af6a;
+    --gold-bright: #f0d089;
+    --deep: #080c09;
+    --deep2: #121f16;
+    --violet: #2eb36f;
+    --leather: #141715;
+    --leather-dark: #090a09;
+    --edge: #e8d9ae;
+  }
+}
+
+@layer utilities {
+  .preserve-3d {
+    transform-style: preserve-3d;
+  }
+  .backface-hidden {
+    backface-visibility: hidden;
+  }
+  .rotate-y-180 {
+    transform: rotateY(-180deg);
+  }
+  .rotate-y-90 {
+    transform: rotateY(-90deg);
+  }
+  .perspective-2000 {
+    perspective: 2800px;
+  }
+  .origin-left {
+    transform-origin: left center;
+  }
+}
+
+/* Custom Grimoire Styles */
+.bg-parchment-left {
+  background-color: var(--paper);
+  background-image: 
+    radial-gradient(ellipse at 15% 10%, rgba(212,175,106,.06), transparent 40%),
+    url('https://www.transparenttextures.com/patterns/handmade-paper.png');
+  color: var(--ink);
+}
+
+.bg-parchment-right {
+  background-color: var(--paper);
+  background-image: 
+    radial-gradient(ellipse at 85% 10%, rgba(212,175,106,.06), transparent 40%),
+    url('https://www.transparenttextures.com/patterns/handmade-paper.png');
+  color: var(--ink);
+}
+
+.bg-cover-texture {
+  background: 
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.4'/%3E%3C/svg%3E"),
+    radial-gradient(circle at 50% 40%, rgba(46,179,111,.15), transparent 62%),
+    linear-gradient(160deg, var(--deep2) 0%, var(--deep) 72%);
+  box-shadow: 0 16px 38px rgba(0,0,0,.85), inset 0 0 0 1px rgba(212,175,106,.2);
+}
+
+.bg-cover-back {
+  background: 
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.4'/%3E%3C/svg%3E"),
+    radial-gradient(circle at 30% 20%, rgba(46,179,111,.1), transparent 60%),
+    linear-gradient(160deg, var(--leather) 0%, var(--leather-dark) 100%);
+  box-shadow: 0 2px 6px rgba(0,0,0,.5) inset;
+}
+
+.book-spine {
+  background: 
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.4'/%3E%3C/svg%3E"),
+    linear-gradient(90deg, var(--leather-dark) 0%, var(--leather) 35%, var(--leather) 65%, var(--leather-dark) 100%);
+  box-shadow: inset 0 0 14px rgba(0,0,0,.6);
+}
+.book-spine::before {
+  content: "";
+  position: absolute;
+  inset: 8px 3px;
+  background: repeating-linear-gradient(180deg, rgba(212,175,106,.14) 0 2px, transparent 2px 24px);
+}
+.book-pageblock {
+  background: repeating-linear-gradient(180deg, var(--edge) 0 2px, #d6c085 2px 3px),
+    linear-gradient(90deg, #d0bb7e, var(--edge) 40%, #f2e6c4 100%);
+  box-shadow: inset 4px 0 8px rgba(0,0,0,.2), inset -2px 0 3px rgba(255,255,255,.4);
+}
+.book-pageblock-top {
+  background: linear-gradient(180deg, #f2e6c4, #d0bb7e);
+}
+.book-pageblock-bottom {
+  background: linear-gradient(180deg, #f2e6c4, #d0bb7e);
+}
+
+.text-glow {
+  text-shadow: 0 0 8px rgba(46, 179, 111, 0.6), 0 0 20px rgba(46, 179, 111, 0.3);
+}
+
+.text-glow-gold {
+  text-shadow: 0 0 8px rgba(255, 174, 0, 0.6), 0 0 20px rgba(255, 174, 0, 0.3);
+}
+
+.box-glow {
+  box-shadow: 0 0 15px rgba(46, 179, 111, 0.4), inset 0 0 20px rgba(46, 179, 111, 0.2);
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(139, 107, 78, 0.1); 
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(139, 107, 78, 0.4); 
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(139, 107, 78, 0.6); 
+}
