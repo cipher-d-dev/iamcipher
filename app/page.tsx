@@ -3,8 +3,10 @@ import { useState } from 'react';
 import Book from '@/components/Book';
 import MagicCircle from '@/components/MagicCircle';
 import Particles from '@/components/Particles';
+import MagicalLoader from '@/components/MagicalLoader';
 
 export default function Home() {
+  const [loaded, setLoaded] = useState(false);
   const [appState, setAppState] = useState<'closed' | 'opening' | 'reading' | 'closing' | 'summary'>('closed');
 
   if (appState === 'summary') {
@@ -130,24 +132,30 @@ export default function Home() {
   }
 
   return (
-    <main className="relative w-screen h-screen overflow-hidden bg-[#080c09] flex items-center justify-center select-none font-serif">
-      {/* Background ambient lighting */}
-      <div className="absolute inset-0 opacity-40 bg-[radial-gradient(circle_at_50%_50%,#112b1c_0%,transparent_70%)] pointer-events-none" />
-      
-      <MagicCircle isActive={appState !== 'closed'} />
-      <Particles isActive={appState !== 'closed'} />
-      
-      <div className="absolute inset-0 z-20">
-        <Book isActive={appState !== 'closed'} onStateChange={(state) => setAppState(state as any)} />
-      </div>
-
-      <button 
-        onClick={() => setAppState('summary')}
-        className={`absolute top-6 right-8 z-50 text-[#a8b5a8] hover:text-[#f0d089] font-mono text-[13px] tracking-wider transition-all duration-300
-        ${appState === 'closed' ? 'opacity-60 hover:opacity-100' : 'opacity-0 pointer-events-none'}`}
+    <>
+      {!loaded && <MagicalLoader onDone={() => setLoaded(true)} />}
+      <main
+        className="relative w-screen h-screen overflow-hidden bg-[#080c09] flex items-center justify-center select-none font-serif"
+        style={{ opacity: loaded ? 1 : 0, transition: 'opacity 0.8s ease-in' }}
       >
-        [ skip intro ]
-      </button>
-    </main>
+        {/* Background ambient lighting */}
+        <div className="absolute inset-0 opacity-40 bg-[radial-gradient(circle_at_50%_50%,#112b1c_0%,transparent_70%)] pointer-events-none" />
+        
+        <MagicCircle isActive={appState !== 'closed'} />
+        <Particles isActive={appState !== 'closed'} />
+        
+        <div className="absolute inset-0 z-20">
+          <Book isActive={appState !== 'closed'} onStateChange={(state) => setAppState(state as any)} />
+        </div>
+
+        <button 
+          onClick={() => setAppState('summary')}
+          className={`absolute top-6 right-8 z-50 text-[#a8b5a8] hover:text-[#f0d089] font-mono text-[13px] tracking-wider transition-all duration-300
+          ${appState === 'closed' ? 'opacity-60 hover:opacity-100' : 'opacity-0 pointer-events-none'}`}
+        >
+          [ skip intro ]
+        </button>
+      </main>
+    </>
   );
 }

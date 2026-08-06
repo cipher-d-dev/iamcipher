@@ -39,7 +39,7 @@ export function CoverFront() {
       </div>
       
       <p className="text-[#849c89] font-kalam text-sm lg:text-base mb-12 z-10 shadow-black drop-shadow-md">
-        software engineer · notebook keeper
+        software engineer · systems designer
       </p>
       
       {/* Debossed/Embossed Central Sigil */}
@@ -59,11 +59,65 @@ export function CoverFront() {
 export function InnerCover({ right = false }: { right?: boolean }) {
   if (right) {
     return (
-      <div className="w-full h-full bg-cover-texture flex items-center justify-center relative shadow-[inset_20px_0_20px_rgba(0,0,0,0.8)] border-y border-[#d4c5a0]/10">
+      <div className="w-full h-full bg-cover-texture flex items-center justify-center relative shadow-[inset_20px_0_20px_rgba(0,0,0,0.8)] border-y border-[#d4c5a0]/10 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent pointer-events-none" />
-        <div className="opacity-[0.03] text-[#8b6b4e] flex flex-col gap-12">
+
+        {/* Faint background runes */}
+        <div className="opacity-[0.03] text-[#8b6b4e] flex flex-col gap-12 absolute select-none">
           <span className="text-[10rem]">ᛟ</span>
           <span className="text-[10rem]">ᛉ</span>
+        </div>
+
+        {/* Glowing closing inscription */}
+        <div className="relative z-10 flex flex-col items-center justify-center gap-4 px-10 text-center">
+
+          {/* Sigil — uses Tailwind animate-pulse */}
+          <span
+            className="text-4xl text-[#2eb36f] animate-pulse"
+            style={{ textShadow: '0 0 20px rgba(46,179,111,0.9), 0 0 40px rgba(46,179,111,0.5), 0 0 60px rgba(46,179,111,0.2)' }}
+          >
+            ✦
+          </span>
+
+          <div className="w-16 h-[1px] bg-gradient-to-r from-transparent via-[#2eb36f]/40 to-transparent" />
+
+          <p
+            className="font-cinzel text-[#a8c8b0] text-[12px] tracking-[0.15em] leading-relaxed"
+            style={{ textShadow: '0 0 14px rgba(46,179,111,0.6), 0 0 28px rgba(46,179,111,0.3)' }}
+          >
+            You&apos;ve reached the end —
+          </p>
+
+          <p
+            className="font-caveat text-[#7ab88a] text-[20px] animate-pulse"
+            style={{ textShadow: '0 0 10px rgba(46,179,111,0.5)', animationDuration: '3s' }}
+          >
+            for now.
+          </p>
+
+          <div className="w-8 h-[1px] bg-gradient-to-r from-transparent via-[#ffae00]/25 to-transparent" />
+
+          <p
+            className="font-kalam text-[#5a7a60] text-[11px] leading-[1.9] max-w-[180px] italic"
+            style={{ textShadow: '0 0 8px rgba(46,179,111,0.25)' }}
+          >
+            Come back to see where this journey goes.
+          </p>
+          <p
+            className="font-kalam text-[#3d5c44] text-[10.5px] italic"
+            style={{ textShadow: '0 0 6px rgba(46,179,111,0.2)' }}
+          >
+            The grimoire is never finished.
+          </p>
+
+          <div className="w-16 h-[1px] bg-gradient-to-r from-transparent via-[#2eb36f]/20 to-transparent mt-1" />
+
+          <span
+            className="text-base text-[#ffae00]/50 animate-pulse"
+            style={{ textShadow: '0 0 12px rgba(255,174,0,0.5)', animationDuration: '4s', animationDelay: '1s' }}
+          >
+            ᛟ
+          </span>
         </div>
       </div>
     );
@@ -107,6 +161,19 @@ export function CoverBack() {
       <div className="w-20 h-20 rounded-full flex items-center justify-center relative shadow-[inset_0_2px_8px_rgba(0,0,0,0.9),0_1px_1px_rgba(255,255,255,0.05)] bg-[#090d0b] border border-[#090a09]">
         <div className="absolute inset-2 rounded-full border border-[#2eb36f]/10" />
       </div>
+
+      {/* Closing inscription */}
+      <div className="absolute bottom-16 left-0 right-0 flex flex-col items-center gap-3 px-10 text-center pointer-events-none">
+        <div className="w-12 h-[1px] bg-[#2eb36f]/20 mb-1" />
+        <p className="font-caveat text-[#849c89] text-[15px] leading-relaxed max-w-[260px] drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
+          You've reached the end — for now.
+        </p>
+        <p className="font-kalam text-[#5a7a60] text-[12px] leading-relaxed max-w-[240px] italic">
+          Come back later to see where this journey goes. The grimoire is never truly finished.
+        </p>
+        <div className="w-8 h-[1px] bg-[#2eb36f]/20 mt-1" />
+        <span className="text-[#2eb36f]/30 text-lg">✦</span>
+      </div>
     </div>
   );
 }
@@ -147,7 +214,7 @@ export function OriginLeft() {
              <p className="font-kalam text-[10px] leading-tight group-hover:hidden">Upload your photo to <br/><span className="font-mono bg-[#d4c5a0]/40 px-1">/public/photo1.jpg</span></p>
           </div>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/photo1.jpg" alt="Profile 1" className="absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-300" onError={(e) => { e.currentTarget.style.opacity = '0'; e.currentTarget.parentElement?.classList.remove('group'); }} onLoad={(e) => { e.currentTarget.style.opacity = '1'; }} />
+          <img src="/photo1.jpg" alt="Profile 1" className="absolute inset-0 w-full h-full object-cover transition-opacity duration-300" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement?.classList.remove('group'); }} />
         </div>
         <p className="font-caveat text-center text-[#5c4d33] text-[13px] mt-1 -mb-1">Me</p>
       </div>
@@ -190,7 +257,7 @@ export function OriginTerminal({ active }: { active: boolean }) {
            <div className="w-2 h-2 rounded-full bg-[#413a2e]" />
            <div className="w-2 h-2 rounded-full bg-[#413a2e]" />
          </div>
-         <div className="flex-1 overflow-y-auto text-[10.8px] leading-[1.65] relative z-10 font-mono" style=\{\{ isolation: 'isolate' \}\}>
+         <div className="flex-1 overflow-y-auto text-[10.8px] leading-[1.65] relative z-10 font-mono" style={{ transform: 'translateZ(0)', WebkitFontSmoothing: 'subpixel-antialiased' }}>
            <Typewriter text={logText} active={active} delay={800} />
          </div>
        </div>
@@ -265,7 +332,7 @@ export function ToolsLeft() {
     <div className="w-full h-full bg-parchment-left rounded-l-md p-10 shadow-[inset_10px_0_20px_rgba(0,0,0,0.15)] flex flex-col border-r-2 border-[#d4c5a0]">
       <h2 className="text-2xl font-cinzel font-semibold text-[#1a0f05] mb-6 border-b border-[#a4302a] pb-2 inline-block self-start">Core & Frontend Runes</h2>
       
-      <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-6" style=\{\{ isolation: 'isolate' \}\}>
+      <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-6" style={{ transform: 'translateZ(0)', WebkitFontSmoothing: 'subpixel-antialiased' }}>
         <div className="space-y-4 text-[13px] font-serif">
           <div className="group relative border border-[#c9b783] bg-[#f4ebd0]/50 p-3 shadow-sm hover:shadow-md transition-shadow">
             <h3 className="font-semibold font-cinzel text-[15px] text-[#1a0f05] mb-2 flex items-center gap-2">
@@ -315,7 +382,7 @@ export function ToolsRight() {
     <div className="w-full h-full bg-parchment-right rounded-r-md p-10 shadow-[inset_-10px_0_20px_rgba(0,0,0,0.15)] flex flex-col border-l-2 border-[#d4c5a0]">
       <div className="w-full h-8 border-b border-[#a4302a] mb-6 opacity-0" />
       
-      <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-6" style=\{\{ isolation: 'isolate' \}\}>
+      <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-6" style={{ transform: 'translateZ(0)', WebkitFontSmoothing: 'subpixel-antialiased' }}>
         <h2 className="text-2xl font-cinzel font-semibold text-[#1a0f05] mb-2 border-b border-[#a4302a] pb-2 inline-block self-start">Backend & Systems</h2>
         
         <div className="space-y-4 text-[13px] font-serif mt-4">
@@ -380,7 +447,7 @@ export function ProjectsLeft() {
     <div className="w-full h-full bg-parchment-left rounded-l-md p-10 shadow-[inset_10px_0_20px_rgba(0,0,0,0.15)] flex flex-col border-r-2 border-[#d4c5a0]">
       <h2 className="text-2xl font-cinzel font-semibold text-[#1a0f05] mb-6 border-b border-[#a4302a] pb-2 inline-block self-start">Arcane Constructs (I)</h2>
       
-      <div className="flex-1 overflow-y-auto pr-4 custom-scrollbar space-y-6 pb-8" style=\{\{ isolation: 'isolate' \}\}>
+      <div className="flex-1 overflow-y-auto pr-4 custom-scrollbar space-y-6 pb-8" style={{ transform: 'translateZ(0)', WebkitFontSmoothing: 'subpixel-antialiased' }}>
         <div className="group relative">
            <div className="flex items-center justify-between mb-1">
              <h3 className="font-semibold font-cinzel text-[17px] text-[#1a0f05] flex items-center gap-2">
@@ -452,7 +519,7 @@ export function ProjectsRight() {
     <div className="w-full h-full bg-parchment-right rounded-r-md p-10 shadow-[inset_-10px_0_20px_rgba(0,0,0,0.15)] flex flex-col border-l-2 border-[#d4c5a0]">
       <h2 className="text-2xl font-cinzel font-semibold text-[#1a0f05] mb-6 border-b border-[#a4302a] pb-2 inline-block self-start">Arcane Constructs (II)</h2>
       
-      <div className="flex-1 overflow-y-auto pr-4 custom-scrollbar space-y-6 pb-8" style=\{\{ isolation: 'isolate' \}\}>
+      <div className="flex-1 overflow-y-auto pr-4 custom-scrollbar space-y-6 pb-8" style={{ transform: 'translateZ(0)', WebkitFontSmoothing: 'subpixel-antialiased' }}>
         <div className="group relative">
            <h3 className="font-semibold font-cinzel text-[17px] text-[#1a0f05] mb-1">Weft</h3>
            <p className="text-[#5c4d33] font-mono text-[9px] tracking-[0.03em] mb-2">2026 · Android Developer · Kotlin / Android SDK / System Architecture</p>
@@ -518,7 +585,7 @@ export function FocusTerminal({ active }: { active: boolean }) {
            <div className="w-2 h-2 rounded-full bg-[#413a2e]" />
            <div className="w-2 h-2 rounded-full bg-[#413a2e]" />
          </div>
-         <div className="flex-1 overflow-y-auto text-[10.8px] leading-[1.65] relative z-10 font-mono" style=\{\{ isolation: 'isolate' \}\}>
+         <div className="flex-1 overflow-y-auto text-[10.8px] leading-[1.65] relative z-10 font-mono" style={{ transform: 'translateZ(0)', WebkitFontSmoothing: 'subpixel-antialiased' }}>
            <Typewriter text={focusText} active={active} delay={400} />
          </div>
        </div>
@@ -528,7 +595,7 @@ export function FocusTerminal({ active }: { active: boolean }) {
 
 export function ContactRight() {
   return (
-    <div className="w-full h-full bg-parchment-right rounded-r-md p-10 relative shadow-[inset_-10px_0_20px_rgba(0,0,0,0.15)] flex flex-col justify-center border-l-2 border-[#d4c5a0]" style=\{\{ isolation: 'isolate' \}\}>
+    <div className="w-full h-full bg-parchment-right rounded-r-md p-10 relative shadow-[inset_-10px_0_20px_rgba(0,0,0,0.15)] flex flex-col justify-center border-l-2 border-[#d4c5a0]" style={{ transform: 'translateZ(0)', WebkitFontSmoothing: 'subpixel-antialiased' }}>
       <span className="absolute top-6 right-6 text-[#8b6b4e] text-2xl opacity-40 font-cinzel">ᛃ</span>
       <span className="absolute bottom-6 left-6 text-[#8b6b4e] text-2xl opacity-40 font-cinzel">ᛗ</span>
 
@@ -546,7 +613,7 @@ export function ContactRight() {
                <p className="font-kalam text-[8px] leading-tight group-hover:hidden">Upload to <br/><span className="font-mono bg-[#d4c5a0]/40 px-1">/public/photo2.jpg</span></p>
             </div>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/photo2.jpg" alt="Profile 2" className="absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-300" onError={(e) => { e.currentTarget.style.opacity = '0'; e.currentTarget.parentElement?.classList.remove('group'); }} onLoad={(e) => { e.currentTarget.style.opacity = '1'; }} />
+            <img src="/photo2.jpg" alt="Profile 2" className="absolute inset-0 w-full h-full object-cover transition-opacity duration-300" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement?.classList.remove('group'); }} />
           </div>
         </div>
       </div>
