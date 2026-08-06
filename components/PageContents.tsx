@@ -190,7 +190,7 @@ export function OriginTerminal({ active }: { active: boolean }) {
            <div className="w-2 h-2 rounded-full bg-[#413a2e]" />
            <div className="w-2 h-2 rounded-full bg-[#413a2e]" />
          </div>
-         <div className="flex-1 overflow-y-auto text-[10.8px] leading-[1.65] relative z-10 font-mono">
+         <div className="flex-1 overflow-y-auto text-[10.8px] leading-[1.65] relative z-10 font-mono" style=\{\{ isolation: 'isolate' \}\}>
            <Typewriter text={logText} active={active} delay={800} />
          </div>
        </div>
@@ -265,7 +265,7 @@ export function ToolsLeft() {
     <div className="w-full h-full bg-parchment-left rounded-l-md p-10 shadow-[inset_10px_0_20px_rgba(0,0,0,0.15)] flex flex-col border-r-2 border-[#d4c5a0]">
       <h2 className="text-2xl font-cinzel font-semibold text-[#1a0f05] mb-6 border-b border-[#a4302a] pb-2 inline-block self-start">Core & Frontend Runes</h2>
       
-      <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-6">
+      <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-6" style=\{\{ isolation: 'isolate' \}\}>
         <div className="space-y-4 text-[13px] font-serif">
           <div className="group relative border border-[#c9b783] bg-[#f4ebd0]/50 p-3 shadow-sm hover:shadow-md transition-shadow">
             <h3 className="font-semibold font-cinzel text-[15px] text-[#1a0f05] mb-2 flex items-center gap-2">
@@ -315,7 +315,7 @@ export function ToolsRight() {
     <div className="w-full h-full bg-parchment-right rounded-r-md p-10 shadow-[inset_-10px_0_20px_rgba(0,0,0,0.15)] flex flex-col border-l-2 border-[#d4c5a0]">
       <div className="w-full h-8 border-b border-[#a4302a] mb-6 opacity-0" />
       
-      <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-6">
+      <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-6" style=\{\{ isolation: 'isolate' \}\}>
         <h2 className="text-2xl font-cinzel font-semibold text-[#1a0f05] mb-2 border-b border-[#a4302a] pb-2 inline-block self-start">Backend & Systems</h2>
         
         <div className="space-y-4 text-[13px] font-serif mt-4">
@@ -380,7 +380,7 @@ export function ProjectsLeft() {
     <div className="w-full h-full bg-parchment-left rounded-l-md p-10 shadow-[inset_10px_0_20px_rgba(0,0,0,0.15)] flex flex-col border-r-2 border-[#d4c5a0]">
       <h2 className="text-2xl font-cinzel font-semibold text-[#1a0f05] mb-6 border-b border-[#a4302a] pb-2 inline-block self-start">Arcane Constructs (I)</h2>
       
-      <div className="flex-1 overflow-y-auto pr-4 custom-scrollbar space-y-6 pb-8">
+      <div className="flex-1 overflow-y-auto pr-4 custom-scrollbar space-y-6 pb-8" style=\{\{ isolation: 'isolate' \}\}>
         <div className="group relative">
            <div className="flex items-center justify-between mb-1">
              <h3 className="font-semibold font-cinzel text-[17px] text-[#1a0f05] flex items-center gap-2">
@@ -452,7 +452,7 @@ export function ProjectsRight() {
     <div className="w-full h-full bg-parchment-right rounded-r-md p-10 shadow-[inset_-10px_0_20px_rgba(0,0,0,0.15)] flex flex-col border-l-2 border-[#d4c5a0]">
       <h2 className="text-2xl font-cinzel font-semibold text-[#1a0f05] mb-6 border-b border-[#a4302a] pb-2 inline-block self-start">Arcane Constructs (II)</h2>
       
-      <div className="flex-1 overflow-y-auto pr-4 custom-scrollbar space-y-6 pb-8">
+      <div className="flex-1 overflow-y-auto pr-4 custom-scrollbar space-y-6 pb-8" style=\{\{ isolation: 'isolate' \}\}>
         <div className="group relative">
            <h3 className="font-semibold font-cinzel text-[17px] text-[#1a0f05] mb-1">Weft</h3>
            <p className="text-[#5c4d33] font-mono text-[9px] tracking-[0.03em] mb-2">2026 · Android Developer · Kotlin / Android SDK / System Architecture</p>
@@ -518,7 +518,7 @@ export function FocusTerminal({ active }: { active: boolean }) {
            <div className="w-2 h-2 rounded-full bg-[#413a2e]" />
            <div className="w-2 h-2 rounded-full bg-[#413a2e]" />
          </div>
-         <div className="flex-1 overflow-y-auto text-[10.8px] leading-[1.65] relative z-10 font-mono">
+         <div className="flex-1 overflow-y-auto text-[10.8px] leading-[1.65] relative z-10 font-mono" style=\{\{ isolation: 'isolate' \}\}>
            <Typewriter text={focusText} active={active} delay={400} />
          </div>
        </div>
@@ -528,7 +528,7 @@ export function FocusTerminal({ active }: { active: boolean }) {
 
 export function ContactRight() {
   return (
-    <div className="w-full h-full bg-parchment-right rounded-r-md p-10 relative shadow-[inset_-10px_0_20px_rgba(0,0,0,0.15)] flex flex-col justify-center border-l-2 border-[#d4c5a0]">
+    <div className="w-full h-full bg-parchment-right rounded-r-md p-10 relative shadow-[inset_-10px_0_20px_rgba(0,0,0,0.15)] flex flex-col justify-center border-l-2 border-[#d4c5a0]" style=\{\{ isolation: 'isolate' \}\}>
       <span className="absolute top-6 right-6 text-[#8b6b4e] text-2xl opacity-40 font-cinzel">ᛃ</span>
       <span className="absolute bottom-6 left-6 text-[#8b6b4e] text-2xl opacity-40 font-cinzel">ᛗ</span>
 

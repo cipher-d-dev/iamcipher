@@ -230,6 +230,21 @@ export default function Book({ isActive, onStateChange }: { isActive: boolean, o
     if (end - touchStart.current > 50) turnPrev();
   };
 
+  // Section catalogue
+  const catalogue = [
+    { label: 'Origin',     rune: 'ᚩ', index: 3 },
+    { label: 'Experience', rune: 'ᛖ', index: 5 },
+    { label: 'Tools',      rune: 'ᛏ', index: 6 },
+    { label: 'Projects',   rune: 'ᛈ', index: 7 },
+    { label: 'Contact',    rune: 'ᛗ', index: 8 },
+  ];
+  const activeSection = catalogue.reduce((best, entry) =>
+    pageIndex >= entry.index ? entry : best, catalogue[0]);
+  const jumpTo = (target: number) => {
+    if (bookState === 'closed') { handleOpen(); setTimeout(() => setPageIndex(target), 1400); }
+    else if (bookState === 'reading') setPageIndex(target);
+  };
+
   return (
     <div 
       ref={containerRef} 
@@ -352,6 +367,62 @@ export default function Book({ isActive, onStateChange }: { isActive: boolean, o
       >
         <div className="w-4 h-4 rounded-full border border-[#ffae00]/40 flex items-center justify-center text-[10px] text-[#ffae00] mb-1">✕</div>
         <div className="w-[1px] h-12 bg-black/20" />
+      </div>
+
+      {/* Side Catalogue — vertical index tabs */}
+      <div
+        className="absolute flex flex-col gap-1 z-50 transition-all duration-700 ease-in-out"
+        style={{
+          left: `calc(50% + ${210 * scale}px)`,
+          top: '50%',
+          transform: 'translateY(-50%)',
+          opacity: bookState === 'reading' ? 1 : 0,
+          pointerEvents: bookState === 'reading' ? 'auto' : 'none',
+        }}
+      >
+        {catalogue.map((entry) => {
+          const isActive = activeSection.index === entry.index;
+          return (
+            <button
+              key={entry.label}
+              onClick={() => jumpTo(entry.index)}
+              title={entry.label}
+              className="group relative flex items-center transition-all duration-300 ease-in-out"
+            >
+              <div className={`
+                flex items-center gap-2 pl-2 pr-3 py-2 border border-r-0
+                font-cinzel text-[10px] tracking-widest uppercase shadow-md transition-all duration-300
+                ${isActive
+                  ? 'bg-[#f4ebd0] border-[#8b6b4e] text-[#a4302a] w-28'
+                  : 'bg-[#d4c5a0]/80 border-[#a89060]/60 text-[#5c4d33] translate-x-1 w-24 hover:translate-x-0 hover:w-28 hover:bg-[#eee0c0] hover:text-[#1a0f05]'
+                }
+              `}>
+                <span className={`font-cinzel text-[13px] shrink-0 ${isActive ? 'text-[#a4302a]' : 'text-[#8b6b4e] group-hover:text-[#a4302a]'}`}>
+                  {entry.rune}
+                </span>
+                <span className="truncate">{entry.label}</span>
+              </div>
+              {isActive && <div className="w-[3px] h-full bg-[#a4302a] absolute right-0 top-0" />}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Navigation hint */}
+      <div
+        className="absolute z-40 flex items-center gap-3 pointer-events-none transition-all duration-700"
+        style={{
+          top: `calc(50% + ${310 * scale}px)`,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          opacity: bookState === 'reading' ? 0.55 : 0,
+        }}
+      >
+        <span className="font-cinzel text-[#d4c5a0] text-[10px] tracking-widest">← prev</span>
+        <span className="text-[#8b6b4e] text-[10px]">·</span>
+        <span className="font-kalam text-[#a8b5a8] text-[11px]">arrow keys or swipe to turn pages</span>
+        <span className="text-[#8b6b4e] text-[10px]">·</span>
+        <span className="font-cinzel text-[#d4c5a0] text-[10px] tracking-widest">next →</span>
       </div>
     </div>
   );
