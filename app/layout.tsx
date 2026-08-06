@@ -16,7 +16,6 @@ const sourceSerif = Source_Serif_4({ weight: ['400', '600'], subsets: ['latin'],
 const jetbrains = JetBrains_Mono({ weight: ['400', '500', '700'], subsets: ['latin'], variable: '--font-jetbrains' });
 const cinzelDec = Cinzel_Decorative({ weight: ['400', '700'], subsets: ['latin'], variable: '--font-cinzel-dec' });
 const cinzel = Cinzel({ weight: ['500', '700'], subsets: ['latin'], variable: '--font-cinzel' });
-const notoJp = Noto_Serif_JP({ weight: ['400', '600'], subsets: ['latin'], variable: '--font-noto-jp' });
 
 export const metadata: Metadata = {
   title: 'Grimoire Portfolio',
@@ -25,7 +24,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({children}: {children: React.ReactNode}) {
   return (
-    <html lang="en" className={`${kalam.variable} ${caveat.variable} ${sourceSerif.variable} ${jetbrains.variable} ${cinzelDec.variable} ${cinzel.variable} ${notoJp.variable}`}>
+    <html lang="en" className={`${kalam.variable} ${caveat.variable} ${sourceSerif.variable} ${jetbrains.variable} ${cinzelDec.variable} ${cinzel.variable}`}>
       <body suppressHydrationWarning className="bg-[#0c0512] text-gray-200 font-source-serif">
         {children}
       </body>

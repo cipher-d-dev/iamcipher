@@ -1,6 +1,6 @@
 {
-  "name": "Grimoire Portfolio",
-  "description": "A magical spellbook portfolio site.",
+  "name": "Cipher The Dev",
+  "description": "The story of the boy behind the screen",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
