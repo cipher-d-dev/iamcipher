@@ -21,7 +21,7 @@ export default function Book({ isActive, onStateChange, playTurn, playClick, pla
   const leafRefs = useRef<HTMLDivElement[]>([]);
 
   const leavesContent = [
-    { front: <CoverFront />, back: <InnerCover /> },
+    { front: <CoverFront onOpen={() => { playClick(); handleOpen(); }} />, back: <InnerCover /> },
     { front: <div className="w-full h-full bg-parchment-right" />, back: <div className="w-full h-full bg-parchment-left shadow-[inset_-10px_0_20px_rgba(0,0,0,0.05)]" /> },
     { front: <div className="w-full h-full bg-parchment-right shadow-[inset_10px_0_20px_rgba(0,0,0,0.05)]" />, back: <div className="w-full h-full bg-parchment-left shadow-[inset_-10px_0_20px_rgba(0,0,0,0.05)]" /> },
     { front: <TitlePage />, back: <OriginLeft /> },

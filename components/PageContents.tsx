@@ -2,7 +2,21 @@ import React from 'react';
 import { Mail, Github, Linkedin, FileText, ArrowRight } from 'lucide-react';
 import Typewriter from './Typewriter';
 
-export function CoverFront() {
+export function CoverFront({ onOpen }: { onOpen?: () => void }) {
+  const [hovered, setHovered] = React.useState(false);
+
+  // Sparks fired outward from sigil centre
+  const sparks = [
+    { sx: '0px',   sy: '-52px', delay: '0s',    color: '#2eb36f' },
+    { sx: '37px',  sy: '-37px', delay: '0.1s',  color: '#f0d089' },
+    { sx: '52px',  sy: '0px',   delay: '0.05s', color: '#2eb36f' },
+    { sx: '37px',  sy: '37px',  delay: '0.15s', color: '#f0d089' },
+    { sx: '0px',   sy: '52px',  delay: '0.08s', color: '#2eb36f' },
+    { sx: '-37px', sy: '37px',  delay: '0.12s', color: '#f0d089' },
+    { sx: '-52px', sy: '0px',   delay: '0.03s', color: '#2eb36f' },
+    { sx: '-37px', sy: '-37px', delay: '0.18s', color: '#f0d089' },
+  ];
+
   return (
     <div className="w-full h-full bg-cover-texture flex flex-col items-center justify-center p-8 relative overflow-hidden rounded-[2px_8px_8px_2px]">
       
@@ -42,14 +56,155 @@ export function CoverFront() {
         software engineer · systems designer
       </p>
       
-      {/* Debossed/Embossed Central Sigil */}
-      <div className="w-32 h-32 rounded-full flex items-center justify-center relative mb-12 shadow-[inset_0_4px_12px_rgba(0,0,0,0.9),0_1px_1px_rgba(255,255,255,0.1)] bg-[#090d0b] border border-[#090a09]">
-        <div className="absolute inset-3 rounded-full border-[2px] border-[#2eb36f]/30 shadow-[inset_0_0_10px_rgba(46,179,111,0.1)] animate-[spin_20s_linear_infinite]" style={{ borderStyle: 'dashed' }} />
-        <div className="w-20 h-20 bg-[radial-gradient(circle_at_center,#2eb36f,transparent)] opacity-20 blur-[10px] absolute rounded-full" />
-        <span className="text-5xl text-[#2eb36f] text-shadow-[0_0_15px_rgba(46,179,111,0.6)] font-cinzel relative z-10 -mt-1">✧</span>
+      {/* Debossed/Embossed Central Sigil — magic spell activates on hover */}
+      <div
+        className="w-32 h-32 rounded-full flex items-center justify-center relative mb-12 cursor-pointer select-none"
+        style={{
+          background: '#090d0b',
+          border: '1px solid #090a09',
+          boxShadow: hovered
+            ? 'inset 0 4px 12px rgba(0,0,0,0.9), 0 0 32px 8px rgba(46,179,111,0.45), 0 0 60px 16px rgba(46,179,111,0.15)'
+            : 'inset 0 4px 12px rgba(0,0,0,0.9), 0 1px 1px rgba(255,255,255,0.1)',
+          transition: 'box-shadow 0.4s ease',
+        }}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        onClick={(e) => { e.stopPropagation(); onOpen?.(); }}
+      >
+        {/* Slow ambient spin ring — always on */}
+        <div
+          className="absolute inset-3 rounded-full border-[2px] border-[#2eb36f]/30"
+          style={{
+            borderStyle: 'dashed',
+            animation: 'sigil-spin-cw 20s linear infinite',
+            boxShadow: hovered ? 'inset 0 0 10px rgba(46,179,111,0.2), 0 0 8px rgba(46,179,111,0.3)' : 'inset 0 0 10px rgba(46,179,111,0.1)',
+            transition: 'box-shadow 0.4s ease',
+          }}
+        />
+
+        {/* Hover: fast outer ring CW */}
+        <div style={{
+          position: 'absolute',
+          inset: '-10px',
+          borderRadius: '50%',
+          border: '1px solid rgba(46,179,111,0.5)',
+          borderStyle: 'dashed',
+          animation: hovered ? 'sigil-spin-cw 2s linear infinite' : 'none',
+          opacity: hovered ? 1 : 0,
+          transition: 'opacity 0.3s ease',
+          boxShadow: '0 0 10px rgba(46,179,111,0.3)',
+        }} />
+
+        {/* Hover: inner ring CCW */}
+        <div style={{
+          position: 'absolute',
+          inset: '-2px',
+          borderRadius: '50%',
+          border: '1px solid rgba(240,208,137,0.6)',
+          animation: hovered ? 'sigil-spin-ccw 1.2s linear infinite' : 'none',
+          opacity: hovered ? 1 : 0,
+          transition: 'opacity 0.3s ease',
+          boxShadow: '0 0 8px rgba(240,208,137,0.4)',
+        }} />
+
+        {/* Expanding cast rings — two offset loops */}
+        {[0, 0.5].map((delay, i) => (
+          <div key={i} style={{
+            position: 'absolute',
+            inset: 0,
+            borderRadius: '50%',
+            border: '1.5px solid rgba(46,179,111,0.7)',
+            animation: hovered ? `sigil-cast-ring 1.4s ease-out ${delay}s infinite` : 'none',
+            opacity: 0,
+          }} />
+        ))}
+
+        {/* Core radial glow pulse */}
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(46,179,111,0.4) 0%, rgba(46,179,111,0.1) 55%, transparent 75%)',
+          animation: hovered ? 'sigil-pulse-glow 1s ease-in-out infinite' : 'none',
+          opacity: hovered ? 1 : 0,
+          transition: 'opacity 0.3s ease',
+        }} />
+
+        {/* Ambient blur glow — always subtle */}
+        <div className="w-20 h-20 absolute rounded-full" style={{
+          background: 'radial-gradient(circle at center, #2eb36f, transparent)',
+          opacity: hovered ? 0.45 : 0.2,
+          filter: 'blur(10px)',
+          transition: 'opacity 0.4s ease',
+        }} />
+
+        {/* Floating rune glyphs at compass points — appear on hover */}
+        {hovered && ['ᚩ', 'ᛖ', 'ᛏ', 'ᛈ'].map((rune, i) => {
+          const angle = i * 90 - 90;
+          const rad = angle * Math.PI / 180;
+          const r = 56;
+          return (
+            <span key={i} style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: `translate(calc(-50% + ${Math.cos(rad) * r}px), calc(-50% + ${Math.sin(rad) * r}px))`,
+              fontSize: '10px',
+              color: '#2eb36f',
+              textShadow: '0 0 8px rgba(46,179,111,0.9)',
+              animation: `sigil-rune-fade ${0.8 + i * 0.15}s ease-in-out ${i * 0.1}s infinite`,
+              pointerEvents: 'none',
+              userSelect: 'none',
+            }}>
+              {rune}
+            </span>
+          );
+        })}
+
+        {/* Sparks */}
+        {hovered && sparks.map((s, i) => (
+          <div key={i} style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            width: '3px',
+            height: '3px',
+            borderRadius: '50%',
+            marginTop: '-1.5px',
+            marginLeft: '-1.5px',
+            background: s.color,
+            boxShadow: `0 0 5px 2px ${s.color}`,
+            ['--sx' as string]: s.sx,
+            ['--sy' as string]: s.sy,
+            animation: `sigil-spark-fly 0.7s ease-out ${s.delay} infinite`,
+          }} />
+        ))}
+
+        {/* The ✧ glyph */}
+        <span
+          className="font-cinzel relative z-10 -mt-1"
+          style={{
+            fontSize: '3rem',
+            color: hovered ? '#5fffb0' : '#2eb36f',
+            textShadow: hovered
+              ? '0 0 20px rgba(46,179,111,1), 0 0 40px rgba(46,179,111,0.6), 0 0 60px rgba(46,179,111,0.3)'
+              : '0 0 15px rgba(46,179,111,0.6)',
+            transition: 'color 0.3s ease, text-shadow 0.3s ease',
+            animation: hovered ? 'sigil-spin-cw 8s linear infinite' : 'none',
+          }}
+        >
+          ✧
+        </span>
       </div>
       
-      <p className="text-[#f0d089] font-caveat text-2xl z-10 mt-2 pointer-events-none drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]">
+      <p
+        className="font-caveat text-2xl z-10 mt-2 drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)] pointer-events-none"
+        style={{
+          color: hovered ? '#f0d089' : '#f0d089cc',
+          textShadow: hovered ? '0 0 12px rgba(240,208,137,0.7)' : 'none',
+          transition: 'text-shadow 0.3s ease',
+        }}
+      >
         open grimoire
       </p>
     </div>

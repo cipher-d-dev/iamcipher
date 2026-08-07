@@ -154,3 +154,27 @@
   from { opacity: 0; transform: translateY(4px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+
+/* ── Magic sigil spell animations ───────────────────────────────────── */
+@keyframes sigil-spin-cw {
+  to { transform: rotate(360deg); }
+}
+@keyframes sigil-spin-ccw {
+  to { transform: rotate(-360deg); }
+}
+@keyframes sigil-pulse-glow {
+  0%, 100% { opacity: 0.3; transform: scale(1);    }
+  50%       { opacity: 0.9; transform: scale(1.12); }
+}
+@keyframes sigil-cast-ring {
+  0%   { transform: scale(0.9);  opacity: 0.9; }
+  100% { transform: scale(1.65); opacity: 0;   }
+}
+@keyframes sigil-spark-fly {
+  0%   { transform: translate(0, 0) scale(1);   opacity: 1; }
+  100% { transform: translate(var(--sx), var(--sy)) scale(0); opacity: 0; }
+}
+@keyframes sigil-rune-fade {
+  0%, 100% { opacity: 0.2; }
+  50%       { opacity: 1;   }
+}
