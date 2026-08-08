@@ -3,20 +3,24 @@ import { Mail, Github, Linkedin, FileText, ArrowRight } from 'lucide-react';
 import Typewriter from './Typewriter';
 import GrimoireModal from './GrimoireModal';
 
+// ── Static data hoisted outside components to avoid recreation on every render ──
+
+const COVER_SPARKS = [
+  { sx: '0px',   sy: '-52px', delay: '0s',    color: '#2eb36f' },
+  { sx: '37px',  sy: '-37px', delay: '0.1s',  color: '#f0d089' },
+  { sx: '52px',  sy: '0px',   delay: '0.05s', color: '#2eb36f' },
+  { sx: '37px',  sy: '37px',  delay: '0.15s', color: '#f0d089' },
+  { sx: '0px',   sy: '52px',  delay: '0.08s', color: '#2eb36f' },
+  { sx: '-37px', sy: '37px',  delay: '0.12s', color: '#f0d089' },
+  { sx: '-52px', sy: '0px',   delay: '0.03s', color: '#2eb36f' },
+  { sx: '-37px', sy: '-37px', delay: '0.18s', color: '#f0d089' },
+];
+
 export function CoverFront({ onOpen }: { onOpen?: () => void }) {
   const [hovered, setHovered] = React.useState(false);
 
   // Sparks fired outward from sigil centre
-  const sparks = [
-    { sx: '0px',   sy: '-52px', delay: '0s',    color: '#2eb36f' },
-    { sx: '37px',  sy: '-37px', delay: '0.1s',  color: '#f0d089' },
-    { sx: '52px',  sy: '0px',   delay: '0.05s', color: '#2eb36f' },
-    { sx: '37px',  sy: '37px',  delay: '0.15s', color: '#f0d089' },
-    { sx: '0px',   sy: '52px',  delay: '0.08s', color: '#2eb36f' },
-    { sx: '-37px', sy: '37px',  delay: '0.12s', color: '#f0d089' },
-    { sx: '-52px', sy: '0px',   delay: '0.03s', color: '#2eb36f' },
-    { sx: '-37px', sy: '-37px', delay: '0.18s', color: '#f0d089' },
-  ];
+  const sparks = COVER_SPARKS;
 
   return (
     <div className="w-full h-full bg-cover-texture flex flex-col items-center justify-center p-8 relative overflow-hidden rounded-[2px_8px_8px_2px]">
@@ -212,7 +216,7 @@ export function CoverFront({ onOpen }: { onOpen?: () => void }) {
   );
 }
 
-export function InnerCover({ right = false }: { right?: boolean }) {
+export const InnerCover = React.memo(function InnerCover({ right = false }: { right?: boolean }) {
   if (right) {
     return (
       <div className="w-full h-full bg-cover-texture flex items-center justify-center relative shadow-[inset_20px_0_20px_rgba(0,0,0,0.8)] border-y border-[#d4c5a0]/10 overflow-hidden">
@@ -301,9 +305,9 @@ export function InnerCover({ right = false }: { right?: boolean }) {
       </div>
     </div>
   );
-}
+});
 
-export function CoverBack() {
+export const CoverBack = React.memo(function CoverBack() {
   return (
     <div className="w-full h-full bg-cover-back rounded-[2px_8px_8px_2px] flex flex-col items-center justify-center p-8 relative overflow-hidden">
       {/* Outer embossing */}
@@ -345,9 +349,9 @@ export function CoverBack() {
       </div>
     </div>
   );
-}
+});
 
-export function TitlePage({ mobile = false }: { mobile?: boolean }) {
+export const TitlePage = React.memo(function TitlePage({ mobile = false }: { mobile?: boolean }) {
   return (
     <div className={`w-full h-full bg-parchment-right p-6 relative overflow-auto
       ${mobile ? '' : 'rounded-r-md shadow-[inset_-10px_0_20px_rgba(0,0,0,0.1)] border-l-2 border-[#d4c5a0]'}`}>
@@ -370,9 +374,9 @@ export function TitlePage({ mobile = false }: { mobile?: boolean }) {
       </div>
     </div>
   );
-}
+});
 
-export function OriginLeft({ mobile = false }: { mobile?: boolean }) {
+export const OriginLeft = React.memo(function OriginLeft({ mobile = false }: { mobile?: boolean }) {
   return (
     <div className={`w-full h-full bg-parchment-left flex flex-col justify-center overflow-auto
       ${mobile ? 'p-6' : 'rounded-l-md p-10 shadow-[inset_10px_0_20px_rgba(0,0,0,0.15)] border-r-2 border-[#d4c5a0]'}`}>
@@ -423,9 +427,9 @@ export function OriginLeft({ mobile = false }: { mobile?: boolean }) {
       )}
     </div>
   );
-}
+});
 
-export function OriginTerminal({ active, mobile = false, playSound }: { active: boolean; mobile?: boolean; playSound?: () => void }) {
+export const OriginTerminal = React.memo(function OriginTerminal({ active, mobile = false, playSound }: { active: boolean; mobile?: boolean; playSound?: () => void }) {
   const logText = `> Executing initiation sequence...
 > Loading chronos_logs.dat...
 > [USER] identified: Cipher
@@ -455,9 +459,9 @@ export function OriginTerminal({ active, mobile = false, playSound }: { active: 
        </div>
     </div>
   );
-}
+});
 
-export function ExperienceLeft({ mobile = false }: { mobile?: boolean }) {
+export const ExperienceLeft = React.memo(function ExperienceLeft({ mobile = false }: { mobile?: boolean }) {
   return (
     <div className={`w-full h-full bg-parchment-left flex flex-col overflow-auto
       ${mobile ? 'p-6' : 'rounded-l-md p-10 shadow-[inset_10px_0_20px_rgba(0,0,0,0.15)] border-r-2 border-[#d4c5a0]'}`}>
@@ -492,9 +496,9 @@ export function ExperienceLeft({ mobile = false }: { mobile?: boolean }) {
       </div>
     </div>
   );
-}
+});
 
-export function ExperienceRight({ mobile = false }: { mobile?: boolean }) {
+export const ExperienceRight = React.memo(function ExperienceRight({ mobile = false }: { mobile?: boolean }) {
   return (
     <div className={`w-full h-full bg-parchment-right flex flex-col overflow-auto
       ${mobile ? 'p-6' : 'rounded-r-md p-10 shadow-[inset_-10px_0_20px_rgba(0,0,0,0.15)] border-l-2 border-[#d4c5a0]'}`}>
@@ -523,9 +527,9 @@ export function ExperienceRight({ mobile = false }: { mobile?: boolean }) {
       </div>
     </div>
   );
-}
+});
 
-export function ToolsLeft({ mobile = false }: { mobile?: boolean }) {
+export const ToolsLeft = React.memo(function ToolsLeft({ mobile = false }: { mobile?: boolean }) {
   return (
     <div className={`w-full h-full bg-parchment-left flex flex-col overflow-auto
       ${mobile ? 'p-6' : 'rounded-l-md p-10 shadow-[inset_10px_0_20px_rgba(0,0,0,0.15)] border-r-2 border-[#d4c5a0]'}`}>
@@ -575,9 +579,9 @@ export function ToolsLeft({ mobile = false }: { mobile?: boolean }) {
       </div>
     </div>
   );
-}
+});
 
-export function ToolsRight({ mobile = false }: { mobile?: boolean }) {
+export const ToolsRight = React.memo(function ToolsRight({ mobile = false }: { mobile?: boolean }) {
   return (
     <div className={`w-full h-full bg-parchment-right flex flex-col overflow-auto
       ${mobile ? 'p-6' : 'rounded-r-md p-10 shadow-[inset_-10px_0_20px_rgba(0,0,0,0.15)] border-l-2 border-[#d4c5a0]'}`}>
@@ -642,9 +646,9 @@ export function ToolsRight({ mobile = false }: { mobile?: boolean }) {
       </div>
     </div>
   );
-}
+});
 
-export function ProjectsLeft({ mobile = false }: { mobile?: boolean }) {
+export const ProjectsLeft = React.memo(function ProjectsLeft({ mobile = false }: { mobile?: boolean }) {
   const linkClass = `inline-block font-kalam text-[#2f5d8a] hover:text-[#1a0f05] border-b border-dashed border-[#2f5d8a] transition-colors relative z-10 ${mobile ? 'text-sm' : 'text-[12.5px]'}`;
   const metaClass = `text-[#5c4d33] font-mono tracking-[0.03em] mb-2 ${mobile ? 'text-[11px]' : 'text-[9px]'}`;
   const bodyClass = `text-[#1a0f05] leading-[1.62] mb-2 font-serif ${mobile ? 'text-sm' : 'text-[13.5px]'}`;
@@ -709,9 +713,9 @@ export function ProjectsLeft({ mobile = false }: { mobile?: boolean }) {
       </div>
     </div>
   );
-}
+});
 
-export function ProjectsRight({ mobile = false }: { mobile?: boolean }) {
+export const ProjectsRight = React.memo(function ProjectsRight({ mobile = false }: { mobile?: boolean }) {
   const linkClass = `inline-block font-kalam text-[#2f5d8a] hover:text-[#1a0f05] border-b border-dashed border-[#2f5d8a] transition-colors relative z-10 ${mobile ? 'text-sm' : 'text-[12.5px]'}`;
   const metaClass = `text-[#5c4d33] font-mono tracking-[0.03em] mb-2 ${mobile ? 'text-[11px]' : 'text-[9px]'}`;
   const bodyClass = `text-[#1a0f05] leading-[1.62] mb-2 font-serif ${mobile ? 'text-sm' : 'text-[13.5px]'}`;
@@ -763,9 +767,9 @@ export function ProjectsRight({ mobile = false }: { mobile?: boolean }) {
       </div>
     </div>
   );
-}
+});
 
-export function FocusTerminal({ active, mobile = false, playSound }: { active: boolean; mobile?: boolean; playSound?: () => void }) {
+export const FocusTerminal = React.memo(function FocusTerminal({ active, mobile = false, playSound }: { active: boolean; mobile?: boolean; playSound?: () => void }) {
   const focusText = `$ status --current
 > focus: Mesh Networks & Cryptography
 > learning: Vector DBs & LLM Runners
@@ -790,9 +794,9 @@ export function FocusTerminal({ active, mobile = false, playSound }: { active: b
       </div>
     </div>
   );
-}
+});
 
-export function ContactRight({ mobile = false }: { mobile?: boolean }) {
+export const ContactRight = React.memo(function ContactRight({ mobile = false }: { mobile?: boolean }) {
   const rowClass = `flex items-center gap-3 py-3 border-b border-dashed border-[#c9b783] font-mono ${mobile ? 'text-sm' : 'text-[11.5px]'}`;
   const labelClass = `text-[#5c4d33] ${mobile ? 'w-20' : 'min-w-[68px]'}`;
   const linkClass = 'text-[#1a0f05] hover:text-[#2f5d8a] transition-colors relative z-10';
@@ -864,11 +868,11 @@ export function ContactRight({ mobile = false }: { mobile?: boolean }) {
       </div>
     </div>
   );
-}
+});
 
 // ── GuestBook pages ──────────────────────────────────────────────────
 
-export function GuestBookLeft({ mobile = false }: { mobile?: boolean }) {
+export const GuestBookLeft = React.memo(function GuestBookLeft({ mobile = false }: { mobile?: boolean }) {
   return (
     <div className={`w-full h-full bg-parchment-left flex flex-col justify-center overflow-hidden relative
       ${mobile ? 'p-6' : 'rounded-l-md p-10 shadow-[inset_10px_0_20px_rgba(0,0,0,0.15)] border-r-2 border-[#d4c5a0]'}`}>
@@ -911,7 +915,7 @@ export function GuestBookLeft({ mobile = false }: { mobile?: boolean }) {
       </div>
     </div>
   );
-}
+});
 
 export function GuestBookRight({
   mobile = false,

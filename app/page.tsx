@@ -202,7 +202,7 @@ export default function Home() {
 
   if (appState === 'summary') {
     return (
-      <main className="min-h-screen bg-[#080c09] text-[#e8d9ae] p-8 md:p-16 font-serif selection:bg-[#2eb36f] selection:text-[#080c09] overflow-auto">
+      <main key="summary" className="min-h-screen bg-[#080c09] text-[#e8d9ae] p-8 md:p-16 font-serif selection:bg-[#2eb36f] selection:text-[#080c09] overflow-auto">
         <button onClick={() => setAppState('closed')} className="mb-12 text-[#2eb36f] hover:text-[#f0d089] transition-colors font-mono text-sm border-b border-transparent hover:border-[#f0d089]">
           ← Return to the Grimoire
         </button>
@@ -326,6 +326,7 @@ export default function Home() {
     <>
       {!loaded && <MagicalLoader onDone={() => setLoaded(true)} />}
       <main
+        key="book"
         className="relative w-screen h-screen overflow-hidden bg-[#080c09] flex items-center justify-center select-none font-serif"
         style={{ opacity: loaded ? 1 : 0, transition: 'opacity 0.8s ease-in' }}
       >

@@ -1,9 +1,19 @@
 'use client';
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, useMemo } from 'react';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { CoverFront, InnerCover, CoverBack, TitlePage, OriginLeft, OriginTerminal, ExperienceLeft, ExperienceRight, ToolsLeft, ToolsRight, ProjectsLeft, ProjectsRight, FocusTerminal, ContactRight, GuestBookLeft, GuestBookRight } from './PageContents';
 import GrimoireModal from './GrimoireModal';
+
+// ── Static data outside component — never recreated ──────────────────
+const CATALOGUE = [
+  { label: 'Origin',     rune: 'ᚩ', index: 3 },
+  { label: 'Experience', rune: 'ᛖ', index: 5 },
+  { label: 'Tools',      rune: 'ᛏ', index: 6 },
+  { label: 'Projects',   rune: 'ᛈ', index: 7 },
+  { label: 'Contact',    rune: 'ᛗ', index: 8 },
+  { label: 'Guestbook',  rune: 'ᛟ', index: 9 },
+];
 
 export default function Book({ isActive, onStateChange, playTurnWeighted, playClick, playMulti, playQuill, startTheme, onPageTurn }: {
   isActive: boolean;
@@ -30,7 +40,7 @@ export default function Book({ isActive, onStateChange, playTurnWeighted, playCl
   // Jump-sequence timers — cancelled on close or new jump
   const jumpTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
-  const leavesContent = [
+  const leavesContent = useMemo(() => [
     { front: <CoverFront onOpen={() => { playClick(); handleOpen(); }} />, back: <InnerCover /> },
     { front: <div className="w-full h-full bg-parchment-right" />, back: <div className="w-full h-full bg-parchment-left shadow-[inset_-10px_0_20px_rgba(0,0,0,0.05)]" /> },
     { front: <div className="w-full h-full bg-parchment-right shadow-[inset_10px_0_20px_rgba(0,0,0,0.05)]" />, back: <div className="w-full h-full bg-parchment-left shadow-[inset_-10px_0_20px_rgba(0,0,0,0.05)]" /> },
@@ -41,7 +51,8 @@ export default function Book({ isActive, onStateChange, playTurnWeighted, playCl
     { front: <ProjectsRight />, back: <FocusTerminal active={pageIndex === 8} playSound={playQuill} /> },
     { front: <ContactRight />, back: <GuestBookLeft /> },
     { front: <GuestBookRight onClose={() => handleClose()} onContentChange={setGuestbookHasContent} />, back: <InnerCover right={true} /> },
-  ];
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  ], [pageIndex, playClick, playQuill, setGuestbookHasContent]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -330,16 +341,8 @@ export default function Book({ isActive, onStateChange, playTurnWeighted, playCl
   };
 
   // Section catalogue
-  const catalogue = [
-    { label: 'Origin',     rune: 'ᚩ', index: 3 },
-    { label: 'Experience', rune: 'ᛖ', index: 5 },
-    { label: 'Tools',      rune: 'ᛏ', index: 6 },
-    { label: 'Projects',   rune: 'ᛈ', index: 7 },
-    { label: 'Contact',    rune: 'ᛗ', index: 8 },
-    { label: 'Guestbook',  rune: 'ᛟ', index: 9 },
-  ];
-  const activeSection = catalogue.reduce((best, entry) =>
-    pageIndex >= entry.index ? entry : best, catalogue[0]);
+  const activeSection = CATALOGUE.reduce((best, entry) =>
+    pageIndex >= entry.index ? entry : best, CATALOGUE[0]);
 
   // Ref to cancel any in-progress jump sequence (declared at top of component)
 
@@ -562,7 +565,7 @@ export default function Book({ isActive, onStateChange, playTurnWeighted, playCl
           pointerEvents: bookState === 'reading' ? 'auto' : 'none',
         }}
       >
-        {catalogue.map((entry) => {
+        {CATALOGUE.map((entry) => {
           const isActive = activeSection.index === entry.index;
           return (
             <button
