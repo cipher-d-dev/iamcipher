@@ -2,7 +2,7 @@
 import { useRef, useState, useEffect } from 'react';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
-import { CoverFront, InnerCover, CoverBack, TitlePage, OriginLeft, OriginTerminal, ExperienceLeft, ExperienceRight, ToolsLeft, ToolsRight, ProjectsLeft, ProjectsRight, FocusTerminal, ContactRight } from './PageContents';
+import { CoverFront, InnerCover, CoverBack, TitlePage, OriginLeft, OriginTerminal, ExperienceLeft, ExperienceRight, ToolsLeft, ToolsRight, ProjectsLeft, ProjectsRight, FocusTerminal, ContactRight, GuestBookLeft, GuestBookRight } from './PageContents';
 
 export default function Book({ isActive, onStateChange, playTurnWeighted, playClick, playMulti, playQuill, startTheme, onPageTurn }: {
   isActive: boolean;
@@ -22,6 +22,8 @@ export default function Book({ isActive, onStateChange, playTurnWeighted, playCl
   const bookRef = useRef<HTMLDivElement>(null);
   const leafRefs = useRef<HTMLDivElement[]>([]);
   const bookmarkRef = useRef<HTMLDivElement>(null);
+  // Jump-sequence timers — cancelled on close or new jump
+  const jumpTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   const leavesContent = [
     { front: <CoverFront onOpen={() => { playClick(); handleOpen(); }} />, back: <InnerCover /> },
@@ -32,7 +34,8 @@ export default function Book({ isActive, onStateChange, playTurnWeighted, playCl
     { front: <ExperienceRight />, back: <ToolsLeft /> },
     { front: <ToolsRight />, back: <ProjectsLeft /> },
     { front: <ProjectsRight />, back: <FocusTerminal active={pageIndex === 8} playSound={playQuill} /> },
-    { front: <ContactRight />, back: <InnerCover right={true} /> }
+    { front: <ContactRight />, back: <GuestBookLeft /> },
+    { front: <GuestBookRight onClose={() => handleClose()} />, back: <InnerCover right={true} /> },
   ];
 
   useEffect(() => {
@@ -217,6 +220,9 @@ export default function Book({ isActive, onStateChange, playTurnWeighted, playCl
 
   const handleClose = () => {
     if (bookState !== 'reading') return;
+    // Cancel any in-progress jump sequence
+    jumpTimersRef.current.forEach(clearTimeout);
+    jumpTimersRef.current = [];
     setBookState('closing');
     onStateChange('closing');
     playMulti();
@@ -321,13 +327,66 @@ export default function Book({ isActive, onStateChange, playTurnWeighted, playCl
     { label: 'Tools',      rune: 'ᛏ', index: 6 },
     { label: 'Projects',   rune: 'ᛈ', index: 7 },
     { label: 'Contact',    rune: 'ᛗ', index: 8 },
+    { label: 'Guestbook',  rune: 'ᛟ', index: 9 },
   ];
   const activeSection = catalogue.reduce((best, entry) =>
     pageIndex >= entry.index ? entry : best, catalogue[0]);
+
+  // Ref to cancel any in-progress jump sequence (declared at top of component)
+
   const jumpTo = (target: number) => {
+    if (bookState === 'closed') {
+      // Open the book, then jump directly to the target section once settled.
+      // The open animation takes ~1.4s; we wait 1.6s to be safe.
+      handleOpen();
+      const t = setTimeout(() => setPageIndex(target), 1600);
+      jumpTimersRef.current.push(t);
+      return;
+    }
+    if (bookState !== 'reading') return;
+
+    // Cancel any ongoing jump sequence
+    jumpTimersRef.current.forEach(clearTimeout);
+    jumpTimersRef.current = [];
+
+    const distance = Math.abs(target - pageIndex);
+
+    if (distance === 0) return;
+
+    if (distance === 1) {
+      // Single page flip — use the weighted turn sound
+      playTurnWeighted(pageIndex);
+      setPageIndex(target);
+      return;
+    }
+
+    // Multi-page jump: step through every page between current and target
+    // Per-step delay: 180ms at 2 hops, compresses to 120ms for 5+ hops
+    const PER_STEP_MS = Math.max(120, Math.round(200 - (distance - 2) * 16));
+    const direction = target > pageIndex ? 1 : -1;
+
+    // Build the sequence of intermediate page indices to visit
+    const steps: number[] = [];
+    for (let i = pageIndex + direction; i !== target; i += direction) {
+      steps.push(i);
+    }
+    steps.push(target); // include the destination
+
+    // Play multi sound once immediately for the whole sequence
     playMulti();
-    if (bookState === 'closed') { handleOpen(); setTimeout(() => setPageIndex(target), 1400); }
-    else if (bookState === 'reading') setPageIndex(target);
+
+    // Schedule each step — play single-flip sound on each step after the first
+    steps.forEach((stepIndex, i) => {
+      const t = setTimeout(() => {
+        setPageIndex(stepIndex);
+        // Play a crisp single-page sound on every flip after the first
+        // (the multi sound already covers the kick-off)
+        if (i > 0) {
+          playTurnWeighted(stepIndex);
+        }
+      }, i * PER_STEP_MS);
+      jumpTimersRef.current.push(t);
+    });
   };
 
   // Bookmark ribbon sway — gentle cloth-settling idle when reading

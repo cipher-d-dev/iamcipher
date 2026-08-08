@@ -1,5 +1,5 @@
 {
-  "name": "ai-studio-applet",
+  "name": "cipher-grimoire",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -10,6 +10,7 @@
     "clean": "next clean"
   },
   "dependencies": {
+    "@emailjs/browser": "4.4.1",
     "@google/genai": "^2.4.0",
     "@gsap/react": "^2.1.2",
     "@hookform/resolvers": "^5.2.1",
