@@ -4,13 +4,15 @@ import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { CoverFront, InnerCover, CoverBack, TitlePage, OriginLeft, OriginTerminal, ExperienceLeft, ExperienceRight, ToolsLeft, ToolsRight, ProjectsLeft, ProjectsRight, FocusTerminal, ContactRight } from './PageContents';
 
-export default function Book({ isActive, onStateChange, playTurn, playClick, playMulti, startTheme }: {
+export default function Book({ isActive, onStateChange, playTurnWeighted, playClick, playMulti, playQuill, startTheme, onPageTurn }: {
   isActive: boolean;
   onStateChange: (state: 'closed' | 'opening' | 'reading' | 'closing') => void;
-  playTurn: () => void;
+  playTurnWeighted: (leafIndex: number) => void;
   playClick: () => void;
   playMulti: () => void;
+  playQuill: () => void;
   startTheme: () => void;
+  onPageTurn?: () => void;
 }) {
   const [bookState, setBookState] = useState<'closed' | 'opening' | 'reading' | 'closing'>('closed');
   const [pageIndex, setPageIndex] = useState(0);
@@ -19,16 +21,17 @@ export default function Book({ isActive, onStateChange, playTurn, playClick, pla
   const containerRef = useRef<HTMLDivElement>(null);
   const bookRef = useRef<HTMLDivElement>(null);
   const leafRefs = useRef<HTMLDivElement[]>([]);
+  const bookmarkRef = useRef<HTMLDivElement>(null);
 
   const leavesContent = [
     { front: <CoverFront onOpen={() => { playClick(); handleOpen(); }} />, back: <InnerCover /> },
     { front: <div className="w-full h-full bg-parchment-right" />, back: <div className="w-full h-full bg-parchment-left shadow-[inset_-10px_0_20px_rgba(0,0,0,0.05)]" /> },
     { front: <div className="w-full h-full bg-parchment-right shadow-[inset_10px_0_20px_rgba(0,0,0,0.05)]" />, back: <div className="w-full h-full bg-parchment-left shadow-[inset_-10px_0_20px_rgba(0,0,0,0.05)]" /> },
     { front: <TitlePage />, back: <OriginLeft /> },
-    { front: <OriginTerminal active={pageIndex === 4} />, back: <ExperienceLeft /> },
+    { front: <OriginTerminal active={pageIndex === 4} playSound={playQuill} />, back: <ExperienceLeft /> },
     { front: <ExperienceRight />, back: <ToolsLeft /> },
     { front: <ToolsRight />, back: <ProjectsLeft /> },
-    { front: <ProjectsRight />, back: <FocusTerminal active={pageIndex === 8} /> },
+    { front: <ProjectsRight />, back: <FocusTerminal active={pageIndex === 8} playSound={playQuill} /> },
     { front: <ContactRight />, back: <InnerCover right={true} /> }
   ];
 
@@ -89,11 +92,50 @@ export default function Book({ isActive, onStateChange, playTurn, playClick, pla
   useGSAP(() => {
     if (bookState !== 'reading') return;
     const total = leafRefs.current.length;
+
+    // Signal sigil charge-up on every page turn
+    onPageTurn?.();
     leafRefs.current.forEach((leaf, i) => {
+      const shadowEl = leaf.querySelector<HTMLElement>('[data-leaf-shadow]');
+
+      const updateShadow = () => {
+        if (!shadowEl) return;
+        const ry = gsap.getProperty(leaf, 'rotateY') as number;
+        // Pages sitting flat on the right (ry ≈ 0) cast a shadow from the spine
+        // onto their own surface — a left-edge inset. Pages on the left (ry ≈ -175)
+        // cast almost nothing visible from the front.
+        // At the arc peak (ry ≈ -87.5) the page is edge-on so no face shadow.
+        const absRy = Math.abs(ry);
+        // Only apply shadow to right-side flat pages (< 60° rotated)
+        const flatness = Math.max(0, 1 - absRy / 60); // 1 when flat, 0 past 60°
+        const blur    = 6 + (1 - flatness) * 12;
+        const opacity = flatness * 0.32;
+        // Inset from the spine side (left) — darker near gutter, fading right
+        shadowEl.style.background = opacity > 0.01
+          ? `linear-gradient(to right, rgba(0,0,0,${(opacity).toFixed(3)}) 0%, rgba(0,0,0,${(opacity * 0.4).toFixed(3)}) ${blur * 2}px, transparent ${blur * 5}px)`
+          : 'none';
+      };
+
       if (i < pageIndex) {
-        gsap.to(leaf, { rotateY: -175, duration: 0.85, ease: 'power2.inOut', zIndex: i, z: i * (26 / total) - 13 });
+        gsap.to(leaf, {
+          rotateY: -175,
+          duration: 0.85,
+          ease: 'power2.inOut',
+          zIndex: i,
+          z: i * (26 / total) - 13,
+          onUpdate: updateShadow,
+          onComplete: updateShadow,
+        });
       } else {
-        gsap.to(leaf, { rotateY: 0, duration: 0.85, ease: 'power2.inOut', zIndex: (total - i) + total, z: (total - i) * (26 / total) - 13 });
+        gsap.to(leaf, {
+          rotateY: 0,
+          duration: 0.85,
+          ease: 'power2.inOut',
+          zIndex: (total - i) + total,
+          z: (total - i) * (26 / total) - 13,
+          onUpdate: updateShadow,
+          onComplete: updateShadow,
+        });
       }
     });
   }, [pageIndex, bookState]);
@@ -199,7 +241,8 @@ export default function Book({ isActive, onStateChange, playTurn, playClick, pla
 
   const turnNext = () => {
     if (bookState !== 'reading') return;
-    playTurn();
+    // pageIndex is the leaf about to flip — pass it for weight tier
+    playTurnWeighted(pageIndex);
     if (pageIndex < leavesContent.length) {
       setPageIndex(p => p + 1);
     } else if (pageIndex === leavesContent.length) {
@@ -209,7 +252,8 @@ export default function Book({ isActive, onStateChange, playTurn, playClick, pla
 
   const turnPrev = () => {
     if (bookState !== 'reading') return;
-    playTurn();
+    // leaf returning is pageIndex - 1
+    playTurnWeighted(Math.max(0, pageIndex - 1));
     if (pageIndex > 3) {
       setPageIndex(p => p - 1);
     } else if (pageIndex === 3) {
@@ -258,12 +302,32 @@ export default function Book({ isActive, onStateChange, playTurn, playClick, pla
     else if (bookState === 'reading') setPageIndex(target);
   };
 
+  // Bookmark ribbon sway — gentle cloth-settling idle when reading
+  useGSAP(() => {
+    const el = bookmarkRef.current;
+    if (!el) return;
+    if (bookState === 'reading') {
+      gsap.to(el, {
+        rotateZ: 2,
+        duration: 2.2,
+        ease: 'sine.inOut',
+        yoyo: true,
+        repeat: -1,
+        transformOrigin: 'top center',
+        overwrite: 'auto',
+      });
+    } else {
+      gsap.to(el, { rotateZ: 0, duration: 0.5, ease: 'power2.out', overwrite: 'auto' });
+    }
+  }, [bookState]);
+
   return (
     <div 
       ref={containerRef} 
       className="relative flex items-center justify-center w-full h-full perspective-2000 preserve-3d"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
+      style={bookState === 'reading' ? { cursor: "url('/quill-cursor.svg') 4 28, default" } : undefined}
     >
       <div 
         ref={bookRef}
@@ -332,8 +396,14 @@ export default function Book({ isActive, onStateChange, playTurn, playClick, pla
             }}
           >
             {/* Front */}
-            <div className="absolute inset-0 backface-hidden flex">
+            <div className="absolute inset-0 backface-hidden flex" data-leaf-front>
               {leaf.front}
+              {/* Spine gutter shadow — gradient driven by live rotateY, blends into page */}
+              <div
+                data-leaf-shadow
+                className="absolute inset-0 pointer-events-none"
+                style={{ background: 'none' }}
+              />
             </div>
             
             {/* Back */}
@@ -344,39 +414,17 @@ export default function Book({ isActive, onStateChange, playTurn, playClick, pla
           );
         })}
 
-        {/* Navigation Overlays */}
-        {bookState === 'reading' && (
-          <>
-            <div 
-              className="absolute left-0 top-0 w-full h-full z-50 opacity-0 hover:opacity-10 bg-transparent rounded-l-md origin-left pointer-events-none"
-              style={{ transform: 'rotateY(-180deg) translateZ(30px)' }}
-            >
-              <button
-                onClick={(e) => { e.stopPropagation(); turnPrev(); }}
-                className="absolute right-0 top-0 w-24 h-full cursor-w-resize pointer-events-auto bg-black/20"
-                aria-label="Previous Page"
-              />
-            </div>
-            <div 
-              className="absolute right-0 top-0 w-full h-full z-50 opacity-0 hover:opacity-10 bg-transparent rounded-r-md pointer-events-none"
-              style={{ transform: 'translateZ(30px)' }}
-            >
-              <button
-                onClick={(e) => { e.stopPropagation(); turnNext(); }}
-                className="absolute right-0 top-0 w-24 h-full cursor-e-resize pointer-events-auto bg-black/20"
-                aria-label="Next Page"
-              />
-            </div>
-          </>
-        )}
+
       </div>
 
       {/* Bookmark Close Button */}
       <div 
+        ref={bookmarkRef}
         className={`absolute right-16 w-8 bg-[#a31a1a] shadow-lg z-40 transform hover:-translate-y-2 cursor-pointer flex flex-col items-center pt-2 transition-all duration-700 ease-in-out
           ${bookState === 'reading' ? 'top-0 h-32 translate-y-0 opacity-100' : '-top-10 h-0 opacity-0 pointer-events-none'}`}
         onClick={() => { playClick(); handleClose(); }}
         title="Close Grimoire"
+        style={{ cursor: 'pointer' }}
       >
         <div className="w-4 h-4 rounded-full border border-[#ffae00]/40 flex items-center justify-center text-[10px] text-[#ffae00] mb-1">✕</div>
         <div className="w-[1px] h-12 bg-black/20" />
@@ -401,6 +449,7 @@ export default function Book({ isActive, onStateChange, playTurn, playClick, pla
               onClick={() => jumpTo(entry.index)}
               title={entry.label}
               className="group relative flex items-center transition-all duration-300 ease-in-out"
+              style={{ cursor: 'pointer' }}
             >
               <div className={`
                 flex items-center gap-2 pl-2 pr-3 py-2 border border-r-0

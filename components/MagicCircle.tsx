@@ -3,7 +3,7 @@ import { useRef } from 'react';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 
-export default function MagicCircle({ isActive }: { isActive: boolean }) {
+export default function MagicCircle({ isActive, charging }: { isActive: boolean; charging?: boolean }) {
   const circleRef = useRef<HTMLDivElement>(null);
   const innerTextRef = useRef<SVGUseElement>(null);
 
@@ -16,7 +16,6 @@ export default function MagicCircle({ isActive }: { isActive: boolean }) {
     });
   }, []);
 
-  // Inner text ring rotates counter to the outer circle for layered motion
   useGSAP(() => {
     gsap.to(innerTextRef.current, {
       rotateZ: -720,
@@ -35,6 +34,14 @@ export default function MagicCircle({ isActive }: { isActive: boolean }) {
       ease: 'power2.out',
     });
   }, [isActive]);
+
+  // Sigil charge-up — brief intensity burst when a new page's content starts revealing
+  useGSAP(() => {
+    if (!charging) return;
+    gsap.timeline()
+      .to(circleRef.current, { scale: 1.22, opacity: 0.95, duration: 0.08, ease: 'power3.out' })
+      .to(circleRef.current, { scale: isActive ? 1.1 : 0.8, opacity: isActive ? 0.6 : 0.15, duration: 0.22, ease: 'power2.inOut' });
+  }, [charging]);
 
   return (
     <div ref={circleRef} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-0">

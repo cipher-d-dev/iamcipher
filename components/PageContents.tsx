@@ -424,7 +424,7 @@ export function OriginLeft({ mobile = false }: { mobile?: boolean }) {
   );
 }
 
-export function OriginTerminal({ active, mobile = false }: { active: boolean; mobile?: boolean }) {
+export function OriginTerminal({ active, mobile = false, playSound }: { active: boolean; mobile?: boolean; playSound?: () => void }) {
   const logText = `> Executing initiation sequence...
 > Loading chronos_logs.dat...
 > [USER] identified: Cipher
@@ -449,7 +449,7 @@ export function OriginTerminal({ active, mobile = false }: { active: boolean; mo
          </div>
          <div className={`flex-1 overflow-y-auto leading-[1.65] relative z-10 font-mono
            ${mobile ? 'text-[13px]' : 'text-[10.8px]'}`} style={{ isolation: 'isolate' }}>
-           <Typewriter text={logText} active={active} delay={800} />
+           <Typewriter text={logText} active={active} delay={800} playSound={playSound} />
          </div>
        </div>
     </div>
@@ -764,7 +764,7 @@ export function ProjectsRight({ mobile = false }: { mobile?: boolean }) {
   );
 }
 
-export function FocusTerminal({ active, mobile = false }: { active: boolean; mobile?: boolean }) {
+export function FocusTerminal({ active, mobile = false, playSound }: { active: boolean; mobile?: boolean; playSound?: () => void }) {
   const focusText = `$ status --current
 > focus: Mesh Networks & Cryptography
 > learning: Vector DBs & LLM Runners
@@ -784,7 +784,7 @@ export function FocusTerminal({ active, mobile = false }: { active: boolean; mob
         </div>
         <div className={`flex-1 overflow-y-auto leading-[1.65] relative z-10 font-mono
           ${mobile ? 'text-[13px]' : 'text-[10.8px]'}`} style={{ isolation: 'isolate' }}>
-          <Typewriter text={focusText} active={active} delay={400} />
+          <Typewriter text={focusText} active={active} delay={400} playSound={playSound} />
         </div>
       </div>
     </div>

@@ -1,37 +1,45 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 
-export default function Typewriter({ text, active, delay = 0 }: { text: string, active: boolean, delay?: number }) {
-  // Persists across renders — tracks how far we've typed
-  const progressRef = useRef(0);
+export default function Typewriter({
+  text,
+  active,
+  delay = 0,
+  playSound,
+}: {
+  text: string;
+  active: boolean;
+  delay?: number;
+  /** Optional quill-scratch SFX — called throttled every 4 chars while typing */
+  playSound?: () => void;
+}) {
+  const progressRef   = useRef(0);
   const [displayed, setDisplayed] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
-  // Holds the active interval so we can clear it
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [isTyping, setIsTyping]   = useState(false);
+  const intervalRef   = useRef<ReturnType<typeof setInterval> | null>(null);
+  const timeoutRef    = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Track last char index at which the sound fired
+  const lastSoundAt   = useRef(-1);
 
-  // Reset only when the text itself changes (different page)
   useEffect(() => {
     if (intervalRef.current) clearInterval(intervalRef.current);
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     progressRef.current = 0;
+    lastSoundAt.current = -1;
     setDisplayed('');
     setIsTyping(false);
   }, [text]);
 
-  // Start/pause typing based on active — never resets progress
   useEffect(() => {
     if (!active) {
-      // Pause: stop any running interval/timeout but keep progress
       if (intervalRef.current) clearInterval(intervalRef.current);
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
       intervalRef.current = null;
-      timeoutRef.current = null;
+      timeoutRef.current  = null;
       setIsTyping(false);
       return;
     }
 
-    // Already finished
     if (progressRef.current >= text.length) {
       setIsTyping(false);
       return;
@@ -42,6 +50,17 @@ export default function Typewriter({ text, active, delay = 0 }: { text: string, 
       intervalRef.current = setInterval(() => {
         progressRef.current += 1;
         setDisplayed(text.substring(0, progressRef.current));
+
+        // Throttled quill scratch — fire every 4 visible chars, skip whitespace runs
+        if (
+          playSound &&
+          progressRef.current - lastSoundAt.current >= 4 &&
+          text[progressRef.current - 1]?.trim() !== ''
+        ) {
+          lastSoundAt.current = progressRef.current;
+          playSound();
+        }
+
         if (progressRef.current >= text.length) {
           clearInterval(intervalRef.current!);
           intervalRef.current = null;
@@ -54,10 +73,9 @@ export default function Typewriter({ text, active, delay = 0 }: { text: string, 
       if (intervalRef.current) clearInterval(intervalRef.current);
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
       intervalRef.current = null;
-      timeoutRef.current = null;
+      timeoutRef.current  = null;
       setIsTyping(false);
     };
-  // Only re-run when active changes — text changes are handled by the effect above
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active]);
 

@@ -1,9 +1,11 @@
 'use client';
 import { useState, useEffect, useRef, useCallback } from 'react';
+import gsap from 'gsap';
 import Book from '@/components/Book';
 import MobileReader from '@/components/MobileReader';
 import MagicCircle from '@/components/MagicCircle';
 import Particles from '@/components/Particles';
+import DustMotes from '@/components/DustMotes';
 import MagicalLoader from '@/components/MagicalLoader';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -11,13 +13,59 @@ export default function Home() {
   const [loaded, setLoaded] = useState(false);
   const [appState, setAppState] = useState<'closed' | 'opening' | 'reading' | 'closing' | 'summary'>('closed');
   const [muted, setMuted] = useState(false);
+  const [sigilCharging, setSigilCharging] = useState(false);
   const isMobile = useIsMobile();
+
+  // Fire a 200ms sigil charge pulse on each page turn
+  const handlePageTurn = useCallback(() => {
+    setSigilCharging(true);
+    setTimeout(() => setSigilCharging(false), 200);
+  }, []);
 
   // ── Audio refs ──────────────────────────────────────────────
   const themeRef  = useRef<HTMLAudioElement | null>(null);
   const turnRef   = useRef<HTMLAudioElement | null>(null);
   const clickRef  = useRef<HTMLAudioElement | null>(null);
   const multiRef  = useRef<HTMLAudioElement | null>(null);
+  // Rustle ambience — looping parchment bed, active only while reading
+  // Drop /public/rustle.wav to activate (silent stub until then)
+  const rustleRef = useRef<HTMLAudioElement | null>(null);
+  // Quill scratch — sparse SFX for Typewriter reveals
+  // Drop /public/quill.wav to activate (silent stub until then)
+  const quillRef  = useRef<HTMLAudioElement | null>(null);
+
+  // ── Candlelight flicker ref ──────────────────────────────────
+  const candleRef = useRef<HTMLDivElement>(null);
+
+  // Irregular flicker — chained tweens with randomised duration/opacity
+  // so it reads as actual flame movement, not a breathing UI element
+  useEffect(() => {
+    const el = candleRef.current;
+    if (!el) return;
+
+    let killed = false;
+    const flicker = () => {
+      if (killed) return;
+      // Each step picks a random target opacity and a random duration
+      // weighted toward short bursts with occasional longer holds
+      const targetOpacity = 0.14 + Math.random() * 0.1;  // 0.14 – 0.24
+      const duration = 0.08 + Math.random() * 0.55;       // 80ms – 630ms
+      gsap.to(el, {
+        opacity: targetOpacity,
+        duration,
+        ease: 'none',
+        onComplete: flicker,
+      });
+    };
+
+    // Kick off with a small initial delay so it doesn't snap on mount
+    const t = setTimeout(flicker, 200);
+    return () => {
+      killed = true;
+      clearTimeout(t);
+      gsap.killTweensOf(el);
+    };
+  }, []);
 
   // Initialise audio elements once
   useEffect(() => {
@@ -38,11 +86,24 @@ export default function Home() {
     multi.volume = 0.7;
     multiRef.current = multi;
 
+    // Rustle ambience — looping, very low volume, fades in/out with reading state
+    const rustle = new Audio('/rustle.wav');
+    rustle.loop   = true;
+    rustle.volume = 0;   // starts silent; ramped up when reading begins
+    rustleRef.current = rustle;
+
+    // Quill scratch — very short SFX, played throttled during Typewriter
+    const quill = new Audio('/quill.wav');
+    quill.volume = 0.35;
+    quillRef.current = quill;
+
     return () => {
       theme.pause();
       turn.pause();
       click.pause();
       multi.pause();
+      rustle.pause();
+      quill.pause();
     };
   }, []);
 
@@ -56,17 +117,32 @@ export default function Home() {
 
   // Sync mute state
   useEffect(() => {
-    [themeRef, turnRef, clickRef, multiRef].forEach(r => {
+    [themeRef, turnRef, clickRef, multiRef, rustleRef, quillRef].forEach(r => {
       if (r.current) r.current.muted = muted;
     });
   }, [muted]);
 
   // ── Sound helpers (stable refs so children don't re-render) ──
-  const playTurn = useCallback(() => {
+
+  // Weighted page turn — pitch-shifts the single turnpage.wav via playbackRate:
+  //   leafIndex 0        = cover (heavy leather thud)   → rate 0.72
+  //   leafIndex 1–2      = flyleaves (medium swish)     → rate 0.88
+  //   leafIndex 3+       = interior pages (crisp paper) → rate 1.08
+  const playTurnWeighted = useCallback((leafIndex: number) => {
     const a = turnRef.current;
     if (!a) return;
+    if      (leafIndex === 0)      a.playbackRate = 0.72;
+    else if (leafIndex <= 2)       a.playbackRate = 0.88;
+    else                           a.playbackRate = 1.08;
     a.currentTime = 0;
     a.play().catch(() => {});
+    // Duck rustle briefly during the turn
+    const rustle = rustleRef.current;
+    if (rustle && rustle.volume > 0) {
+      const prev = rustle.volume;
+      rustle.volume = Math.max(0, prev * 0.3);
+      setTimeout(() => { if (rustleRef.current) rustleRef.current.volume = prev; }, 900);
+    }
   }, []);
 
   const playClick = useCallback(() => {
@@ -82,6 +158,47 @@ export default function Home() {
     a.currentTime = 0;
     a.play().catch(() => {});
   }, []);
+
+  // Quill scratch — throttled by Typewriter, passed as prop
+  const playQuill = useCallback(() => {
+    const a = quillRef.current;
+    if (!a) return;
+    a.currentTime = 0;
+    a.play().catch(() => {});
+  }, []);
+
+  // Rustle ambience — fade in when reading, fade out otherwise
+  const rustleFadeRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const fadeRustle = useCallback((targetVol: number) => {
+    const rustle = rustleRef.current;
+    if (!rustle) return;
+    if (rustleFadeRef.current) clearInterval(rustleFadeRef.current);
+    // Start playing if going up from 0
+    if (targetVol > 0 && rustle.paused) {
+      rustle.play().catch(() => {});
+    }
+    const step = (targetVol - rustle.volume) / 30;
+    rustleFadeRef.current = setInterval(() => {
+      if (!rustleRef.current) return;
+      const next = rustleRef.current.volume + step;
+      if ((step > 0 && next >= targetVol) || (step < 0 && next <= targetVol)) {
+        rustleRef.current.volume = Math.max(0, targetVol);
+        if (targetVol === 0) rustleRef.current.pause();
+        clearInterval(rustleFadeRef.current!);
+      } else {
+        rustleRef.current.volume = Math.max(0, next);
+      }
+    }, 50);
+  }, []);
+
+  // Fade rustle in/out with reading state
+  useEffect(() => {
+    if (appState === 'reading') {
+      fadeRustle(0.12);
+    } else {
+      fadeRustle(0);
+    }
+  }, [appState, fadeRustle]);
 
   if (appState === 'summary') {
     return (
@@ -215,6 +332,16 @@ export default function Home() {
         {/* Background ambient lighting */}
         <div className="absolute inset-0 opacity-40 bg-[radial-gradient(circle_at_50%_50%,#112b1c_0%,transparent_70%)] pointer-events-none" />
 
+        {/* Candlelight flicker — warm amber radial bloom, irregular GSAP opacity */}
+        <div
+          ref={candleRef}
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            opacity: 0.18,
+            background: 'radial-gradient(ellipse 70% 60% at 50% 45%, rgba(255,174,80,0.22) 0%, rgba(255,140,40,0.08) 45%, transparent 75%)',
+          }}
+        />
+
         {/* Mute toggle */}
         <button
           onClick={() => setMuted(m => !m)}
@@ -245,14 +372,15 @@ export default function Home() {
               <MobileReader
                 onClose={() => setAppState('closed')}
                 onStateChange={(state) => setAppState(state)}
-                playTurn={playTurn}
+                playTurn={() => playTurnWeighted(3)}
                 playClick={playClick}
                 playMulti={playMulti}
               />
             )}
 
-            <MagicCircle isActive={appState !== 'closed'} />
+            <MagicCircle isActive={appState !== 'closed'} charging={sigilCharging} />
             <Particles isActive={appState !== 'closed'} />
+            <DustMotes isActive={appState === 'reading'} />
 
             {appState === 'closed' && (
               <button
@@ -266,17 +394,20 @@ export default function Home() {
         ) : (
           /* ── Desktop: 3-D book ── */
           <>
-            <MagicCircle isActive={appState !== 'closed'} />
+            <MagicCircle isActive={appState !== 'closed'} charging={sigilCharging} />
             <Particles isActive={appState !== 'closed'} />
+            <DustMotes isActive={appState === 'reading'} />
 
             <div className="absolute inset-0 z-20">
               <Book
                 isActive={appState !== 'closed'}
                 onStateChange={(state) => setAppState(state as any)}
-                playTurn={playTurn}
+                playTurnWeighted={playTurnWeighted}
                 playClick={playClick}
                 playMulti={playMulti}
+                playQuill={playQuill}
                 startTheme={startTheme}
+                onPageTurn={handlePageTurn}
               />
             </div>
 
