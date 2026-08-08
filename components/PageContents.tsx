@@ -1,6 +1,7 @@
 import React from 'react';
 import { Mail, Github, Linkedin, FileText, ArrowRight } from 'lucide-react';
 import Typewriter from './Typewriter';
+import GrimoireModal from './GrimoireModal';
 
 export function CoverFront({ onOpen }: { onOpen?: () => void }) {
   const [hovered, setHovered] = React.useState(false);
@@ -915,31 +916,30 @@ export function GuestBookLeft({ mobile = false }: { mobile?: boolean }) {
 export function GuestBookRight({
   mobile = false,
   onClose,
+  onContentChange,
 }: {
   mobile?: boolean;
   onClose?: () => void;
+  /** Called whenever the drawn/recognized message content changes — lets parent know if there's unsaved work */
+  onContentChange?: (hasContent: boolean) => void;
 }) {
   const [name, setName] = React.useState('');
   const [message, setMessage] = React.useState('');
-  // animateFromIndex tracks what was already drawn — updated AFTER message state settles
-  const animateFromRef = React.useRef(0);
-  const [animateFrom, setAnimateFrom] = React.useState(0);
   const [status, setStatus] = React.useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
-  const textareaRef = React.useRef<HTMLTextAreaElement>(null);
-  const MAX = 280;
+  const [modalOpen, setModalOpen] = React.useState(false);
 
-  const handleMessageChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const val = e.target.value.slice(0, MAX);
-    // Capture the boundary before this batch of new chars
-    const from = animateFromRef.current;
-    // New chars start where the old message ended
-    animateFromRef.current = val.length;
-    setAnimateFrom(from);
-    setMessage(val);
+  const handleTextChange = (text: string) => {
+    setMessage(text);
+    onContentChange?.(text.trim().length > 0);
   };
 
   const handleSend = async () => {
-    if (!message.trim() || status === 'sending' || status === 'sent') return;
+    // Empty message — show grimoire alert instead of silently failing
+    if (!message.trim()) {
+      setModalOpen(true);
+      return;
+    }
+    if (status === 'sending' || status === 'sent') return;
     setStatus('sending');
     try {
       const emailjs = await import('@emailjs/browser');
@@ -953,6 +953,7 @@ export function GuestBookRight({
         process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY!,
       );
       setStatus('sent');
+      onContentChange?.(false);
       if (onClose) setTimeout(onClose, 2800);
     } catch (err) {
       console.error('EmailJS error:', err);
@@ -960,84 +961,43 @@ export function GuestBookRight({
     }
   };
 
-  // Auto-focus the textarea when the page is visible
-  React.useEffect(() => {
-    const t = setTimeout(() => textareaRef.current?.focus(), 300);
-    return () => clearTimeout(t);
-  }, []);
-
   return (
     <div className={`w-full h-full bg-parchment-right flex flex-col overflow-hidden relative
       ${mobile ? 'p-4' : 'rounded-r-md p-6 shadow-[inset_-10px_0_20px_rgba(0,0,0,0.15)] border-l-2 border-[#d4c5a0]'}`}>
 
-      {/* Ruled lines */}
-      <div className="absolute inset-0 pointer-events-none" style={{
-        backgroundImage: 'repeating-linear-gradient(180deg, transparent 0px, transparent 27px, rgba(139,107,78,0.12) 28px)',
-        backgroundPosition: '0 36px',
-      }} />
-
       <div className="relative z-10 flex flex-col h-full gap-3">
+
         {/* Name field */}
-        <div className="flex items-center gap-2">
-          <span className="font-kalam text-[#8b6b4e] text-[11px] shrink-0">From:</span>
+        <div className="relative z-20 flex items-center gap-2 border-b border-[#c9b783]/50 pb-1 shrink-0">
+          <span className="font-kalam text-[#8b6b4e] text-[12px] shrink-0">From:</span>
           <input
             type="text"
             value={name}
             onChange={e => setName(e.target.value.slice(0, 60))}
-            placeholder="your name (optional)"
+            placeholder="click here — type your name (optional)"
             disabled={status !== 'idle'}
-            className="flex-1 bg-transparent border-b border-[#c9b783]/60 font-caveat text-[#1a0f05] text-[15px] outline-none placeholder:text-[#8b6b4e]/50 pb-0.5"
-            style={{ cursor: "url('/quill-cursor.svg') 4 28, text" }}
+            className="flex-1 bg-transparent font-caveat text-[#1a0f05] text-[16px] outline-none placeholder:text-[#8b6b4e]/40 cursor-text"
           />
         </div>
 
-        {/* Writing area — invisible textarea captures keystrokes, InkWriter renders calligraphy */}
-        <div
-          className="flex-1 relative overflow-hidden"
-          style={{ minHeight: '120px' }}
-          onClick={() => textareaRef.current?.focus()}
-        >
-          {/* Capture textarea — nearly invisible but focusable */}
-          <textarea
-            ref={textareaRef}
-            value={message}
-            onChange={handleMessageChange}
-            disabled={status !== 'idle'}
-            maxLength={MAX}
-            className="absolute inset-0 w-full h-full resize-none z-10 bg-transparent outline-none border-none"
-            placeholder=""
-            aria-label="Your message"
-            style={{
-              opacity: 0.01,          // nearly invisible — but not 0 so browser still treats it as interactive
-              color: 'transparent',
-              caretColor: 'transparent',
-              cursor: "url('/quill-cursor.svg') 4 28, text",
-            }}
-          />
-
-          {/* InkWriter calligraphy layer */}
-          <div className="absolute inset-0 overflow-y-auto pointer-events-none select-none">
-            {message.length === 0 ? (
-              <p className="font-caveat text-[#8b6b4e]/50 text-base mt-2 ml-2">
-                Begin writing here…
-              </p>
-            ) : (
-              <React.Suspense fallback={
-                <p className="font-caveat text-[#3d2b1f] text-base mt-2 ml-2">{message}</p>
-              }>
-                <InkWriterLazy
-                  text={message}
-                  animateFromIndex={animateFrom}
-                />
-              </React.Suspense>
-            )}
-          </div>
+        {/* Handwriting canvas — fills the writing area, IS the page */}
+        <div className="flex-1 min-h-0 relative overflow-hidden">
+          <React.Suspense fallback={
+            <div className="absolute inset-0 bg-[#edeef0]/40 flex items-center justify-center">
+              <span className="font-kalam text-[#8b6b4e] text-[11px] italic animate-pulse">loading…</span>
+            </div>
+          }>
+            <HandwritingInputLazy
+              onTextChange={handleTextChange}
+              disabled={status !== 'idle'}
+            />
+          </React.Suspense>
         </div>
 
-        {/* Footer — char count + send button */}
-        <div className="flex items-center justify-between pt-2 border-t border-[#c9b783]/40 shrink-0">
-          <span className={`font-mono text-[9px] ${message.length >= MAX ? 'text-[#a4302a]' : 'text-[#8b6b4e]/60'}`}>
-            {message.length}/{MAX}
+        {/* Footer */}
+        <div className="relative z-20 flex items-center justify-between pt-2 border-t border-[#c9b783]/40 shrink-0">
+          <span className="font-mono text-[9px] text-[#8b6b4e]/40">
+            {message ? `"${message.slice(0, 28)}${message.length > 28 ? '…' : ''}"` : 'draw to compose'}
           </span>
 
           {status === 'sent' ? (
@@ -1045,22 +1005,18 @@ export function GuestBookRight({
               ✦ Your words have been received.
             </span>
           ) : status === 'error' ? (
-            <span className="font-caveat text-[#a4302a] text-sm">
-              Something went wrong. Try again.
-            </span>
+            <button onClick={() => setStatus('idle')} className="font-caveat text-[#a4302a] text-sm hover:underline">
+              Something went wrong — try again.
+            </button>
           ) : (
             <button
               onClick={handleSend}
-              disabled={!message.trim() || status === 'sending'}
+              disabled={status === 'sending'}
               className={`group flex items-center gap-2 font-cinzel text-[10px] tracking-widest uppercase transition-all duration-300
-                ${message.trim() && status === 'idle'
-                  ? 'text-[#a4302a] hover:text-[#1a0f05]'
-                  : 'text-[#8b6b4e]/40 cursor-not-allowed'}`}
+                ${status === 'idle' ? 'text-[#a4302a] hover:text-[#1a0f05]' : 'text-[#8b6b4e]/40 cursor-not-allowed'}`}
             >
-              <span
-                className={`w-7 h-7 rounded-full bg-[#a31a1a] flex items-center justify-center text-[10px] text-[#f0d089] shadow-md transition-all duration-300
-                  ${status === 'sending' ? 'scale-110 shadow-[0_0_12px_rgba(163,26,26,0.7)]' : 'group-hover:scale-110 group-hover:shadow-[0_0_8px_rgba(163,26,26,0.5)]'}`}
-              >
+              <span className={`w-7 h-7 rounded-full bg-[#a31a1a] flex items-center justify-center text-[10px] text-[#f0d089] shadow-md transition-all duration-300
+                ${status === 'sending' ? 'scale-110 shadow-[0_0_12px_rgba(163,26,26,0.7)]' : 'group-hover:scale-110 group-hover:shadow-[0_0_8px_rgba(163,26,26,0.5)]'}`}>
                 {status === 'sending' ? '◌' : '✦'}
               </span>
               {status === 'sending' ? 'Sending…' : 'Send'}
@@ -1068,9 +1024,20 @@ export function GuestBookRight({
           )}
         </div>
       </div>
+
+      {/* Empty-submit alert modal */}
+      <GrimoireModal
+        open={modalOpen}
+        variant="alert"
+        rune="ᚹ"
+        title="The page is blank"
+        message="Your quill has not yet touched the parchment. Draw your message before sealing it."
+        confirmLabel="I shall write"
+        onConfirm={() => setModalOpen(false)}
+      />
     </div>
   );
 }
 
-// Lazy import InkWriter to avoid SSR issues with SVG path length measurement
-const InkWriterLazy = React.lazy(() => import('./InkWriter'));
+// HandwritingInput is lazy-loaded to avoid SSR issues with canvas
+const HandwritingInputLazy = React.lazy(() => import('./HandwritingInput'));

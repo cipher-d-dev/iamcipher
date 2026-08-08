@@ -150,6 +150,34 @@
   background: rgba(139, 107, 78, 0.6); 
 }
 
+/* ── Cursor overrides inside the book ───────────────────────────────
+   The book container sets a quill cursor for the reading experience,
+   but interactive elements need their own contextual cursors.       */
+
+/* Clickable elements inside the book → pointer */
+.book-interactive button,
+.book-interactive a,
+.book-interactive [role="button"] {
+  cursor: pointer !important;
+}
+
+/* Text inputs and textareas → text cursor */
+.book-interactive input,
+.book-interactive textarea {
+  cursor: text !important;
+}
+
+/* The drawing canvas → crosshair */
+.book-interactive canvas {
+  cursor: crosshair !important;
+}
+
+/* Disabled states → default */
+.book-interactive button:disabled,
+.book-interactive [disabled] {
+  cursor: default !important;
+}
+
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(4px); }
   to   { opacity: 1; transform: translateY(0); }

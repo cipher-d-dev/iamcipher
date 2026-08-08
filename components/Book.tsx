@@ -3,6 +3,7 @@ import { useRef, useState, useEffect } from 'react';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { CoverFront, InnerCover, CoverBack, TitlePage, OriginLeft, OriginTerminal, ExperienceLeft, ExperienceRight, ToolsLeft, ToolsRight, ProjectsLeft, ProjectsRight, FocusTerminal, ContactRight, GuestBookLeft, GuestBookRight } from './PageContents';
+import GrimoireModal from './GrimoireModal';
 
 export default function Book({ isActive, onStateChange, playTurnWeighted, playClick, playMulti, playQuill, startTheme, onPageTurn }: {
   isActive: boolean;
@@ -17,6 +18,10 @@ export default function Book({ isActive, onStateChange, playTurnWeighted, playCl
   const [bookState, setBookState] = useState<'closed' | 'opening' | 'reading' | 'closing'>('closed');
   const [pageIndex, setPageIndex] = useState(0);
   const [scale, setScale] = useState(1);
+  // Tracks whether the guestbook page has unsaved drawn content
+  const [guestbookHasContent, setGuestbookHasContent] = useState(false);
+  // Controls the confirm-close modal
+  const [closeConfirmOpen, setCloseConfirmOpen] = useState(false);
   
   const containerRef = useRef<HTMLDivElement>(null);
   const bookRef = useRef<HTMLDivElement>(null);
@@ -35,7 +40,7 @@ export default function Book({ isActive, onStateChange, playTurnWeighted, playCl
     { front: <ToolsRight />, back: <ProjectsLeft /> },
     { front: <ProjectsRight />, back: <FocusTerminal active={pageIndex === 8} playSound={playQuill} /> },
     { front: <ContactRight />, back: <GuestBookLeft /> },
-    { front: <GuestBookRight onClose={() => handleClose()} />, back: <InnerCover right={true} /> },
+    { front: <GuestBookRight onClose={() => handleClose()} onContentChange={setGuestbookHasContent} />, back: <InnerCover right={true} /> },
   ];
 
   useEffect(() => {
@@ -223,6 +228,7 @@ export default function Book({ isActive, onStateChange, playTurnWeighted, playCl
     // Cancel any in-progress jump sequence
     jumpTimersRef.current.forEach(clearTimeout);
     jumpTimersRef.current = [];
+    setGuestbookHasContent(false);
     setBookState('closing');
     onStateChange('closing');
     playMulti();
@@ -298,6 +304,9 @@ export default function Book({ isActive, onStateChange, playTurnWeighted, playCl
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (bookState !== 'reading') return;
+      // Don't hijack arrow keys when the user is typing in an input or textarea
+      const tag = (e.target as HTMLElement)?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
       if (e.key === 'ArrowRight' || e.key === ' ') turnNext();
       if (e.key === 'ArrowLeft') turnPrev();
       if (e.key === 'Escape') handleClose();
@@ -411,7 +420,7 @@ export default function Book({ isActive, onStateChange, playTurnWeighted, playCl
   return (
     <div 
       ref={containerRef} 
-      className="relative flex items-center justify-center w-full h-full perspective-2000 preserve-3d"
+      className="book-interactive relative flex items-center justify-center w-full h-full perspective-2000 preserve-3d"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
       style={bookState === 'reading' ? { cursor: "url('/quill-cursor.svg') 4 28, default" } : undefined}
@@ -509,13 +518,38 @@ export default function Book({ isActive, onStateChange, playTurnWeighted, playCl
         ref={bookmarkRef}
         className={`absolute right-16 w-8 bg-[#a31a1a] shadow-lg z-40 transform hover:-translate-y-2 cursor-pointer flex flex-col items-center pt-2 transition-all duration-700 ease-in-out
           ${bookState === 'reading' ? 'top-0 h-32 translate-y-0 opacity-100' : '-top-10 h-0 opacity-0 pointer-events-none'}`}
-        onClick={() => { playClick(); handleClose(); }}
+        onClick={() => {
+          playClick();
+          // If the guestbook page is open and has unsaved content, confirm first
+          if (guestbookHasContent && pageIndex === 9) {
+            setCloseConfirmOpen(true);
+          } else {
+            handleClose();
+          }
+        }}
         title="Close Grimoire"
         style={{ cursor: 'pointer' }}
       >
         <div className="w-4 h-4 rounded-full border border-[#ffae00]/40 flex items-center justify-center text-[10px] text-[#ffae00] mb-1">✕</div>
         <div className="w-[1px] h-12 bg-black/20" />
       </div>
+
+      {/* Confirm-close modal — shown when closing with unsaved guestbook content */}
+      <GrimoireModal
+        open={closeConfirmOpen}
+        variant="confirm"
+        rune="ᛉ"
+        title="Abandon your words?"
+        message="Your message has not been sent. Close the grimoire and let it fade to nothing?"
+        confirmLabel="Close anyway"
+        cancelLabel="Stay a while"
+        onConfirm={() => {
+          setCloseConfirmOpen(false);
+          setGuestbookHasContent(false);
+          handleClose();
+        }}
+        onCancel={() => setCloseConfirmOpen(false)}
+      />
 
       {/* Side Catalogue — vertical index tabs */}
       <div
