@@ -39,9 +39,37 @@ export default function Book({ isActive, onStateChange, playTurnWeighted, playCl
     const handleResize = () => {
       const ww = window.innerWidth;
       const wh = window.innerHeight;
-      const scaleW = (ww - 60) / 840;
-      const scaleH = (wh - 60) / 640;
-      setScale(Math.min(scaleW, scaleH, 1.2));
+      const dpr = window.devicePixelRatio ?? 1;
+
+      // devicePixelRatio tells us if Windows/OS display scaling is active.
+      // A 1920×1080 monitor at 125% Windows scale → CSS viewport ~1536×864, DPR 1.25
+      // A genuine 1536×864 laptop screen at 100%     → CSS viewport ~1536×864, DPR 1.0
+      // A 4K monitor at 200%                         → CSS viewport ~1920×1080, DPR 2.0
+      // We use DPR to recover the physical intent and set padding accordingly.
+
+      // Physical pixel height estimate
+      const physH = wh * dpr;
+
+      // Vertical padding: more on physically small/dense screens (laptops),
+      // less on large monitors where the book can breathe naturally.
+      const vPad = physH >= 1600 ? 120   // 4K / large HiDPI — generous
+                 : physH >= 1200 ? 100   // 1080p HiDPI or 1440p — comfortable
+                 :                  70;  // 720p / compact
+
+      // Horizontal padding accounts for catalogue tabs (~120px) + margin
+      const hPad = 180;
+
+      const scaleW = (ww - hPad) / 840;
+      const scaleH = (wh - vPad) / 640;
+
+      // On a genuine large monitor (wide CSS viewport, low DPR) allow up to 1.2.
+      // On a scaled laptop (narrower CSS viewport, DPR > 1) cap lower so it doesn't crowd.
+      const maxScale = dpr <= 1 && ww >= 1400 ? 1.2   // large monitor at 100%
+                     : dpr <= 1              ? 1.0   // smaller monitor at 100%
+                     : wh >= 900             ? 1.0   // scaled but tall enough
+                     :                        0.88;  // scaled and short — laptop
+
+      setScale(Math.min(scaleW, scaleH, maxScale));
     };
     handleResize();
     window.addEventListener('resize', handleResize);
@@ -474,7 +502,7 @@ export default function Book({ isActive, onStateChange, playTurnWeighted, playCl
       <div
         className="absolute z-40 flex items-center gap-3 pointer-events-none transition-all duration-700"
         style={{
-          top: `calc(50% + ${310 * scale}px)`,
+          top: `calc(50% + ${Math.min(310 * scale, 270)}px)`,
           left: '50%',
           transform: 'translateX(-50%)',
           opacity: bookState === 'reading' ? 0.55 : 0,
