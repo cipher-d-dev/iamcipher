@@ -9,6 +9,7 @@ import {
   Noto_Serif_JP 
 } from 'next/font/google';
 import './globals.css';
+import MagicCursor from '@/components/MagicCursor';
 
 const kalam = Kalam({ weight: ['400', '700'], subsets: ['latin'], variable: '--font-kalam' });
 const caveat = Caveat({ weight: ['600', '700'], subsets: ['latin'], variable: '--font-caveat' });
@@ -71,6 +72,7 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
   return (
     <html lang="en" className={`${kalam.variable} ${caveat.variable} ${sourceSerif.variable} ${jetbrains.variable} ${cinzelDec.variable} ${cinzel.variable}`}>
       <body suppressHydrationWarning className="bg-[#0c0512] text-gray-200 font-source-serif">
+        <MagicCursor />
         {children}
       </body>
     </html>

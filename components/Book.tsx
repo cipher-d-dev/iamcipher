@@ -28,11 +28,12 @@ export default function Book({ isActive, onStateChange, playTurnWeighted, playCl
   const [bookState, setBookState] = useState<'closed' | 'opening' | 'reading' | 'closing'>('closed');
   const [pageIndex, setPageIndex] = useState(0);
   const [scale, setScale] = useState(1);
+  const scaleRef = useRef(1); // mirrors scale state — read by GSAP to avoid stale closure
   // Tracks whether the guestbook page has unsaved drawn content
   const [guestbookHasContent, setGuestbookHasContent] = useState(false);
   // Controls the confirm-close modal
   const [closeConfirmOpen, setCloseConfirmOpen] = useState(false);
-  
+
   const containerRef = useRef<HTMLDivElement>(null);
   const bookRef = useRef<HTMLDivElement>(null);
   const leafRefs = useRef<HTMLDivElement[]>([]);
@@ -89,6 +90,7 @@ export default function Book({ isActive, onStateChange, playTurnWeighted, playCl
                      :                        0.88;  // scaled and short — laptop
 
       setScale(Math.min(scaleW, scaleH, maxScale));
+      scaleRef.current = Math.min(scaleW, scaleH, maxScale);
     };
     handleResize();
     window.addEventListener('resize', handleResize);
@@ -213,8 +215,8 @@ export default function Book({ isActive, onStateChange, playTurnWeighted, playCl
 
     // Animate book flat to the center
     tl.to(bookRef.current, { rotateX: 0, rotateY: 0, y: 0, duration: 1, ease: "power2.inOut" }, 0)
-      .to(bookRef.current, { scale: scale * 1.04, duration: 0.5, ease: 'sine.out' }, 0.3)
-      .to(bookRef.current, { scale: scale, duration: 0.4, ease: 'sine.inOut' }, 0.9);
+      .to(bookRef.current, { scale: scaleRef.current * 1.04, duration: 0.5, ease: 'sine.out' }, 0.3)
+      .to(bookRef.current, { scale: scaleRef.current, duration: 0.4, ease: 'sine.inOut' }, 0.9);
       
     // Gently flip open the cover and flyleaves
     const leavesToFlip = [leafRefs.current[0], leafRefs.current[1], leafRefs.current[2]];
@@ -426,7 +428,6 @@ export default function Book({ isActive, onStateChange, playTurnWeighted, playCl
       className="book-interactive relative flex items-center justify-center w-full h-full perspective-2000 preserve-3d"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
-      style={bookState === 'reading' ? { cursor: "url('/quill-cursor.svg') 4 28, default" } : undefined}
     >
       <div 
         ref={bookRef}
@@ -531,7 +532,6 @@ export default function Book({ isActive, onStateChange, playTurnWeighted, playCl
           }
         }}
         title="Close Grimoire"
-        style={{ cursor: 'pointer' }}
       >
         <div className="w-4 h-4 rounded-full border border-[#ffae00]/40 flex items-center justify-center text-[10px] text-[#ffae00] mb-1">✕</div>
         <div className="w-[1px] h-12 bg-black/20" />
@@ -573,7 +573,6 @@ export default function Book({ isActive, onStateChange, playTurnWeighted, playCl
               onClick={() => jumpTo(entry.index)}
               title={entry.label}
               className="group relative flex items-center transition-all duration-300 ease-in-out"
-              style={{ cursor: 'pointer' }}
             >
               <div className={`
                 flex items-center gap-2 pl-2 pr-3 py-2 border border-r-0

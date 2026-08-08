@@ -6,11 +6,11 @@ import {
   ToolsLeft, ToolsRight,
   ProjectsLeft, ProjectsRight,
   FocusTerminal, ContactRight,
+  GuestBookLeft, GuestBookRight,
   InnerCover,
 } from './PageContents';
 
 // Flat ordered list of all readable pages for mobile
-// Each entry is what fills the full screen card
 const PAGES: { label: string; rune: string; node: React.ReactNode }[] = [
   { label: 'Title',       rune: 'ᚨ', node: <TitlePage mobile /> },
   { label: 'Origin',      rune: 'ᚩ', node: <OriginLeft mobile /> },
@@ -23,6 +23,8 @@ const PAGES: { label: string; rune: string; node: React.ReactNode }[] = [
   { label: 'Projects',    rune: 'ᛈ', node: <ProjectsRight mobile /> },
   { label: 'Focus',       rune: 'ᛇ', node: <FocusTerminal active={true} mobile /> },
   { label: 'Contact',     rune: 'ᛗ', node: <ContactRight mobile /> },
+  { label: 'Guestbook',   rune: 'ᛟ', node: <GuestBookLeft mobile /> },
+  { label: 'Guestbook',   rune: 'ᛟ', node: <GuestBookRight mobile /> },
   { label: 'End',         rune: 'ᛟ', node: <InnerCover right={true} /> },
 ];
 
@@ -32,6 +34,7 @@ const CATALOGUE = [
   { label: 'Tools',      rune: 'ᛏ', pageIndex: 5 },
   { label: 'Projects',   rune: 'ᛈ', pageIndex: 7 },
   { label: 'Contact',    rune: 'ᛗ', pageIndex: 10 },
+  { label: 'Guestbook',  rune: 'ᛟ', pageIndex: 11 },
 ];
 
 export default function MobileReader({

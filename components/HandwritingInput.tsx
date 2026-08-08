@@ -321,7 +321,7 @@ export default function HandwritingInput({ onTextChange, disabled = false }: Han
       <canvas
         ref={canvasRef}
         className="absolute inset-0 w-full h-full rounded-sm"
-        style={{ touchAction: 'none', cursor: disabled ? 'default' : 'crosshair', zIndex: 2 }}
+        style={{ touchAction: 'none', zIndex: 2 }}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}

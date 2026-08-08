@@ -11,6 +11,11 @@
 }
 
 @layer base {
+  /* Hide the native cursor everywhere — MagicCursor renders a custom one */
+  *, *::before, *::after {
+    cursor: none !important;
+  }
+
   :root {
     --paper: #d9c89a;
     --paper-shadow: #c4ae78;
@@ -150,33 +155,7 @@
   background: rgba(139, 107, 78, 0.6); 
 }
 
-/* ── Cursor overrides inside the book ───────────────────────────────
-   The book container sets a quill cursor for the reading experience,
-   but interactive elements need their own contextual cursors.       */
-
-/* Clickable elements inside the book → pointer */
-.book-interactive button,
-.book-interactive a,
-.book-interactive [role="button"] {
-  cursor: pointer !important;
-}
-
-/* Text inputs and textareas → text cursor */
-.book-interactive input,
-.book-interactive textarea {
-  cursor: text !important;
-}
-
-/* The drawing canvas → crosshair */
-.book-interactive canvas {
-  cursor: crosshair !important;
-}
-
-/* Disabled states → default */
-.book-interactive button:disabled,
-.book-interactive [disabled] {
-  cursor: default !important;
-}
+/* ── Cursor overrides: all handled by MagicCursor component ──────── */
 
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(4px); }
@@ -205,4 +184,10 @@
 @keyframes sigil-rune-fade {
   0%, 100% { opacity: 0.2; }
   50%       { opacity: 1;   }
+}
+
+/* ── Magic cursor idle float ──────────────────────────────────────────── */
+@keyframes magic-cursor-float {
+  0%, 100% { transform: translateY(0px);  }
+  50%       { transform: translateY(-4px); }
 }
