@@ -5,8 +5,7 @@ import {
   Source_Serif_4, 
   JetBrains_Mono, 
   Cinzel_Decorative, 
-  Cinzel, 
-  Noto_Serif_JP 
+  Cinzel,
 } from 'next/font/google';
 import './globals.css';
 import MagicCursor from '@/components/MagicCursor';

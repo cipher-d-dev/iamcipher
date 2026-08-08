@@ -13,7 +13,6 @@ export type CursorState = 'idle' | 'lock' | 'reading' | 'brush' | 'point' | 'run
 interface CursorCtx {
   cursorState: CursorState;
   setCursorState: (state: CursorState) => void;
-  // Convenience: push a state for the duration of a hover (restore on leave)
   pushCursor: (state: CursorState) => void;
   popCursor: () => void;
 }

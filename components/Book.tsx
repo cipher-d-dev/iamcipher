@@ -30,9 +30,7 @@ export default function Book({ isActive, onStateChange, playTurnWeighted, playCl
   const [pageIndex, setPageIndex] = useState(0);
   const [scale, setScale] = useState(1);
   const scaleRef = useRef(1); // mirrors scale state — read by GSAP to avoid stale closure
-  // Tracks whether the guestbook page has unsaved drawn content
   const [guestbookHasContent, setGuestbookHasContent] = useState(false);
-  // Controls the confirm-close modal
   const [closeConfirmOpen, setCloseConfirmOpen] = useState(false);
 
   const { pushCursor, popCursor, setCursorState } = useCursor();
@@ -150,28 +148,33 @@ export default function Book({ isActive, onStateChange, playTurnWeighted, playCl
     if (bookState !== 'reading') return;
     const total = leafRefs.current.length;
 
-    // Signal sigil charge-up on every page turn
     onPageTurn?.();
     leafRefs.current.forEach((leaf, i) => {
       const shadowEl = leaf.querySelector<HTMLElement>('[data-leaf-shadow]');
+      const frontEl  = leaf.querySelector<HTMLElement>('[data-leaf-front]');
+      const backEl   = leaf.querySelector<HTMLElement>('[data-leaf-back]');
 
-      const updateShadow = () => {
-        if (!shadowEl) return;
+      const updateFace = () => {
         const ry = gsap.getProperty(leaf, 'rotateY') as number;
-        // Pages sitting flat on the right (ry ≈ 0) cast a shadow from the spine
-        // onto their own surface — a left-edge inset. Pages on the left (ry ≈ -175)
-        // cast almost nothing visible from the front.
-        // At the arc peak (ry ≈ -87.5) the page is edge-on so no face shadow.
-        const absRy = Math.abs(ry);
-        // Only apply shadow to right-side flat pages (< 60° rotated)
-        const flatness = Math.max(0, 1 - absRy / 60); // 1 when flat, 0 past 60°
-        const blur    = 6 + (1 - flatness) * 12;
-        const opacity = flatness * 0.32;
-        // Inset from the spine side (left) — darker near gutter, fading right
+
+        // Pointer-events follow actual live rotateY — not React state.
+        // Front visible when facing viewer (ry > -90), back visible when flipped past spine.
+        if (frontEl) frontEl.style.pointerEvents = ry > -90 ? 'auto' : 'none';
+        if (backEl)  backEl.style.pointerEvents  = ry < -90 ? 'auto' : 'none';
+
+        if (!shadowEl) return;
+        const absRy    = Math.abs(ry);
+        const flatness = Math.max(0, 1 - absRy / 60);
+        const blur     = 6 + (1 - flatness) * 12;
+        const opacity  = flatness * 0.32;
         shadowEl.style.background = opacity > 0.01
-          ? `linear-gradient(to right, rgba(0,0,0,${(opacity).toFixed(3)}) 0%, rgba(0,0,0,${(opacity * 0.4).toFixed(3)}) ${blur * 2}px, transparent ${blur * 5}px)`
+          ? `linear-gradient(to right, rgba(0,0,0,${opacity.toFixed(3)}) 0%, rgba(0,0,0,${(opacity * 0.4).toFixed(3)}) ${blur * 2}px, transparent ${blur * 5}px)`
           : 'none';
       };
+
+      // Always call immediately — GSAP skips onUpdate/onComplete for no-op tweens
+      // (leaves already at their target), so we must initialise the state now.
+      updateFace();
 
       if (i < pageIndex) {
         gsap.to(leaf, {
@@ -180,8 +183,8 @@ export default function Book({ isActive, onStateChange, playTurnWeighted, playCl
           ease: 'power2.inOut',
           zIndex: i,
           z: i * (26 / total) - 13,
-          onUpdate: updateShadow,
-          onComplete: updateShadow,
+          onUpdate: updateFace,
+          onComplete: updateFace,
         });
       } else {
         gsap.to(leaf, {
@@ -190,8 +193,8 @@ export default function Book({ isActive, onStateChange, playTurnWeighted, playCl
           ease: 'power2.inOut',
           zIndex: (total - i) + total,
           z: (total - i) * (26 / total) - 13,
-          onUpdate: updateShadow,
-          onComplete: updateShadow,
+          onUpdate: updateFace,
+          onComplete: updateFace,
         });
       }
     });
@@ -246,7 +249,6 @@ export default function Book({ isActive, onStateChange, playTurnWeighted, playCl
 
   const handleClose = () => {
     if (bookState !== 'reading') return;
-    // Cancel any in-progress jump sequence
     jumpTimersRef.current.forEach(clearTimeout);
     jumpTimersRef.current = [];
     setGuestbookHasContent(false);
@@ -397,15 +399,10 @@ export default function Book({ isActive, onStateChange, playTurnWeighted, playCl
     // Play multi sound once immediately for the whole sequence
     playMulti();
 
-    // Schedule each step — play single-flip sound on each step after the first
     steps.forEach((stepIndex, i) => {
       const t = setTimeout(() => {
         setPageIndex(stepIndex);
-        // Play a crisp single-page sound on every flip after the first
-        // (the multi sound already covers the kick-off)
-        if (i > 0) {
-          playTurnWeighted(stepIndex);
-        }
+        if (i > 0) playTurnWeighted(stepIndex);
       }, i * PER_STEP_MS);
       jumpTimersRef.current.push(t);
     });
@@ -495,9 +492,9 @@ export default function Book({ isActive, onStateChange, playTurnWeighted, playCl
             key={index}
             ref={(el) => { if (el) leafRefs.current[index] = el; }}
             className="absolute top-0 left-0 w-full h-full preserve-3d origin-left cursor-pointer"
-            style={{ 
+            style={{
               zIndex: initialZIndex,
-              transform: `translateZ(${initialZ}px)`
+              transform: `translateZ(${initialZ}px)`,
             }}
             onMouseEnter={() => { if (bookState === 'closed') pushCursor('lock'); }}
             onMouseLeave={() => { if (bookState === 'closed') popCursor(); }}
@@ -505,19 +502,18 @@ export default function Book({ isActive, onStateChange, playTurnWeighted, playCl
                if (bookState === 'closed') handleOpen();
             }}
           >
-            {/* Front */}
+            {/* Front — pointer-events toggled live by GSAP updateFace callback */}
             <div className="absolute inset-0 backface-hidden flex" data-leaf-front>
               {leaf.front}
-              {/* Spine gutter shadow — gradient driven by live rotateY, blends into page */}
               <div
                 data-leaf-shadow
                 className="absolute inset-0 pointer-events-none"
                 style={{ background: 'none' }}
               />
             </div>
-            
-            {/* Back */}
-            <div className="absolute inset-0 backface-hidden rotate-y-180 flex">
+
+            {/* Back — pointer-events toggled live by GSAP updateFace callback */}
+            <div className="absolute inset-0 backface-hidden rotate-y-180 flex" data-leaf-back>
               {leaf.back}
             </div>
           </div>

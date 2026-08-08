@@ -4,7 +4,6 @@ import Typewriter from './Typewriter';
 import GrimoireModal from './GrimoireModal';
 import { useCursor } from '@/context/CursorContext';
 
-// ── Static data hoisted outside components to avoid recreation on every render ──
 
 const COVER_SPARKS = [
   { sx: '0px',   sy: '-52px', delay: '0s',    color: '#2eb36f' },
@@ -20,9 +19,6 @@ const COVER_SPARKS = [
 export function CoverFront({ onOpen }: { onOpen?: () => void }) {
   const [hovered, setHovered] = React.useState(false);
   const { pushCursor, popCursor } = useCursor();
-
-  // Sparks fired outward from sigil centre
-  const sparks = COVER_SPARKS;
 
   return (
     <div className="w-full h-full bg-cover-texture flex flex-col items-center justify-center p-8 relative overflow-hidden rounded-[2px_8px_8px_2px]">
@@ -169,7 +165,7 @@ export function CoverFront({ onOpen }: { onOpen?: () => void }) {
         })}
 
         {/* Sparks */}
-        {hovered && sparks.map((s, i) => (
+        {hovered && COVER_SPARKS.map((s, i) => (
           <div key={i} style={{
             position: 'absolute',
             top: '50%',
@@ -872,7 +868,6 @@ export const ContactRight = React.memo(function ContactRight({ mobile = false }:
   );
 });
 
-// ── GuestBook pages ──────────────────────────────────────────────────
 
 export const GuestBookLeft = React.memo(function GuestBookLeft({ mobile = false }: { mobile?: boolean }) {
   return (
@@ -1049,5 +1044,4 @@ export function GuestBookRight({
   );
 }
 
-// HandwritingInput is lazy-loaded to avoid SSR issues with canvas
 const HandwritingInputLazy = React.lazy(() => import('./HandwritingInput'));
