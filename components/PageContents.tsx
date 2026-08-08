@@ -2,6 +2,7 @@ import React from 'react';
 import { Mail, Github, Linkedin, FileText, ArrowRight } from 'lucide-react';
 import Typewriter from './Typewriter';
 import GrimoireModal from './GrimoireModal';
+import { useCursor } from '@/context/CursorContext';
 
 // ── Static data hoisted outside components to avoid recreation on every render ──
 
@@ -18,6 +19,7 @@ const COVER_SPARKS = [
 
 export function CoverFront({ onOpen }: { onOpen?: () => void }) {
   const [hovered, setHovered] = React.useState(false);
+  const { pushCursor, popCursor } = useCursor();
 
   // Sparks fired outward from sigil centre
   const sparks = COVER_SPARKS;
@@ -72,8 +74,8 @@ export function CoverFront({ onOpen }: { onOpen?: () => void }) {
             : 'inset 0 4px 12px rgba(0,0,0,0.9), 0 1px 1px rgba(255,255,255,0.1)',
           transition: 'box-shadow 0.4s ease',
         }}
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
+        onMouseEnter={() => { setHovered(true); pushCursor('lock'); }}
+        onMouseLeave={() => { setHovered(false); popCursor(); }}
         onClick={(e) => { e.stopPropagation(); onOpen?.(); }}
       >
         {/* Slow ambient spin ring — always on */}
@@ -931,6 +933,7 @@ export function GuestBookRight({
   const [message, setMessage] = React.useState('');
   const [status, setStatus] = React.useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
   const [modalOpen, setModalOpen] = React.useState(false);
+  const { pushCursor, popCursor } = useCursor();
 
   const handleTextChange = (text: string) => {
     setMessage(text);
@@ -985,7 +988,10 @@ export function GuestBookRight({
         </div>
 
         {/* Handwriting canvas — fills the writing area, IS the page */}
-        <div className="flex-1 min-h-0 relative overflow-hidden">
+        <div className="flex-1 min-h-0 relative overflow-hidden"
+          onMouseEnter={() => pushCursor('brush')}
+          onMouseLeave={() => popCursor()}
+        >
           <React.Suspense fallback={
             <div className="absolute inset-0 bg-[#edeef0]/40 flex items-center justify-center">
               <span className="font-kalam text-[#8b6b4e] text-[11px] italic animate-pulse">loading…</span>

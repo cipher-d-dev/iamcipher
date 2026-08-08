@@ -4,6 +4,7 @@ import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { CoverFront, InnerCover, CoverBack, TitlePage, OriginLeft, OriginTerminal, ExperienceLeft, ExperienceRight, ToolsLeft, ToolsRight, ProjectsLeft, ProjectsRight, FocusTerminal, ContactRight, GuestBookLeft, GuestBookRight } from './PageContents';
 import GrimoireModal from './GrimoireModal';
+import { useCursor } from '@/context/CursorContext';
 
 // ── Static data outside component — never recreated ──────────────────
 const CATALOGUE = [
@@ -34,6 +35,13 @@ export default function Book({ isActive, onStateChange, playTurnWeighted, playCl
   // Controls the confirm-close modal
   const [closeConfirmOpen, setCloseConfirmOpen] = useState(false);
 
+  const { pushCursor, popCursor, setCursorState } = useCursor();
+
+  // Sync book state → cursor state
+  useEffect(() => {
+    if (bookState === 'reading') setCursorState('reading');
+    else setCursorState('idle');
+  }, [bookState, setCursorState]);
   const containerRef = useRef<HTMLDivElement>(null);
   const bookRef = useRef<HTMLDivElement>(null);
   const leafRefs = useRef<HTMLDivElement[]>([]);
@@ -491,6 +499,8 @@ export default function Book({ isActive, onStateChange, playTurnWeighted, playCl
               zIndex: initialZIndex,
               transform: `translateZ(${initialZ}px)`
             }}
+            onMouseEnter={() => { if (bookState === 'closed') pushCursor('lock'); }}
+            onMouseLeave={() => { if (bookState === 'closed') popCursor(); }}
             onClick={() => {
                if (bookState === 'closed') handleOpen();
             }}
@@ -522,6 +532,8 @@ export default function Book({ isActive, onStateChange, playTurnWeighted, playCl
         ref={bookmarkRef}
         className={`absolute right-16 w-8 bg-[#a31a1a] shadow-lg z-40 transform hover:-translate-y-2 cursor-pointer flex flex-col items-center pt-2 transition-all duration-700 ease-in-out
           ${bookState === 'reading' ? 'top-0 h-32 translate-y-0 opacity-100' : '-top-10 h-0 opacity-0 pointer-events-none'}`}
+        onMouseEnter={() => pushCursor('point')}
+        onMouseLeave={() => popCursor()}
         onClick={() => {
           playClick();
           // If the guestbook page is open and has unsaved content, confirm first
@@ -572,6 +584,8 @@ export default function Book({ isActive, onStateChange, playTurnWeighted, playCl
               key={entry.label}
               onClick={() => jumpTo(entry.index)}
               title={entry.label}
+              onMouseEnter={() => pushCursor('rune')}
+              onMouseLeave={() => popCursor()}
               className="group relative flex items-center transition-all duration-300 ease-in-out"
             >
               <div className={`
