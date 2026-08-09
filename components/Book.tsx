@@ -140,6 +140,12 @@ export default function Book({ isActive, onStateChange, playTurnWeighted, playCl
       const total = leafRefs.current.length;
       leafRefs.current.forEach((leaf, i) => {
         gsap.set(leaf, { rotateY: 0, zIndex: (total - i) + total, z: (total - i) * (26 / total) - 13 });
+        // Restore pointer-events on all faces — updateFace only runs during reading state,
+        // so faces that were flipped during reading still have pointer-events:none after close.
+        const frontEl = leaf.querySelector<HTMLElement>('[data-leaf-front]');
+        const backEl  = leaf.querySelector<HTMLElement>('[data-leaf-back]');
+        if (frontEl) frontEl.style.pointerEvents = 'auto';
+        if (backEl)  backEl.style.pointerEvents  = 'none';
       });
     }
   }, [bookState]);
