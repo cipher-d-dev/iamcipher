@@ -410,7 +410,49 @@ export default function Book({ isActive, onStateChange, playTurnWeighted, playCl
     });
   };
 
-  // Bookmark ribbon sway — gentle cloth-settling idle when reading
+  // ── Page interactivity gating ─────────────────────────────────────
+  // The HTML `inert` attribute is the only reliable way to block ALL interaction
+  // (pointer events, keyboard focus, tab order) on a subtree — even when child
+  // elements have their own React event handlers, canvas listeners, or CSS
+  // pointer-events rules. CSS pointer-events:none on a parent does NOT cascade
+  // to children that explicitly set pointer-events:auto (e.g. inputs, canvases).
+  //
+  // Visible spread at pageIndex P:
+  //   Left  page = back  of leaf (P - 1)
+  //   Right page = front of leaf (P)
+  //
+  // We gate at the individual face level (front/back divs) so that the leaf
+  // container itself stays interactive for GSAP and click-to-open.
+  useEffect(() => {
+    if (bookState !== 'reading') {
+      // When not reading, remove inert from everything so GSAP and open-click work
+      leafRefs.current.forEach(leaf => {
+        if (!leaf) return;
+        const front = leaf.querySelector<HTMLElement>('[data-leaf-front]');
+        const back  = leaf.querySelector<HTMLElement>('[data-leaf-back]');
+        front?.removeAttribute('inert');
+        back?.removeAttribute('inert');
+      });
+      return;
+    }
+
+    leafRefs.current.forEach((leaf, i) => {
+      if (!leaf) return;
+      const front = leaf.querySelector<HTMLElement>('[data-leaf-front]');
+      const back  = leaf.querySelector<HTMLElement>('[data-leaf-back]');
+
+      // Front face is the right page when its leaf index === pageIndex
+      if (front) {
+        if (i === pageIndex) front.removeAttribute('inert');
+        else                 front.setAttribute('inert', '');
+      }
+      // Back face is the left page when its leaf index === pageIndex - 1
+      if (back) {
+        if (i === pageIndex - 1) back.removeAttribute('inert');
+        else                     back.setAttribute('inert', '');
+      }
+    });
+  }, [bookState, pageIndex]);
   useGSAP(() => {
     const el = bookmarkRef.current;
     if (!el) return;
@@ -512,22 +554,11 @@ export default function Book({ isActive, onStateChange, playTurnWeighted, playCl
                 className="absolute inset-0 pointer-events-none"
                 style={{ background: 'none' }}
               />
-              {/* Interactivity gate — blocks all child pointer events when this face is not the
-                  currently visible right page. Sits above all page content (z-50) so inputs,
-                  canvases and links on hidden pages cannot be reached. */}
-              {bookState === 'reading' && index !== pageIndex && (
-                <div className="absolute inset-0 z-50" style={{ pointerEvents: 'all' }} />
-              )}
             </div>
 
             {/* Back — pointer-events toggled live by GSAP updateFace callback */}
             <div className="absolute inset-0 backface-hidden rotate-y-180 flex" data-leaf-back>
               {leaf.back}
-              {/* Interactivity gate — blocks all child pointer events when this face is not the
-                  currently visible left page. */}
-              {bookState === 'reading' && index !== pageIndex - 1 && (
-                <div className="absolute inset-0 z-50" style={{ pointerEvents: 'all' }} />
-              )}
             </div>
           </div>
           );
