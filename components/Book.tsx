@@ -63,40 +63,36 @@ export default function Book({ isActive, onStateChange, playTurnWeighted, playCl
 
   useEffect(() => {
     const handleResize = () => {
-      const ww = window.innerWidth;
-      const wh = window.innerHeight;
-      const dpr = window.devicePixelRatio ?? 1;
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
 
-      // devicePixelRatio tells us if Windows/OS display scaling is active.
-      // A 1920×1080 monitor at 125% Windows scale → CSS viewport ~1536×864, DPR 1.25
-      // A genuine 1536×864 laptop screen at 100%     → CSS viewport ~1536×864, DPR 1.0
-      // A 4K monitor at 200%                         → CSS viewport ~1920×1080, DPR 2.0
-      // We use DPR to recover the physical intent and set padding accordingly.
+      // Book's intrinsic size at scale=1
+      const BOOK_W = 800; // 400px * 2 (spread = two pages side-by-side visually)
+      const BOOK_H = 600; // 600px height
 
-      // Physical pixel height estimate
-      const physH = wh * dpr;
+      // Fixed chrome that must always fit around the book:
+      //   • Catalogue tabs on the right: ~130px wide, don't need extra gap
+      //   • Bookmark ribbon at the top:  ~0px (it overlaps the book corner, not below it)
+      //   • Nav hint below the book:     ~36px text + 16px gap from book bottom
+      //   • General breathing room on each side: 20px
+      const PAD_LEFT   = 20;
+      const PAD_RIGHT  = 150; // catalogue tabs (≈130px) + 20px gap
+      const PAD_TOP    = 20;
+      const PAD_BOTTOM = 60;  // nav hint height (≈36px) + 24px gap
 
-      // Vertical padding: more on physically small/dense screens (laptops),
-      // less on large monitors where the book can breathe naturally.
-      const vPad = physH >= 1600 ? 120   // 4K / large HiDPI — generous
-                 : physH >= 1200 ? 100   // 1080p HiDPI or 1440p — comfortable
-                 :                  70;  // 720p / compact
+      const availW = vw - PAD_LEFT - PAD_RIGHT;
+      const availH = vh - PAD_TOP  - PAD_BOTTOM;
 
-      // Horizontal padding accounts for catalogue tabs (~120px) + margin
-      const hPad = 180;
+      const scaleW = availW / BOOK_W;
+      const scaleH = availH / BOOK_H;
 
-      const scaleW = (ww - hPad) / 840;
-      const scaleH = (wh - vPad) / 640;
+      // Never exceed 1.2 so the book doesn't become grotesquely large on big monitors,
+      // and never go below 0.4 so it stays legible on very small windows.
+      const computed = Math.min(scaleW, scaleH, 1.2);
+      const clamped  = Math.max(computed, 0.4);
 
-      // On a genuine large monitor (wide CSS viewport, low DPR) allow up to 1.2.
-      // On a scaled laptop (narrower CSS viewport, DPR > 1) cap lower so it doesn't crowd.
-      const maxScale = dpr <= 1 && ww >= 1400 ? 1.2   // large monitor at 100%
-                     : dpr <= 1              ? 1.0   // smaller monitor at 100%
-                     : wh >= 900             ? 1.0   // scaled but tall enough
-                     :                        0.88;  // scaled and short — laptop
-
-      setScale(Math.min(scaleW, scaleH, maxScale));
-      scaleRef.current = Math.min(scaleW, scaleH, maxScale);
+      setScale(clamped);
+      scaleRef.current = clamped;
     };
     handleResize();
     window.addEventListener('resize', handleResize);
@@ -516,11 +512,22 @@ export default function Book({ isActive, onStateChange, playTurnWeighted, playCl
                 className="absolute inset-0 pointer-events-none"
                 style={{ background: 'none' }}
               />
+              {/* Interactivity gate — blocks all child pointer events when this face is not the
+                  currently visible right page. Sits above all page content (z-50) so inputs,
+                  canvases and links on hidden pages cannot be reached. */}
+              {bookState === 'reading' && index !== pageIndex && (
+                <div className="absolute inset-0 z-50" style={{ pointerEvents: 'all' }} />
+              )}
             </div>
 
             {/* Back — pointer-events toggled live by GSAP updateFace callback */}
             <div className="absolute inset-0 backface-hidden rotate-y-180 flex" data-leaf-back>
               {leaf.back}
+              {/* Interactivity gate — blocks all child pointer events when this face is not the
+                  currently visible left page. */}
+              {bookState === 'reading' && index !== pageIndex - 1 && (
+                <div className="absolute inset-0 z-50" style={{ pointerEvents: 'all' }} />
+              )}
             </div>
           </div>
           );
@@ -609,11 +616,11 @@ export default function Book({ isActive, onStateChange, playTurnWeighted, playCl
         })}
       </div>
 
-      {/* Navigation hint */}
+      {/* Navigation hint — sits below the book, always in viewport */}
       <div
         className="absolute z-40 flex items-center gap-3 pointer-events-none transition-all duration-700"
         style={{
-          top: `calc(50% + ${Math.min(310 * scale, 270)}px)`,
+          bottom: '12px',
           left: '50%',
           transform: 'translateX(-50%)',
           opacity: bookState === 'reading' ? 0.55 : 0,
