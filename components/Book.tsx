@@ -1,5 +1,5 @@
 'use client';
-import { useRef, useState, useEffect, useMemo } from 'react';
+import { useRef, useState, useEffect, useMemo, type CSSProperties } from 'react';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { CoverFront, InnerCover, CoverBack, TitlePage, TableOfContents, OriginLeft, OriginTerminal, ExperienceLeft, ExperienceRight, ToolsLeft, ToolsRight, ProjectsPage, FocusTerminal, ContactRight, GuestBookLeft, GuestBookRight, type SectionId } from './PageContents';
@@ -31,8 +31,89 @@ const CATALOGUE: { id: SectionId; label: string; rune: string; index: number }[]
 
 const isSection = (v: string): v is SectionId => v in SECTION_PAGE;
 
+// Section tabs live on the leaf whose front page opens the section
+const TAB_BY_LEAF: Record<number, (typeof CATALOGUE)[number] | undefined> =
+  Object.fromEntries(CATALOGUE.map(c => [c.index, c]));
+const TAB_TOP = 46, TAB_STEP = 86, TAB_H = 80;
+
+// The front cover is a real board: a little larger than the pages it covers.
+// (Making the leaf itself bigger keeps the overhang in the same layer as the
+// cover; separate overhang planes got mis-sorted over the pages.)
+const BOARD_X = 11, BOARD_Y = 9;
+
+// ── Print furniture: running heads and folios ──────────────────────────
+// Verso (left) pages carry the book's title, recto (right) pages the section.
+const RECTO_HEAD: Record<number, string> = {
+  4: 'The Origin', 5: 'Journeys & Quests', 6: 'Runes & Tools',
+  7: 'Arcane Constructs', 8: 'Arcane Constructs', 9: 'Contact', 10: 'Leave a Word',
+};
+const VERSO_HEAD = 'The Grimoire of Cipher';
+
+/** Running head + folio for a face. Front of leaf L is the right page of
+ *  spread L; back of leaf L is the left page of spread L + 1. */
+function pageFurniture(leaf: number, side: 'front' | 'back') {
+  const spread = side === 'front' ? leaf : leaf + 1;
+  if (spread < 4 || spread > 10) return null; // front matter / end papers
+  return side === 'front'
+    ? { head: RECTO_HEAD[spread], folio: (spread - 3) * 2 + 1 }
+    : { head: VERSO_HEAD, folio: (spread - 3) * 2 };
+}
+
+/** Is this face paper (gets curvature, ageing…) or cover leather? */
+const isPaperFace = (leaf: number, side: 'front' | 'back', total: number) =>
+  leaf !== 0 && !(leaf === total - 1 && side === 'back');
+
+// Deterministic "random" so every page has its own, stable blemishes
+function seeded(seed: number) {
+  let t = seed * 9301 + 49297;
+  return () => { t = (t * 9301 + 49297) % 233280; return t / 233280; };
+}
+
+/** Foxing spots, an occasional cup ring and uneven edge browning. */
+function ageStyle(seed: number, side: 'front' | 'back'): CSSProperties {
+  const r = seeded(seed + 7);
+  const layers: string[] = [];
+  const spots = 2 + Math.floor(r() * 3);
+  for (let k = 0; k < spots; k++) {
+    const x = Math.round(8 + r() * 84), y = Math.round(6 + r() * 88);
+    const size = Math.round(6 + r() * 22), a = (0.04 + r() * 0.07).toFixed(3);
+    layers.push(`radial-gradient(circle at ${x}% ${y}%, rgba(120,72,22,${a}) 0, rgba(120,72,22,${(+a * 0.45).toFixed(3)}) ${Math.round(size * 0.45)}px, transparent ${size}px)`);
+  }
+  if (r() < 0.3) { // a faint cup ring
+    const x = Math.round(25 + r() * 50), y = Math.round(55 + r() * 35), rad = Math.round(34 + r() * 18);
+    layers.push(`radial-gradient(circle at ${x}% ${y}%, transparent ${rad - 3}px, rgba(110,66,20,.07) ${rad - 1}px, rgba(110,66,20,.035) ${rad + 1}px, transparent ${rad + 3}px)`);
+  }
+  // Browning creeping in unevenly from the outer edge
+  const outer = side === 'front' ? 100 : 0;
+  for (let k = 0; k < 3; k++) {
+    const y = Math.round(r() * 100), w = Math.round(30 + r() * 60);
+    layers.push(`radial-gradient(ellipse ${Math.round(w * 0.5)}px ${w}px at ${outer}% ${y}%, rgba(110,66,20,${(0.05 + r() * 0.05).toFixed(3)}), transparent 70%)`);
+  }
+  return { zIndex: 2, background: layers.join(','), mixBlendMode: 'multiply' };
+}
+
 /** Shortens every GSAP duration to (almost) nothing for reduced-motion visitors. */
 const D = (seconds: number) => (prefersReducedMotion() ? 0.001 : seconds);
+
+// ── Paper layers drawn over every page face ───────────────────────────
+function PaperLayers({ leaf, side }: { leaf: number; side: 'front' | 'back' }) {
+  const lr = side === 'front' ? 'right' : 'left';
+  const furniture = pageFurniture(leaf, side);
+  const age = useMemo(() => ageStyle(leaf * 2 + (side === 'front' ? 0 : 1), side), [leaf, side]);
+  return (
+    <>
+      <div aria-hidden className={`page-layer page-ghost page-ghost-${lr}`} />
+      <div aria-hidden className="page-layer" style={age} />
+      <div aria-hidden className={`page-layer page-curve-${lr}`} />
+      <div aria-hidden className="page-layer page-shade" data-leaf-shade />
+      <div aria-hidden className="page-layer page-cast" data-leaf-cast />
+      {furniture && <>
+        <div aria-hidden className="running-head">{furniture.head}</div>
+        <div aria-hidden className="folio">{furniture.folio}</div>
+      </>}
+    </>
+  );
+}
 
 // ── Lift-able page corner: the mouse way to turn pages ──────────────────
 function PageCorner({ side, onTurn, onHover, onLeave }: {
@@ -85,7 +166,6 @@ export default function Book({ ready, onStateChange, playTurnWeighted, playClick
   const bookStateRef = useRef(bookState);
   bookStateRef.current = bookState;
   const [pageIndex, setPageIndex] = useState(0);
-  const [scale, setScale] = useState(1);
   const scaleRef = useRef(1); // mirrors scale state — read by GSAP to avoid stale closure
   const [guestbookHasContent, setGuestbookHasContent] = useState(false);
   const [closeConfirmOpen, setCloseConfirmOpen] = useState(false);
@@ -100,7 +180,6 @@ export default function Book({ ready, onStateChange, playTurnWeighted, playClick
   const containerRef = useRef<HTMLDivElement>(null);
   const bookRef = useRef<HTMLDivElement>(null);
   const leafRefs = useRef<HTMLDivElement[]>([]);
-  const bookmarkRef = useRef<HTMLButtonElement>(null);
   // Jump-sequence timers — cancelled on close or new jump
   const jumpTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
@@ -133,14 +212,14 @@ export default function Book({ ready, onStateChange, playTurnWeighted, playClick
       const BOOK_W = 800; // 400px * 2 (spread = two pages side-by-side visually)
       const BOOK_H = 600; // 600px height
 
-      // The open spread is centred on screen (see SPREAD_SHIFT), so each half
-      // of the viewport must hold one page plus, on the right, the catalogue
-      // tabs (~120px) and a little breathing room.
-      const TABS_W     = 140;
-      const PAD_TOP    = 20;
-      const PAD_BOTTOM = 60;  // nav hint height (≈36px) + 24px gap
+      // The open spread is centred on screen (see SPREAD_SHIFT). Each half of
+      // the viewport holds one page, the page-edge tabs (30px) and the
+      // cover board, plus a little breathing room.
+      const BESIDE_PAGE = 30 + 14;
+      const PAD_TOP    = 30;
+      const PAD_BOTTOM = 90;  // ribbon tail + nav hint below the book
 
-      const scaleW = (vw / 2 - TABS_W) / (BOOK_W / 2 + 10);
+      const scaleW = (vw / 2 - 24) / (BOOK_W / 2 + BESIDE_PAGE);
       const scaleH = (vh - PAD_TOP - PAD_BOTTOM) / BOOK_H;
 
       // Never exceed 1.2 so the book doesn't become grotesquely large on big monitors,
@@ -148,7 +227,6 @@ export default function Book({ ready, onStateChange, playTurnWeighted, playClick
       const computed = Math.min(scaleW, scaleH, 1.2);
       const clamped  = Math.max(computed, 0.4);
 
-      setScale(clamped);
       scaleRef.current = clamped;
       // GSAP owns the book's transform (rotations, float, x-shift), so scale
       // goes through GSAP too — a React style string would wipe the others.
@@ -212,10 +290,22 @@ export default function Book({ ready, onStateChange, playTurnWeighted, playClick
     const total = leafRefs.current.length;
 
     onPageTurn?.();
+    const q = (i: number, sel: string) => leafRefs.current[i]?.querySelector<HTMLElement>(sel) ?? null;
+
     leafRefs.current.forEach((leaf, i) => {
-      const shadowEl = leaf.querySelector<HTMLElement>('[data-leaf-shadow]');
-      const frontEl  = leaf.querySelector<HTMLElement>('[data-leaf-front]');
-      const backEl   = leaf.querySelector<HTMLElement>('[data-leaf-back]');
+      const frontEl    = leaf.querySelector<HTMLElement>('[data-leaf-front]');
+      const backEl     = leaf.querySelector<HTMLElement>('[data-leaf-back]');
+      const frontShade = q(i, '[data-leaf-front] > [data-leaf-shade]');
+      const backShade  = q(i, '[data-leaf-back] > [data-leaf-shade]');
+      // Pages this leaf passes over while turning
+      const castRight  = q(i + 1, '[data-leaf-front] > [data-leaf-cast]');
+      const castLeft   = q(i - 1, '[data-leaf-back] > [data-leaf-cast]');
+      const owner = String(i);
+      const setCast = (el: HTMLElement | null, bg: string) => {
+        if (!el) return;
+        if (bg === 'none') { if (el.dataset.owner === owner) { el.style.background = 'none'; delete el.dataset.owner; } }
+        else { el.style.background = bg; el.dataset.owner = owner; }
+      };
 
       const updateFace = () => {
         const ry = gsap.getProperty(leaf, 'rotateY') as number;
@@ -225,14 +315,41 @@ export default function Book({ ready, onStateChange, playTurnWeighted, playClick
         if (frontEl) frontEl.style.pointerEvents = ry > -90 ? 'auto' : 'none';
         if (backEl)  backEl.style.pointerEvents  = ry < -90 ? 'auto' : 'none';
 
-        if (!shadowEl) return;
-        const absRy    = Math.abs(ry);
-        const flatness = Math.max(0, 1 - absRy / 60);
-        const blur     = 6 + (1 - flatness) * 12;
-        const opacity  = flatness * 0.32;
-        shadowEl.style.background = opacity > 0.01
-          ? `linear-gradient(to right, rgba(0,0,0,${opacity.toFixed(3)}) 0%, rgba(0,0,0,${(opacity * 0.4).toFixed(3)}) ${blur * 2}px, transparent ${blur * 5}px)`
-          : 'none';
+        // ── Paper shading while turning ──
+        // a = 0 lying on the right, 90 upright, 175 lying on the left.
+        const a = Math.min(180, Math.max(0, -ry));
+        const turning = a > 0.5 && a < 174.5;
+        if (!turning) {
+          if (frontShade) frontShade.style.background = 'none';
+          if (backShade)  backShade.style.background  = 'none';
+          setCast(castRight, 'none');
+          setCast(castLeft, 'none');
+          return;
+        }
+        const rad = (deg: number) => (deg * Math.PI) / 180;
+        // Lifting face: darker at the spine as it rises, a sheen across the
+        // bend, and the far edge falling into shade as it goes upright.
+        const shade = (t: number, dir: 'right' | 'left') =>
+          `linear-gradient(to ${dir}, rgba(25,12,0,${(0.08 + 0.28 * t).toFixed(3)}) 0%, rgba(25,12,0,${(0.03 * t).toFixed(3)}) 24%, rgba(255,244,214,${(0.22 * Math.sin(Math.PI * t)).toFixed(3)}) 58%, rgba(25,12,0,${(0.4 * t * t).toFixed(3)}) 100%)`;
+        // Shadow the lifted page throws on the page beneath it: covers the
+        // projected width of the leaf and fades as the leaf stands up.
+        const cast = (deg: number, dir: 'right' | 'left') => {
+          const w = 400 * Math.cos(rad(deg));
+          const k = 0.34 * Math.sin(rad(deg)) * Math.min(1, w / 120 + 0.25);
+          return `linear-gradient(to ${dir}, rgba(10,5,0,${k.toFixed(3)}) 0px, rgba(10,5,0,${(k * 0.75).toFixed(3)}) ${Math.max(0, w - 34).toFixed(0)}px, transparent ${(w + 28).toFixed(0)}px)`;
+        };
+        if (a <= 90) {
+          if (frontShade) frontShade.style.background = shade(a / 90, 'right');
+          if (backShade)  backShade.style.background  = 'none';
+          setCast(castRight, cast(a, 'right'));
+          setCast(castLeft, 'none');
+        } else {
+          // Back faces have the spine on their local right
+          if (backShade)  backShade.style.background  = shade((180 - a) / 90, 'left');
+          if (frontShade) frontShade.style.background = 'none';
+          setCast(castLeft, cast(180 - a, 'left'));
+          setCast(castRight, 'none');
+        }
       };
 
       // Always call immediately — GSAP skips onUpdate/onComplete for no-op tweens
@@ -242,8 +359,8 @@ export default function Book({ ready, onStateChange, playTurnWeighted, playClick
       if (i < pageIndex) {
         gsap.to(leaf, {
           rotateY: -175,
-          duration: D(0.85),
-          ease: 'power2.inOut',
+          duration: D(0.9),
+          ease: 'power3.inOut', // slow lift, quick fall, soft landing
           zIndex: i,
           z: i * (26 / total) - 13,
           onUpdate: updateFace,
@@ -252,8 +369,8 @@ export default function Book({ ready, onStateChange, playTurnWeighted, playClick
       } else {
         gsap.to(leaf, {
           rotateY: 0,
-          duration: D(0.85),
-          ease: 'power2.inOut',
+          duration: D(0.9),
+          ease: 'power3.inOut',
           zIndex: (total - i) + total,
           z: (total - i) * (26 / total) - 13,
           onUpdate: updateFace,
@@ -427,6 +544,12 @@ export default function Book({ ready, onStateChange, playTurnWeighted, playClick
     if (end - touchStart.current > 50) turnPrev();
   };
 
+  // Fore-edges of the page block beside the open spread: thinner on the
+  // side you came from, thicker on the side still to read.
+  const stackRight = 1.5 + Math.max(0, leavesContent.length - pageIndex) * 0.9;
+  const stackLeft  = 1.5 + Math.max(0, pageIndex - 1) * 0.9;
+  const showStacks = bookState === 'reading';
+
   // Section catalogue
   const activeSection = CATALOGUE.reduce((best, entry) =>
     pageIndex >= entry.index ? entry : best, CATALOGUE[0]);
@@ -554,24 +677,6 @@ export default function Book({ ready, onStateChange, playTurnWeighted, playClick
       }
     });
   }, [bookState, pageIndex]);
-  useGSAP(() => {
-    const el = bookmarkRef.current;
-    if (!el) return;
-    if (bookState === 'reading') {
-      gsap.to(el, {
-        rotateZ: 2,
-        duration: 2.2,
-        ease: 'sine.inOut',
-        yoyo: true,
-        repeat: -1,
-        transformOrigin: 'top center',
-        overwrite: 'auto',
-      });
-    } else {
-      gsap.to(el, { rotateZ: 0, duration: 0.5, ease: 'power2.out', overwrite: 'auto' });
-    }
-  }, [bookState]);
-
   return (
     <div
       ref={containerRef}
@@ -590,48 +695,61 @@ export default function Book({ ready, onStateChange, playTurnWeighted, playClick
         className="relative preserve-3d"
         style={{ width: '400px', height: '600px', pointerEvents: 'none' }}
       >
-        {/* Spine */}
-        <div 
+        {/* Spine and the edges of the page block. They sit a hair inside the
+            boards and never share an edge with a leaf or cover: planes meeting
+            exactly on an edge made the browser's 3D sort paint them over the
+            closed cover (showing as parchment bands down the spine side). */}
+        <div
           className="absolute top-0 bottom-0 book-spine"
-          style={{ left: '-13px', width: '26px', transform: 'rotateY(-90deg)' }}
+          style={{ left: '-14.5px', width: '26px', transform: 'rotateY(-90deg)' }}
         />
-
-        {/* Pageblocks */}
-        <div 
+        <div
           className="absolute top-2 bottom-2 book-pageblock"
-          style={{ right: '-13px', width: '26px', transform: 'rotateY(90deg)' }}
+          style={{ right: '-12.5px', width: '22px', transform: 'rotateY(90deg)' }}
         />
-        <div 
-          className="absolute left-0 right-0 book-pageblock-top" 
-          style={{ top: '-13px', height: '26px', transform: 'rotateX(90deg)' }} 
+        <div
+          className="absolute left-1 right-1 book-pageblock-top"
+          style={{ top: '-12.5px', height: '22px', transform: 'rotateX(90deg)' }}
         />
-        <div 
-          className="absolute left-0 right-0 book-pageblock-bottom" 
-          style={{ bottom: '-13px', height: '26px', transform: 'rotateX(-90deg)' }} 
+        <div
+          className="absolute left-1 right-1 book-pageblock-bottom"
+          style={{ bottom: '-12.5px', height: '22px', transform: 'rotateX(-90deg)' }}
         />
 
-        {/* Center Crease */}
-        {bookState === 'reading' && (
-          <div 
-            className="absolute top-0 left-0 w-12 h-full -translate-x-1/2 bg-gradient-to-r from-black/20 via-black/40 to-black/20 pointer-events-none z-50"
-            style={{ transform: 'translateZ(20px)' }}
-          >
-            <div className="absolute left-1/2 top-0 bottom-0 w-[1px] -ml-[0.5px] bg-[#d4c5a0]/40 z-30" />
-          </div>
-        )}
+        {/* Surface shadow: the open book rests on something */}
+        <div
+          aria-hidden
+          className="absolute transition-opacity duration-700"
+          style={{
+            left: -440, right: -40, top: -8, bottom: -30,
+            transform: 'translateZ(-40px)',
+            background: 'radial-gradient(ellipse 50% 48% at 50% 54%, rgba(0,0,0,.8), rgba(0,0,0,.4) 55%, transparent 75%)',
+            filter: 'blur(16px)',
+            opacity: bookState === 'reading' ? 1 : 0,
+          }}
+        />
 
         {/* Back Cover */}
-        <div 
-          className="absolute top-0 left-0 w-full h-full preserve-3d shadow-[20px_20px_40px_rgba(0,0,0,0.8)] rounded-[2px_8px_8px_2px]"
+        <div
+          className="absolute top-0 left-0 w-full h-full preserve-3d"
           style={{ transform: 'translateZ(-13px)' }}
         >
-          <div className="absolute inset-0 backface-hidden rounded-[2px_8px_8px_2px] overflow-hidden">
-            <InnerCover />
+          <div className="absolute inset-0 backface-hidden isolate">
+            <div className="absolute inset-0 overflow-hidden"><InnerCover /></div>
+            {/* Flat and furthest back, so it needs a touch more overhang to
+                match the tilted left board */}
+            <div className="board-edge board-edge-right" style={{ top: -11, bottom: -11, right: -13 }} aria-hidden />
+            <div aria-hidden className="page-stack" style={{ left: 400, width: stackRight, opacity: showStacks ? 1 : 0 }} />
           </div>
-          <div className="absolute inset-0 backface-hidden rotate-y-180 rounded-[2px_8px_8px_2px] overflow-hidden">
-            <CoverBack />
+          <div className="absolute inset-0 backface-hidden rotate-y-180 isolate">
+            <div className="absolute inset-0 overflow-hidden rounded-[2px_8px_8px_2px]"><CoverBack /></div>
+            <div className="board-edge board-edge-left" aria-hidden />
           </div>
         </div>
+
+        {/* Headbands at the head and tail of the spine */}
+        <div aria-hidden className="headband" style={{ top: -6, transform: 'translateZ(-6px)', opacity: bookState === 'reading' ? 1 : 0 }} />
+        <div aria-hidden className="headband" style={{ bottom: -6, transform: 'translateZ(-6px)', opacity: bookState === 'reading' ? 1 : 0 }} />
 
         {/* Leaves */}
         {leavesContent.map((leaf, index) => {
@@ -647,6 +765,7 @@ export default function Book({ ready, onStateChange, playTurnWeighted, playClick
               zIndex: initialZIndex,
               transform: `translateZ(${initialZ}px)`,
               pointerEvents: 'auto',
+              ...(index === 0 && { top: -BOARD_Y, height: 600 + 2 * BOARD_Y, width: 400 + BOARD_X }),
             }}
             onMouseEnter={() => { if (bookState === 'closed') pushCursor('lock'); }}
             onMouseLeave={() => { if (bookState === 'closed') popCursor(); }}
@@ -654,56 +773,90 @@ export default function Book({ ready, onStateChange, playTurnWeighted, playClick
                if (bookState === 'closed') handleOpen();
             }}
           >
-            {/* Front — pointer-events toggled live by GSAP updateFace callback */}
-            <div className="absolute inset-0 backface-hidden flex isolate" data-leaf-front>
+            {/* Front — pointer-events toggled live by GSAP updateFace callback.
+                While closed, inner pages aren't drawn: they're hidden behind the
+                cover anyway, and with the spine/page-edge planes present the
+                browser's 3D sort painted them over the cover. */}
+            <div className="absolute inset-0 backface-hidden flex isolate" data-leaf-front
+              style={{ visibility: bookState === 'closed' && index > 0 ? 'hidden' : undefined }}>
               {leaf.front}
+              {isPaperFace(index, 'front', total) && <PaperLayers leaf={index} side="front" />}
               {bookState === 'reading' && index >= CONTENTS_PAGE && index !== GUESTBOOK_PAGE && (
                 <PageCorner side="right" onTurn={turnNext} onHover={() => pushCursor('point')} onLeave={() => popCursor()} />
               )}
-              <div
-                data-leaf-shadow
-                className="absolute inset-0 pointer-events-none"
-                style={{ background: 'none' }}
-              />
             </div>
 
             {/* Back — pointer-events toggled live by GSAP updateFace callback */}
-            <div className="absolute inset-0 backface-hidden rotate-y-180 flex isolate" data-leaf-back>
+            <div className="absolute inset-0 backface-hidden rotate-y-180 flex isolate" data-leaf-back
+              style={{ visibility: bookState === 'closed' && index > 0 ? 'hidden' : undefined }}>
               {leaf.back}
+              {index === 0 && (
+                // Fore-edge of the pages already read, resting on the board
+                <div aria-hidden className="page-stack"
+                  style={{ left: BOARD_X - stackLeft, width: stackLeft, top: BOARD_Y + 3, bottom: BOARD_Y + 3, opacity: showStacks ? 1 : 0, zIndex: 1 }} />
+              )}
+              {isPaperFace(index, 'back', total) && <PaperLayers leaf={index} side="back" />}
               {bookState === 'reading' && index >= CONTENTS_PAGE - 1 && (
                 <PageCorner side="left" onTurn={turnPrev} onHover={() => pushCursor('point')} onLeave={() => popCursor()} />
               )}
             </div>
+
+            {/* Section tab glued to this leaf's fore-edge: it sticks out on the
+                right until you pass it, then out of the left like a real book */}
+            {TAB_BY_LEAF[index] && (() => {
+              const entry = TAB_BY_LEAF[index]!;
+              const k = CATALOGUE.indexOf(entry);
+              const current = !beforeSections && activeSection.id === entry.id && bookState === 'reading';
+              return (['front', 'back'] as const).map(face => (
+                <button
+                  key={face}
+                  type="button"
+                  className={`leaf-tab leaf-tab-${face} backface-hidden`}
+                  style={{ top: TAB_TOP + k * TAB_STEP, height: TAB_H }}
+                  aria-label={`Go to ${entry.label}`}
+                  aria-current={current ? 'page' : undefined}
+                  title={entry.label}
+                  onClick={(e) => { e.stopPropagation(); playClick(); jumpTo(entry.index); }}
+                  onMouseEnter={() => pushCursor('rune')}
+                  onMouseLeave={() => popCursor()}
+                >
+                  <span className="font-cinzel text-[12px] leading-none">{entry.rune}</span>
+                  <span className="leaf-tab-label">{entry.label}</span>
+                </button>
+              ));
+            })()}
           </div>
           );
         })}
 
-
+        {/* Ribbon bookmark lying in the gutter: pull it to close the book */}
+        <button
+          type="button"
+          aria-label="Close the book"
+          title="Close the book"
+          className="ribbon-btn absolute group transition-opacity duration-500"
+          style={{
+            left: 2, width: 14, top: -18, height: 600 + 18 + 46,
+            transform: 'translateZ(7px) rotateZ(-0.6deg)',
+            transformOrigin: 'top center',
+            opacity: bookState === 'reading' ? 1 : 0,
+            pointerEvents: bookState === 'reading' ? 'auto' : 'none',
+          }}
+          onMouseEnter={() => pushCursor('point')}
+          onMouseLeave={() => popCursor()}
+          onClick={() => {
+            playClick();
+            // If the guestbook page is open and has unsaved content, confirm first
+            if (guestbookHasContent && pageIndex === GUESTBOOK_PAGE) setCloseConfirmOpen(true);
+            else handleClose();
+          }}
+        >
+          <span className="ribbon" aria-hidden />
+          <span aria-hidden className="absolute bottom-1 left-5 whitespace-nowrap font-caveat text-[15px] text-[#d4c5a0] opacity-0 group-hover:opacity-90 group-focus-visible:opacity-90 transition-opacity">
+            close the book
+          </span>
+        </button>
       </div>
-
-      {/* Bookmark Close Button */}
-      <button
-        type="button"
-        aria-label="Close the book"
-        ref={bookmarkRef}
-        className={`absolute right-16 w-8 bg-[#a31a1a] shadow-lg z-40 transform hover:-translate-y-2 cursor-pointer flex flex-col items-center pt-2 transition-all duration-700 ease-in-out
-          ${bookState === 'reading' ? 'top-0 h-32 translate-y-0 opacity-100 pointer-events-auto' : '-top-10 h-0 opacity-0 pointer-events-none'}`}
-        onMouseEnter={() => pushCursor('point')}
-        onMouseLeave={() => popCursor()}
-        onClick={() => {
-          playClick();
-          // If the guestbook page is open and has unsaved content, confirm first
-          if (guestbookHasContent && pageIndex === GUESTBOOK_PAGE) {
-            setCloseConfirmOpen(true);
-          } else {
-            handleClose();
-          }
-        }}
-        title="Close Grimoire"
-      >
-        <div className="w-4 h-4 rounded-full border border-[#ffae00]/40 flex items-center justify-center text-[10px] text-[#ffae00] mb-1">✕</div>
-        <div className="w-[1px] h-12 bg-black/20" />
-      </button>
 
       {/* Confirm-close modal — shown when closing with unsaved guestbook content */}
       <GrimoireModal
@@ -722,65 +875,6 @@ export default function Book({ ready, onStateChange, playTurnWeighted, playClick
         onCancel={() => setCloseConfirmOpen(false)}
       />
 
-      {/* Side Catalogue — vertical index tabs */}
-      <div
-        className="absolute flex flex-col gap-1 z-50 transition-all duration-700 ease-in-out"
-        style={{
-          left: `calc(50% + ${(SPREAD_SHIFT + 210) * scale}px)`,
-          top: '50%',
-          transform: 'translateY(-50%)',
-          opacity: bookState === 'reading' ? 1 : 0,
-          pointerEvents: bookState === 'reading' ? 'auto' : 'none',
-        }}
-      >
-        {CATALOGUE.map((entry) => {
-          const isActive = !beforeSections && activeSection.index === entry.index;
-          return (
-            <button
-              key={entry.label}
-              onClick={() => jumpTo(entry.index)}
-              title={entry.label}
-              aria-label={`Go to ${entry.label}`}
-              aria-current={isActive ? 'page' : undefined}
-              onMouseEnter={() => pushCursor('rune')}
-              onMouseLeave={() => popCursor()}
-              className="group relative flex items-center transition-all duration-300 ease-in-out"
-            >
-              <div className={`
-                flex items-center gap-2 pl-2 pr-3 py-2 border border-r-0
-                font-cinzel text-[10px] tracking-widest uppercase shadow-md transition-all duration-300
-                ${isActive
-                  ? 'bg-[#f4ebd0] border-[#8b6b4e] text-[#a4302a] w-28'
-                  : 'bg-[#d4c5a0]/80 border-[#a89060]/60 text-[#5c4d33] translate-x-1 w-24 hover:translate-x-0 hover:w-28 hover:bg-[#eee0c0] hover:text-[#1a0f05]'
-                }
-              `}>
-                <span className={`font-cinzel text-[13px] shrink-0 ${isActive ? 'text-[#a4302a]' : 'text-[#8b6b4e] group-hover:text-[#a4302a]'}`}>
-                  {entry.rune}
-                </span>
-                <span className="truncate">{entry.label}</span>
-              </div>
-              {isActive && <div className="w-[3px] h-full bg-[#a4302a] absolute right-0 top-0" />}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Navigation hint — sits below the book, always in viewport */}
-      <div
-        className="absolute z-40 flex items-center gap-3 pointer-events-none transition-all duration-700"
-        style={{
-          bottom: '12px',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          opacity: bookState === 'reading' ? 0.55 : 0,
-        }}
-      >
-        <span className="font-cinzel text-[#d4c5a0] text-[10px] tracking-widest">← prev</span>
-        <span className="text-[#8b6b4e] text-[10px]">·</span>
-        <span className="font-kalam text-[#a8b5a8] text-[11px]">lift a page corner, use the arrow keys, or swipe</span>
-        <span className="text-[#8b6b4e] text-[10px]">·</span>
-        <span className="font-cinzel text-[#d4c5a0] text-[10px] tracking-widest">next →</span>
-      </div>
     </div>
   );
 }

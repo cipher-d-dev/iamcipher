@@ -67,8 +67,6 @@
   background-image: 
     /* Rough grain — matching cover texture weight, dialled to not overpower ink */
     url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.15'/%3E%3C/svg%3E"),
-    /* Inner-edge (right side = spine) darkens, fades toward outer left edge */
-    linear-gradient(to left, rgba(60,35,10,.18) 0%, rgba(60,35,10,.08) 18%, transparent 55%),
     /* Subtle top/bottom corner burns */
     radial-gradient(ellipse at 0% 0%,    rgba(139,90,40,.12), transparent 55%),
     radial-gradient(ellipse at 100% 100%, rgba(80,50,20,.10), transparent 50%),
@@ -81,8 +79,6 @@
   background-image: 
     /* Rough grain */
     url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.15'/%3E%3C/svg%3E"),
-    /* Inner-edge (left side = spine) darkens, fades toward outer right edge */
-    linear-gradient(to right, rgba(60,35,10,.18) 0%, rgba(60,35,10,.08) 18%, transparent 55%),
     /* Subtle top/bottom corner burns */
     radial-gradient(ellipse at 100% 0%,  rgba(139,90,40,.12), transparent 55%),
     radial-gradient(ellipse at 0%   100%, rgba(80,50,20,.10), transparent 50%),
@@ -242,3 +238,183 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* ══════════════════════════════════════════════════════════════════════
+   BOOK MAKEUP: layers drawn over every paper page in the 3D book
+   (desktop only; the phone reader uses the plain page components)
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* Pages are cut paper, not UI panels: no rounded corners, no light border
+   at the spine, no per-page inset shadow (the curvature layer replaces it). */
+[data-leaf-front] > .bg-parchment-right,
+[data-leaf-back]  > .bg-parchment-left {
+  border-width: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Book margins: the inner (spine) margin is narrower than the outer one,
+   and there is head room for the running head and folio. */
+[data-leaf-back]  > .p-10 { padding: 46px 30px 44px 46px !important; }
+[data-leaf-front] > .p-10 { padding: 46px 46px 44px 30px !important; }
+[data-leaf-front] > .p-6.bg-parchment-right.flex-col { padding: 44px 40px 42px 28px !important; }
+
+.page-layer { position: absolute; inset: 0; pointer-events: none; }
+
+/* Curvature: paper dives into the gutter, bulges up, darkens at the edge */
+.page-curve-right {
+  z-index: 20;
+  background:
+    linear-gradient(to right, rgba(38,20,4,.46) 0px, rgba(38,20,4,.26) 7px, rgba(38,20,4,.11) 20px, rgba(38,20,4,.03) 38px, transparent 56px),
+    linear-gradient(to right, transparent 46px, rgba(255,247,222,.13) 78px, rgba(255,247,222,.05) 128px, transparent 190px),
+    linear-gradient(to left, rgba(70,40,12,.20) 0px, rgba(70,40,12,.07) 10px, transparent 34px),
+    linear-gradient(to bottom, rgba(70,40,12,.10) 0px, transparent 22px, transparent calc(100% - 26px), rgba(70,40,12,.13) 100%);
+}
+.page-curve-left {
+  z-index: 20;
+  background:
+    linear-gradient(to left, rgba(38,20,4,.46) 0px, rgba(38,20,4,.26) 7px, rgba(38,20,4,.11) 20px, rgba(38,20,4,.03) 38px, transparent 56px),
+    linear-gradient(to left, transparent 46px, rgba(255,247,222,.11) 78px, rgba(255,247,222,.04) 128px, transparent 190px),
+    linear-gradient(to right, rgba(70,40,12,.22) 0px, rgba(70,40,12,.08) 10px, transparent 34px),
+    linear-gradient(to bottom, rgba(70,40,12,.10) 0px, transparent 22px, transparent calc(100% - 26px), rgba(70,40,12,.13) 100%);
+}
+
+/* Faint lines of text showing through from the other side of the leaf */
+.page-ghost {
+  z-index: 1;
+  top: 64px; bottom: 70px;
+  background: repeating-linear-gradient(180deg, rgba(43,32,19,.05) 0 4px, transparent 4px 20px);
+  filter: blur(2px);
+  opacity: .32;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 12%, #000 70%, transparent 92%), linear-gradient(180deg, #000 70%, transparent);
+  mask-image: linear-gradient(90deg, transparent 0, #000 12%, #000 70%, transparent 92%);
+}
+.page-ghost-right { left: 30px; right: 46px; transform: scaleX(-1); }
+.page-ghost-left  { left: 46px; right: 30px; transform: scaleX(-1); }
+
+/* Dynamic shading while a leaf turns, and the shadow it casts */
+.page-shade, .page-cast { z-index: 25; }
+
+/* Running head and folio */
+.running-head {
+  position: absolute; top: 17px; left: 0; right: 0;
+  text-align: center; pointer-events: none; z-index: 5;
+  font-family: var(--font-cinzel), serif; font-size: 8px; letter-spacing: .32em;
+  text-transform: uppercase; color: rgba(92,67,40,.72);
+}
+.folio {
+  position: absolute; bottom: 15px; left: 0; right: 0;
+  text-align: center; pointer-events: none; z-index: 5;
+  font-family: var(--font-source-serif), serif; font-style: italic; font-size: 10.5px;
+  color: rgba(92,67,40,.8);
+}
+
+/* Cover boards overhang the paper by a few millimetres */
+.board-edge {
+  position: absolute; z-index: -1; pointer-events: none;
+  top: -8px; bottom: -8px;
+  background:
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.4'/%3E%3C/svg%3E"),
+    linear-gradient(160deg, #2c3a30 0%, #18211b 70%, #121914 100%);
+  /* gilt fillet along the edge, worn leather highlight, weight underneath */
+  box-shadow: inset 0 0 0 1px rgba(212,175,106,.38), inset 0 0 0 3px rgba(0,0,0,.35), inset 0 1px 2px rgba(255,255,255,.08), 0 20px 44px rgba(0,0,0,.7);
+}
+.board-edge-right { left: 0; right: -11px; border-radius: 2px 7px 7px 2px; }
+.board-edge-left  { left: -11px; right: 0; border-radius: 7px 2px 2px 7px; }
+
+/* Stacked page edges seen beside the open spread */
+.page-stack {
+  position: absolute; top: 3px; bottom: 3px; pointer-events: none; z-index: 0;
+  background:
+    repeating-linear-gradient(90deg, #efe2bd 0 1px, #cdb880 1px 2px, #e3d3a6 2px 3px),
+    linear-gradient(#e6d6aa, #cfba84);
+  box-shadow: 0 0 0 .5px rgba(80,55,20,.35);
+  transition: width .6s ease;
+}
+
+/* Headbands: the little woven caps at the top and bottom of the spine */
+.headband {
+  position: absolute; left: -8px; width: 16px; height: 6px; border-radius: 3px; pointer-events: none;
+  background: repeating-linear-gradient(90deg, #8a1414 0 2px, #d4af6a 2px 4px);
+  box-shadow: 0 1px 2px rgba(0,0,0,.6);
+  transition: opacity .5s ease;
+}
+
+/* Ribbon bookmark lying in the gutter (it closes the book) */
+.ribbon {
+  position: absolute; top: 0; bottom: 0; left: 4px; right: 4px;
+  /* satin: deep crimson with a soft sheen, not a flat red bar */
+  background:
+    repeating-linear-gradient(180deg, rgba(255,255,255,.025) 0 1px, transparent 1px 3px),
+    linear-gradient(90deg, #3f0808 0%, #6a1010 28%, #8e2222 50%, #701313 70%, #440909 100%);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% calc(100% - 9px), 0 100%);
+  filter: drop-shadow(1px 0 1.5px rgba(0,0,0,.45));
+  transition: opacity .5s ease, filter .3s ease;
+}
+.ribbon-btn:hover .ribbon, .ribbon-btn:focus-visible .ribbon { filter: drop-shadow(1px 0 1.5px rgba(0,0,0,.45)) brightness(1.18); }
+
+/* Section tabs glued to the edge of a leaf */
+.leaf-tab {
+  position: absolute; left: 100%; width: 30px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+  background:
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.25'/%3E%3C/svg%3E"),
+    linear-gradient(90deg, #b39a64 0%, #cdb784 35%, #c2aa74 100%);
+  color: #4a3720;
+  box-shadow: 1px 1px 3px rgba(0,0,0,.45), inset 0 0 0 .5px rgba(60,40,15,.4);
+  transition: filter .25s ease, background .25s ease;
+}
+.leaf-tab-front { border-radius: 0 5px 5px 0; }
+.leaf-tab-back  { border-radius: 5px 0 0 5px; transform: rotateY(180deg); }
+.leaf-tab:hover, .leaf-tab:focus-visible { filter: brightness(1.1); }
+.leaf-tab[aria-current="page"] {
+  background:
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.25'/%3E%3C/svg%3E"),
+    linear-gradient(90deg, #6e1212 0%, #9b2020 40%, #861818 100%);
+  color: #f0d089;
+}
+.leaf-tab-label {
+  writing-mode: vertical-rl; text-orientation: mixed;
+  font-family: var(--font-cinzel), serif; font-size: 7.5px; letter-spacing: .14em; text-transform: uppercase;
+}
+
+/* ── Print typography ─────────────────────────────────────────────────── */
+.book-body p, p.book-body {
+  text-align: justify;
+  hyphens: auto;
+  -webkit-hyphens: auto;
+  /* break more words so justified lines don't open up rivers */
+  hyphenate-limit-chars: 6 3 2;
+  text-wrap: pretty;
+}
+.drop-cap::first-letter {
+  float: left;
+  font-family: var(--font-cinzel-dec), serif;
+  font-size: 2.9em; line-height: .78;
+  padding: 4px 6px 0 0;
+  color: var(--pen);
+}
+/* Printed ornament between entries */
+.book-rule { display: flex; align-items: center; gap: 8px; color: rgba(139,107,78,.55); font-size: 7px; }
+.book-rule::before, .book-rule::after { content: ""; flex: 1; height: 1px; background: rgba(139,107,78,.35); }
+
+/* Logos printed in the same brown ink as the text */
+.ink-icon { filter: grayscale(1) sepia(.9) saturate(1.4) brightness(.5) contrast(1.2); mix-blend-mode: multiply; opacity: .85; }
+
+/* Typewritten slip tucked into the page */
+.typed-slip {
+  position: relative;
+  background-color: #efe5c9;
+  background-image:
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.12'/%3E%3C/svg%3E"),
+    linear-gradient(175deg, rgba(255,255,255,.25), transparent 40%, rgba(120,90,40,.08));
+  box-shadow: 0 1px 2px rgba(0,0,0,.18), 0 12px 18px -10px rgba(40,25,5,.45);
+  color: #2b2013;
+}
+.typed-slip::before { /* strip of old tape holding it */
+  content: ""; position: absolute; top: -9px; left: 50%; width: 74px; height: 20px;
+  transform: translateX(-50%) rotate(-3deg);
+  background: rgba(232,220,180,.62);
+  box-shadow: 0 1px 1px rgba(0,0,0,.08);
+}
+.typed-ink { color: #2b2013; text-shadow: 0 0 .6px rgba(43,32,19,.55), .3px 0 0 rgba(43,32,19,.18); }

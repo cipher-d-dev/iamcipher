@@ -54,11 +54,14 @@ export default function Home() {
 
   // ── Candlelight flicker ref ──────────────────────────────────
   const candleRef = useRef<HTMLDivElement>(null);
+  // Warm light falling *onto* the book (soft-light blend above it)
+  const candleLightRef = useRef<HTMLDivElement>(null);
 
   // Irregular flicker — chained tweens with randomised duration/opacity
   // so it reads as actual flame movement, not a breathing UI element
   useEffect(() => {
     const el = candleRef.current;
+    const light = candleLightRef.current;
     if (!el || reduceMotion) return;
 
     let killed = false;
@@ -74,6 +77,8 @@ export default function Home() {
         ease: 'none',
         onComplete: flicker,
       });
+      // The light on the pages breathes with the same flame
+      if (light) gsap.to(light, { opacity: 0.6 + (targetOpacity - 0.14) * 3.5, duration, ease: 'none' });
     };
 
     // Kick off with a small initial delay so it doesn't snap on mount
@@ -82,6 +87,7 @@ export default function Home() {
       killed = true;
       clearTimeout(t);
       gsap.killTweensOf(el);
+      if (light) gsap.killTweensOf(light);
     };
   }, [reduceMotion]);
 
@@ -415,6 +421,22 @@ export default function Home() {
               <Particles isActive={appState !== 'closed'} />
               <DustMotes isActive={appState === 'reading'} />
             </>}
+
+            {/* Candlelight falling across the open book from the upper left */}
+            <div
+              aria-hidden
+              className="absolute inset-0 z-30 pointer-events-none transition-opacity duration-700"
+              style={{ opacity: appState === 'reading' ? 1 : 0, mixBlendMode: 'soft-light' }}
+            >
+              <div
+                ref={candleLightRef}
+                className="absolute inset-0"
+                style={{
+                  opacity: 0.7,
+                  background: 'radial-gradient(ellipse 55% 60% at 34% 30%, rgba(255,196,120,.85) 0%, rgba(255,170,90,.35) 40%, rgba(0,0,0,.35) 100%)',
+                }}
+              />
+            </div>
 
             <div className="absolute inset-0 z-20">
               <Book

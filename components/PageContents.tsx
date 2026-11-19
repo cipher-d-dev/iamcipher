@@ -421,10 +421,7 @@ export const OriginLeft = React.memo(function OriginLeft({ mobile = false }: { m
   return (
     <div className={`w-full h-full bg-parchment-left flex flex-col justify-center ${mobile ? 'overflow-auto' : 'overflow-hidden'}
       ${mobile ? 'p-6' : 'rounded-l-md p-10 shadow-[inset_10px_0_20px_rgba(0,0,0,0.15)] border-r-2 border-[#d4c5a0]'}`}>
-      <h2 className={`font-cinzel font-semibold text-[#1a0f05] mb-6 border-b border-[#8b6b4e]/30 pb-4 inline-block self-start
-        ${mobile ? 'text-xl' : 'text-2xl'}`}>
-        The Origin Incantation
-      </h2>
+      <ChapterHead n="I" title="The Origin Incantation" mobile={mobile} />
 
       {mobile ? (
         <>
@@ -437,7 +434,7 @@ export const OriginLeft = React.memo(function OriginLeft({ mobile = false }: { m
               <p className="font-caveat text-center text-[#5c4d33] text-[13px] mt-1 -mb-1">Me</p>
             </div>
           </div>
-          <div className="text-[#3d2b1f] space-y-4 text-sm leading-relaxed font-serif">
+          <div className="book-body text-[#3d2b1f] space-y-4 text-sm leading-relaxed font-serif">
             <p>
               <span className="font-cinzel-dec text-4xl float-left leading-[0.8] pt-1 pr-2 text-[#a4302a]">A</span>
               t age 12, inspired by Kenzi&apos;s effortless tech brilliance on <span className="italic">Game Shakers</span>, the obsession began. First came Scratch, which quickly sparked a jump into raw Python scripts.
@@ -447,7 +444,7 @@ export const OriginLeft = React.memo(function OriginLeft({ mobile = false }: { m
           </div>
         </>
       ) : (
-        <div className="text-[#3d2b1f] space-y-4 text-[12.5px] leading-[1.5] font-serif">
+        <div className="book-body text-[#3d2b1f] space-y-3 text-[12.5px] leading-[1.55] font-serif">
           <div className="float-right ml-4 mb-2 w-32 h-40 bg-[#f4ebd0] p-2 shadow-md rotate-2 border border-[#d4c5a0] flex flex-col">
             <div className="w-full flex-1 bg-[#d0c6a8]/40 border border-[#a4302a]/20 flex items-center justify-center relative overflow-hidden group cursor-pointer">
               <div className="text-center p-2 text-[#8b6b4e]">
@@ -470,6 +467,23 @@ export const OriginLeft = React.memo(function OriginLeft({ mobile = false }: { m
   );
 });
 
+/** A typed note taped into the book: the old "terminal" as paper. */
+function TypedSlip({ text, active, delay, playSound, caption, mobile, tilt }: {
+  text: string; active: boolean; delay: number; playSound?: () => void;
+  caption: string; mobile: boolean; tilt: number;
+}) {
+  return (
+    <figure className="m-0">
+      <div className="typed-slip px-5 pt-6 pb-5" style={{ transform: `rotate(${tilt}deg)` }}>
+        <p className="font-cinzel text-[8px] tracking-[0.3em] uppercase text-[#8b6b4e] mb-3 text-center">{caption}</p>
+        <div className={`typed-ink font-mono leading-[1.75] ${mobile ? 'text-[12.5px]' : 'text-[10.8px]'}`}>
+          <Typewriter text={text} active={active} delay={delay} playSound={playSound} />
+        </div>
+      </div>
+    </figure>
+  );
+}
+
 export const OriginTerminal = React.memo(function OriginTerminal({ active, mobile = false, playSound }: { active: boolean; mobile?: boolean; playSound?: () => void }) {
   const logText = `> Executing initiation sequence...
 > Loading chronos_logs.dat...
@@ -482,58 +496,62 @@ export const OriginTerminal = React.memo(function OriginTerminal({ active, mobil
 > Ready for deployment.`;
 
   return (
-    <div className={`w-full h-full bg-parchment-right flex flex-col overflow-hidden
-      ${mobile ? 'p-4' : 'rounded-r-md p-10 shadow-[inset_-10px_0_20px_rgba(0,0,0,0.15)] border-l-2 border-[#d4c5a0]'}`}>
-       <div className={`bg-[#161210] p-6 rounded-sm border border-[#d4af6a]/25 shadow-xl flex flex-col relative overflow-hidden
-         ${mobile ? 'flex-1 my-2' : 'h-[80%] my-4 -rotate-1'}`}>
-         {/* Scanline overlay */}
-         <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_4px,3px_100%] pointer-events-none" />
-         <div className="flex gap-2 mb-4 bg-[#0d0b09] -mt-6 -mx-6 p-3 border-b border-[#3d2b1f] relative z-10">
-           <div className="w-2 h-2 rounded-full bg-[#413a2e]" />
-           <div className="w-2 h-2 rounded-full bg-[#413a2e]" />
-           <div className="w-2 h-2 rounded-full bg-[#413a2e]" />
-         </div>
-         <div className={`flex-1 overflow-y-auto leading-[1.65] relative z-10 font-mono
-           ${mobile ? 'text-[13px]' : 'text-[10.8px]'}`} style={{ isolation: 'isolate' }}>
-           <Typewriter text={logText} active={active} delay={800} playSound={playSound} />
-         </div>
-       </div>
+    <div className={`w-full h-full bg-parchment-right flex flex-col justify-center ${mobile ? 'p-5 overflow-auto' : 'p-10 overflow-hidden'}`}>
+      <TypedSlip text={logText} active={active} delay={800} playSound={playSound} caption="chronos_logs.dat" mobile={mobile} tilt={-1.4} />
+      <p className={`font-caveat text-[#5c4d33] text-center mt-6 ${mobile ? 'text-base' : 'text-[16px]'}`}>
+        found tucked between these pages
+      </p>
     </div>
   );
 });
 
+// ── Experience ──────────────────────────────────────────────────────
+const EXPERIENCE = [
+  { title: 'Senior Fullstack Engineer', when: '2025 – present', where: 'ISBMPA · isbmpa.com',
+    body: 'Managed web infrastructure, domain configuration and media gallery hosting on Appwrite, while tuning data-fetching limits and backend performance.' },
+  { title: 'Deep Learning Trainee', when: '2026', where: 'NVIDIA × UNILAG',
+    body: 'Trained in deep learning fundamentals and neural network architectures through hands-on workshops and model optimisation exercises.' },
+  { title: 'CTF Winner, First Place', when: '2026', where: 'Go2Cyber',
+    body: 'Took first place in a timed capture-the-flag tournament: exploiting system vulnerabilities and analysing threats in real time.' },
+  { title: 'Software Engineering Intern', when: '2024', where: 'HNG',
+    body: 'Built, tested and shipped full-stack web features with cross-functional teams in a fast-paced agile environment.' },
+];
+
+function ExpEntry({ e, mobile }: { e: typeof EXPERIENCE[number]; mobile: boolean }) {
+  return (
+    <article>
+      <div className="flex items-baseline justify-between gap-3">
+        <h3 className={`font-cinzel font-semibold text-[#1a0f05] ${mobile ? 'text-base' : 'text-[14.5px]'}`}>{e.title}</h3>
+        <span className="font-serif italic text-[11px] text-[#7a5d40] shrink-0">{e.when}</span>
+      </div>
+      <p className="font-cinzel text-[8.5px] tracking-[0.18em] uppercase text-[#a4302a] mt-0.5 mb-1.5">{e.where}</p>
+      <p className={`book-body text-[#2b2013] ${mobile ? 'text-sm leading-[1.6]' : 'text-[13px] leading-[1.55]'}`}>{e.body}</p>
+    </article>
+  );
+}
+
+/** Chapter opener: small caps label, title, printed ornament */
+function ChapterHead({ n, title, mobile }: { n: string; title: string; mobile: boolean }) {
+  return (
+    <header className="text-center mb-5">
+      <p className="font-cinzel text-[9px] tracking-[0.35em] uppercase text-[#8b6b4e]">Chapter {n}</p>
+      <h2 className={`font-cinzel font-semibold text-[#1a0f05] mt-1.5 ${mobile ? 'text-xl' : 'text-[23px]'}`}>{title}</h2>
+      <div className="book-rule mt-2.5 mx-auto w-2/3">◆</div>
+    </header>
+  );
+}
+
 export const ExperienceLeft = React.memo(function ExperienceLeft({ mobile = false }: { mobile?: boolean }) {
   return (
-    <div className={`w-full h-full bg-parchment-left flex flex-col ${mobile ? 'overflow-auto' : 'overflow-hidden'}
-      ${mobile ? 'p-6' : 'rounded-l-md p-10 shadow-[inset_10px_0_20px_rgba(0,0,0,0.15)] border-r-2 border-[#d4c5a0]'}`}>
-      <div className="w-16 h-16 rounded-full border-2 border-[#a4302a] flex items-center justify-center mb-6 shrink-0 relative">
-        <div className="absolute inset-1 rounded-full border border-[#d4af6a]/50 border-dashed animate-[spin_20s_linear_infinite]" />
-        <span className="font-cinzel text-xl text-[#1a0f05]">Exp</span>
-      </div>
-
-      <div className={`text-[#3d2b1f] space-y-4 leading-[1.62] font-serif pr-2
-        ${mobile ? 'text-sm' : 'text-[13.5px]'}`}>
-        <h2 className={`font-cinzel font-semibold text-[#1a0f05] mb-2 border-b border-[#a4302a] pb-1
-          ${mobile ? 'text-xl' : 'text-2xl'}`}>Journeys &amp; Quests</h2>
-        <p>
-          The path of a developer is paved with trials. Herein lies the record of my past campaigns, from small skirmishes to grand sieges on legacy codebases.
-        </p>
-
-        <div className="mt-4 space-y-5">
-          <div className="border-l-2 border-[#a4302a]/40 pl-3 relative">
-            <div className="absolute w-2 h-2 rounded-full bg-[#a4302a] -left-[5px] top-1.5" />
-            <h3 className="font-bold text-[#1a0f05]">Senior Fullstack Engineer</h3>
-            <p className="text-[#a4302a] text-xs font-mono mb-1">2025 - Present | ISBMPA (isbmpa.com)</p>
-            <p className="text-sm">Managed web infrastructure, domain configurations, and media gallery hosting using Appwrite while optimizing data fetching limits and backend performance.</p>
-          </div>
-
-          <div className="border-l-2 border-[#5c4d33]/40 pl-3 relative">
-            <div className="absolute w-2 h-2 rounded-full bg-[#5c4d33] -left-[5px] top-1.5" />
-            <h3 className="font-bold text-[#1a0f05]">Entry Deep Learning Trainee</h3>
-            <p className="text-[#a4302a] text-xs font-mono mb-1">2026 | NVIDIA x UNILAG</p>
-            <p className="text-sm">Trained in deep learning fundamentals and neural network architectures through hands-on technical workshops and model optimization exercises.</p>
-          </div>
-        </div>
+    <div className={`w-full h-full bg-parchment-left flex flex-col ${mobile ? 'overflow-auto p-6' : 'overflow-hidden p-10'}`}>
+      <ChapterHead n="II" title="Journeys & Quests" mobile={mobile} />
+      <p className={`book-body drop-cap text-[#3d2b1f] font-serif mb-5 ${mobile ? 'text-sm leading-[1.6]' : 'text-[13px] leading-[1.6]'}`}>
+        The path of a developer is paved with trials. Herein lies the record of past campaigns, from small skirmishes to grand sieges on legacy codebases.
+      </p>
+      <div className="space-y-4">
+        <ExpEntry e={EXPERIENCE[0]} mobile={mobile} />
+        <div className="book-rule">◆</div>
+        <ExpEntry e={EXPERIENCE[1]} mobile={mobile} />
       </div>
     </div>
   );
@@ -541,82 +559,61 @@ export const ExperienceLeft = React.memo(function ExperienceLeft({ mobile = fals
 
 export const ExperienceRight = React.memo(function ExperienceRight({ mobile = false }: { mobile?: boolean }) {
   return (
-    <div className={`w-full h-full bg-parchment-right flex flex-col ${mobile ? 'overflow-auto' : 'overflow-hidden'}
-      ${mobile ? 'p-6' : 'rounded-r-md p-10 shadow-[inset_-10px_0_20px_rgba(0,0,0,0.15)] border-l-2 border-[#d4c5a0]'}`}>
-      {!mobile && <div className="w-full h-8 border-b border-[#a4302a] mb-6 opacity-0" />}
-      {mobile && <h2 className="text-xl font-cinzel font-semibold text-[#1a0f05] mb-4 border-b border-[#a4302a] pb-1">Journeys &amp; Quests (cont.)</h2>}
-
-      <div className={`text-[#3d2b1f] space-y-5 leading-[1.62] font-serif pr-2 mt-2
-        ${mobile ? 'text-sm' : 'text-[13.5px]'}`}>
-        <div className="border-l-2 border-[#5c4d33]/40 pl-3 relative">
-          <div className="absolute w-2 h-2 rounded-full bg-[#5c4d33] -left-[5px] top-1.5" />
-          <h3 className="font-bold text-[#1a0f05]">CTF Winner</h3>
-          <p className="text-[#a4302a] text-xs font-mono mb-1">2026 | Go2Cyber</p>
-          <p className="text-sm">Secured first place in a competitive capture-the-flag tournament by exploiting system vulnerabilities and executing real-time threat analysis under timed conditions.</p>
-        </div>
-
-        <div className="border-l-2 border-[#5c4d33]/40 pl-3 relative">
-          <div className="absolute w-2 h-2 rounded-full border border-[#5c4d33] bg-transparent -left-[5px] top-1.5" />
-          <h3 className="font-bold text-[#1a0f05]">Software Engineering Intern</h3>
-          <p className="text-[#a4302a] text-xs font-mono mb-1">2024 | HNG</p>
-          <p className="text-sm">Collaborated with cross-functional teams to build, test, and ship full-stack web features in a fast-paced agile development environment.</p>
-        </div>
-
-        <p className="italic text-[#5c4d33] pt-4 border-t border-[#d4c5a0] mt-4">
-          &quot;Experience is not merely time spent, but the wisdom distilled from countless compiled errors.&quot;
-        </p>
+    <div className={`w-full h-full bg-parchment-right flex flex-col ${mobile ? 'overflow-auto p-6' : 'overflow-hidden p-10'}`}>
+      {mobile && <h2 className="text-xl font-cinzel font-semibold text-[#1a0f05] mb-4">Journeys &amp; Quests (cont.)</h2>}
+      <div className={`space-y-4 ${mobile ? '' : 'mt-14'}`}>
+        <ExpEntry e={EXPERIENCE[2]} mobile={mobile} />
+        <div className="book-rule">◆</div>
+        <ExpEntry e={EXPERIENCE[3]} mobile={mobile} />
       </div>
+      <p className={`mt-auto pt-6 text-center font-serif italic text-[#5c4d33] ${mobile ? 'text-sm' : 'text-[12.5px]'}`}>
+        &ldquo;Experience is not merely time spent, but the wisdom distilled from countless compiled errors.&rdquo;
+      </p>
     </div>
   );
 });
 
+// ── Tools ───────────────────────────────────────────────────────────
+// Devicon 2.17.0 (MIT), served from /public/icons so pages never wait on a CDN
+const DEVICON = (path: string) => `/icons/${path.split('/')[1]}.svg`;
+const TOOL_GROUPS = [
+  { rune: 'ᚠ', name: 'Core Languages', note: 'Primary incantations: TypeScript, JavaScript, Python. Systems work in Go, Java and Kotlin.',
+    icons: [['typescript/typescript-original', 'TypeScript'], ['javascript/javascript-original', 'JavaScript'], ['python/python-original', 'Python'], ['go/go-original', 'Go'], ['java/java-original', 'Java'], ['kotlin/kotlin-original', 'Kotlin']] },
+  { rune: 'ᚹ', name: 'Web & Mobile', note: 'Visual manifestation: React, React Native, Vite, Tailwind CSS and Android Studio.',
+    icons: [['react/react-original', 'React'], ['vitejs/vitejs-original', 'Vite'], ['tailwindcss/tailwindcss-original', 'Tailwind CSS'], ['androidstudio/androidstudio-original', 'Android Studio']] },
+  { rune: 'ᛋ', name: 'Backend Architecture', note: 'Distributed systems, zero-trust architecture, REST APIs, microservices, P2P and mesh networking.',
+    icons: [['nodejs/nodejs-original', 'Node.js'], ['express/express-original', 'Express'], ['appwrite/appwrite-original', 'Appwrite'], ['firebase/firebase-plain', 'Firebase'], ['supabase/supabase-original', 'Supabase']] },
+  { rune: 'ᛞ', name: 'Data Infrastructure', note: 'Relational databases, ORMs and AI data layers (pgvector, Qdrant).',
+    icons: [['postgresql/postgresql-original', 'PostgreSQL'], ['mysql/mysql-original', 'MySQL'], ['redis/redis-original', 'Redis'], ['prisma/prisma-original', 'Prisma']] },
+  { rune: 'ᛉ', name: 'DevOps & Security', note: 'CI/CD, cryptographic libraries, token rotation and mTLS, pentesting and local LLMs.',
+    icons: [['docker/docker-original', 'Docker'], ['githubactions/githubactions-original', 'GitHub Actions'], ['linux/linux-original', 'Linux']] },
+];
+
+function ToolEntry({ g, mobile }: { g: typeof TOOL_GROUPS[number]; mobile: boolean }) {
+  return (
+    <article>
+      <h3 className={`font-cinzel font-semibold text-[#1a0f05] flex items-baseline gap-2 ${mobile ? 'text-base' : 'text-[14.5px]'}`}>
+        <span className="text-[#a4302a] text-[15px]" aria-hidden>{g.rune}</span>{g.name}
+      </h3>
+      <div className="flex flex-wrap gap-2.5 mt-1.5 mb-1.5">
+        {g.icons.map(([path, label]) => (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img key={label} src={DEVICON(path)} className="w-[22px] h-[22px] ink-icon" alt={label} title={label} />
+        ))}
+      </div>
+      <p className={`book-body text-[#3d2b1f] font-serif ${mobile ? 'text-sm leading-[1.6]' : 'text-[12.5px] leading-[1.5]'}`}>{g.note}</p>
+    </article>
+  );
+}
+
 export const ToolsLeft = React.memo(function ToolsLeft({ mobile = false }: { mobile?: boolean }) {
   return (
-    <div className={`w-full h-full bg-parchment-left flex flex-col ${mobile ? 'overflow-auto' : 'overflow-hidden'}
-      ${mobile ? 'p-6' : 'rounded-l-md p-10 shadow-[inset_10px_0_20px_rgba(0,0,0,0.15)] border-r-2 border-[#d4c5a0]'}`}>
-      <h2 className={`font-cinzel font-semibold text-[#1a0f05] mb-6 border-b border-[#a4302a] pb-2 inline-block self-start
-        ${mobile ? 'text-xl' : 'text-2xl'}`}>Core &amp; Frontend Runes</h2>
-
-      <div className="flex-1 pr-2 space-y-4">
-        <div className="space-y-4 text-[13px] font-serif">
-          <div className="group relative border border-[#c9b783] bg-[#f4ebd0]/50 p-3 shadow-sm hover:shadow-md transition-shadow">
-            <h3 className={`font-semibold font-cinzel text-[#1a0f05] mb-2 flex items-center gap-2 ${mobile ? 'text-base' : 'text-[15px]'}`}>
-              <span className="text-[#a4302a] text-lg">✦</span> Core Languages
-            </h3>
-            <div className="flex flex-wrap gap-2">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="https://cdn.jsdelivr.net/npm/devicon@2.17.0/icons/typescript/typescript-original.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="TypeScript" title="TypeScript" />
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="https://cdn.jsdelivr.net/npm/devicon@2.17.0/icons/javascript/javascript-original.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="JavaScript" title="JavaScript" />
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="https://cdn.jsdelivr.net/npm/devicon@2.17.0/icons/python/python-original.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="Python" title="Python" />
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="https://cdn.jsdelivr.net/npm/devicon@2.17.0/icons/go/go-original.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="Go" title="Go" />
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="https://cdn.jsdelivr.net/npm/devicon@2.17.0/icons/java/java-original.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="Java" title="Java" />
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="https://cdn.jsdelivr.net/npm/devicon@2.17.0/icons/kotlin/kotlin-original.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="Kotlin" title="Kotlin" />
-            </div>
-            <p className={`text-[#5c4d33] leading-relaxed mt-2 ${mobile ? 'text-sm' : 'text-xs'}`}>Primary incantations: TypeScript, JavaScript, Python. Systems: Go, Java, Kotlin.</p>
-          </div>
-
-          <div className="group relative border border-[#c9b783] bg-[#f4ebd0]/50 p-3 shadow-sm hover:shadow-md transition-shadow">
-            <h3 className={`font-semibold font-cinzel text-[#1a0f05] mb-2 flex items-center gap-2 ${mobile ? 'text-base' : 'text-[15px]'}`}>
-              <span className="text-[#a4302a] text-lg">⚛</span> Web &amp; Mobile Frontend
-            </h3>
-            <div className="flex flex-wrap gap-2">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="https://cdn.jsdelivr.net/npm/devicon@2.17.0/icons/react/react-original.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="React" title="React" />
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="https://cdn.jsdelivr.net/npm/devicon@2.17.0/icons/vitejs/vitejs-original.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="Vite" title="Vite" />
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="https://cdn.jsdelivr.net/npm/devicon@2.17.0/icons/tailwindcss/tailwindcss-original.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="Tailwind" title="Tailwind CSS" />
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="https://cdn.jsdelivr.net/npm/devicon@2.17.0/icons/androidstudio/androidstudio-original.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="Android Studio" title="Android Studio" />
-            </div>
-            <p className={`text-[#5c4d33] leading-relaxed mt-2 ${mobile ? 'text-sm' : 'text-xs'}`}>Visual manifestation: React, React Native, Vite, Tailwind CSS, Android Studio.</p>
-          </div>
-        </div>
+    <div className={`w-full h-full bg-parchment-left flex flex-col ${mobile ? 'overflow-auto p-6' : 'overflow-hidden p-10'}`}>
+      <ChapterHead n="III" title="Runes & Tools" mobile={mobile} />
+      <div className="space-y-4">
+        <ToolEntry g={TOOL_GROUPS[0]} mobile={mobile} />
+        <div className="book-rule">◆</div>
+        <ToolEntry g={TOOL_GROUPS[1]} mobile={mobile} />
       </div>
     </div>
   );
@@ -624,64 +621,13 @@ export const ToolsLeft = React.memo(function ToolsLeft({ mobile = false }: { mob
 
 export const ToolsRight = React.memo(function ToolsRight({ mobile = false }: { mobile?: boolean }) {
   return (
-    <div className={`w-full h-full bg-parchment-right flex flex-col ${mobile ? 'overflow-auto' : 'overflow-hidden'}
-      ${mobile ? 'p-6' : 'rounded-r-md p-10 shadow-[inset_-10px_0_20px_rgba(0,0,0,0.15)] border-l-2 border-[#d4c5a0]'}`}>
-      <div className="flex-1 pr-2 space-y-4">
-        <h2 className={`font-cinzel font-semibold text-[#1a0f05] mb-2 border-b border-[#a4302a] pb-2 inline-block self-start
-          ${mobile ? 'text-xl' : 'text-2xl'}`}>Backend &amp; Systems</h2>
-
-        <div className="space-y-4 text-[13px] font-serif mt-4">
-          <div className="group relative border border-[#c9b783] bg-[#f4ebd0]/50 p-3 shadow-sm hover:shadow-md transition-shadow">
-            <h3 className={`font-semibold font-cinzel text-[#1a0f05] mb-2 flex items-center gap-2 ${mobile ? 'text-base' : 'text-[15px]'}`}>
-              <span className="text-[#a4302a] text-lg">⚡</span> Backend Architecture
-            </h3>
-            <div className="flex flex-wrap gap-2 mb-2">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="https://cdn.jsdelivr.net/npm/devicon@2.17.0/icons/nodejs/nodejs-original.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="Node" title="Node.js" />
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="https://cdn.jsdelivr.net/npm/devicon@2.17.0/icons/express/express-original.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="Express" title="Express.js" />
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="https://cdn.jsdelivr.net/npm/devicon@2.17.0/icons/appwrite/appwrite-original.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="Appwrite" title="Appwrite" />
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="https://cdn.jsdelivr.net/npm/devicon@2.17.0/icons/firebase/firebase-plain.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="Firebase" title="Firebase" />
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="https://cdn.jsdelivr.net/npm/devicon@2.17.0/icons/supabase/supabase-original.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="Supabase" title="Supabase" />
-            </div>
-            <p className={`text-[#5c4d33] leading-relaxed ${mobile ? 'text-sm' : 'text-xs'}`}>Distributed Systems, Zero-Trust Architecture, REST APIs, Microservices, P2P / Mesh Networking.</p>
-          </div>
-
-          <div className="group relative border border-[#c9b783] bg-[#f4ebd0]/50 p-3 shadow-sm hover:shadow-md transition-shadow">
-            <h3 className={`font-semibold font-cinzel text-[#1a0f05] mb-2 flex items-center gap-2 ${mobile ? 'text-base' : 'text-[15px]'}`}>
-              <span className="text-[#a4302a] text-lg">🗄</span> Data Infrastructure
-            </h3>
-            <div className="flex flex-wrap gap-2 mb-2">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="https://cdn.jsdelivr.net/npm/devicon@2.17.0/icons/postgresql/postgresql-original.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="PostgreSQL" title="PostgreSQL" />
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="https://cdn.jsdelivr.net/npm/devicon@2.17.0/icons/mysql/mysql-original.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="MySQL" title="MySQL" />
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="https://cdn.jsdelivr.net/npm/devicon@2.17.0/icons/redis/redis-original.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="Redis" title="Redis" />
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="https://cdn.jsdelivr.net/npm/devicon@2.17.0/icons/prisma/prisma-original.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="Prisma" title="Prisma" />
-            </div>
-            <p className={`text-[#5c4d33] leading-relaxed ${mobile ? 'text-sm' : 'text-xs'}`}>Relational DBs, ORMs, and AI Data Layers (pgvector, Qdrant).</p>
-          </div>
-
-          <div className="group relative border border-[#c9b783] bg-[#f4ebd0]/50 p-3 shadow-sm hover:shadow-md transition-shadow">
-            <h3 className={`font-semibold font-cinzel text-[#1a0f05] mb-2 flex items-center gap-2 ${mobile ? 'text-base' : 'text-[15px]'}`}>
-              <span className="text-[#a4302a] text-lg">🛡</span> DevOps &amp; Security
-            </h3>
-            <div className="flex flex-wrap gap-2 mb-2">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="https://cdn.jsdelivr.net/npm/devicon@2.17.0/icons/docker/docker-original.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="Docker" title="Docker" />
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="https://cdn.jsdelivr.net/npm/devicon@2.17.0/icons/githubactions/githubactions-original.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="GitHub Actions" title="GitHub Actions" />
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="https://cdn.jsdelivr.net/npm/devicon@2.17.0/icons/linux/linux-original.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="Linux" title="Linux" />
-            </div>
-            <p className={`text-[#5c4d33] leading-relaxed ${mobile ? 'text-sm' : 'text-xs'}`}>CI/CD, Cryptographic libraries, Token Rotation/mTLS, Pentesting &amp; Local LLMs.</p>
-          </div>
-        </div>
+    <div className={`w-full h-full bg-parchment-right flex flex-col ${mobile ? 'overflow-auto p-6' : 'overflow-hidden p-10'}`}>
+      <div className={`space-y-4 ${mobile ? '' : 'mt-2'}`}>
+        <ToolEntry g={TOOL_GROUPS[2]} mobile={mobile} />
+        <div className="book-rule">◆</div>
+        <ToolEntry g={TOOL_GROUPS[3]} mobile={mobile} />
+        <div className="book-rule">◆</div>
+        <ToolEntry g={TOOL_GROUPS[4]} mobile={mobile} />
       </div>
     </div>
   );
@@ -774,24 +720,28 @@ export const ProjectsPage = React.memo(function ProjectsPage({
   const items = PROJECT_PAGES[page];
   const compact = items.length > 2;
   const linkClass = `inline-block font-kalam text-[#2f5d8a] hover:text-[#1a0f05] border-b border-dashed border-[#2f5d8a] transition-colors relative z-10 ${mobile ? 'text-sm' : 'text-[12.5px]'}`;
-  const metaClass = `text-[#5c4d33] font-mono tracking-[0.03em] mb-1.5 ${mobile ? 'text-[11px]' : 'text-[9px]'}`;
-  const bodyClass = `text-[#1a0f05] mb-1.5 font-serif ${mobile ? 'text-sm leading-[1.6]' : compact ? 'text-[12.5px] leading-[1.5]' : 'text-[13px] leading-[1.58]'}`;
-  const titleClass = `font-semibold font-cinzel text-[#1a0f05] mb-0.5 ${mobile ? 'text-lg' : 'text-[17px]'}`;
-  const frame = side === 'left'
-    ? 'bg-parchment-left rounded-l-md shadow-[inset_10px_0_20px_rgba(0,0,0,0.15)] border-r-2 border-[#d4c5a0]'
-    : 'bg-parchment-right rounded-r-md shadow-[inset_-10px_0_20px_rgba(0,0,0,0.15)] border-l-2 border-[#d4c5a0]';
+  const metaClass = `font-cinzel uppercase tracking-[0.14em] text-[#8b6b4e] mb-1.5 ${mobile ? 'text-[9.5px]' : 'text-[8px]'}`;
+  const bodyClass = `book-body text-[#1a0f05] mb-1.5 font-serif ${mobile ? 'text-sm leading-[1.6]' : compact ? 'text-[12.5px] leading-[1.48]' : 'text-[13px] leading-[1.55]'}`;
+  const titleClass = `font-semibold font-cinzel text-[#1a0f05] ${mobile ? 'text-lg' : 'text-[16px]'}`;
+  // Book margins: narrower on the spine side
+  const frame = side === 'left' ? 'bg-parchment-left pl-[46px] pr-[30px]' : 'bg-parchment-right pl-[30px] pr-[46px]';
 
   return (
-    <div className={`w-full h-full flex flex-col ${mobile ? `${side === 'left' ? 'bg-parchment-left' : 'bg-parchment-right'} p-6 overflow-auto` : `${frame} px-10 py-9 overflow-hidden`}`}>
-      <div className="flex items-baseline justify-between mb-5 border-b border-[#a4302a] pb-2">
-        <h2 className={`font-cinzel font-semibold text-[#1a0f05] ${mobile ? 'text-xl' : 'text-2xl'}`}>
-          Arcane Constructs <span className="text-[#a4302a]">{NUMERALS[page]}</span>
-        </h2>
-        <span className="font-mono text-[9px] text-[#8b6b4e]">{page + 1}/{PROJECT_PAGES.length}</span>
-      </div>
-      <div className={compact ? 'space-y-4' : 'space-y-6'}>
-        {items.map((proj) => (
+    <div className={`w-full h-full flex flex-col ${mobile ? `${side === 'left' ? 'bg-parchment-left' : 'bg-parchment-right'} p-6 overflow-auto` : `${frame} pt-[44px] pb-[42px] overflow-hidden`}`}>
+      {page === 0 ? (
+        <ChapterHead n="IV" title="Arcane Constructs" mobile={mobile} />
+      ) : mobile ? (
+        <p className="font-cinzel text-[9px] tracking-[0.3em] uppercase text-[#8b6b4e] text-center mb-4">
+          Arcane Constructs, continued · {NUMERALS[page]}
+        </p>
+      ) : (
+        // In the book the running head already names the chapter
+        <div className="h-6" aria-hidden />
+      )}
+      <div className={compact ? 'space-y-3' : 'space-y-4'}>
+        {items.map((proj, idx) => (
           <article key={proj.name} className="relative">
+            {idx > 0 && <div className="book-rule mb-3">◆</div>}
             <div className="flex items-center justify-between">
               <h3 className={titleClass}>{proj.name}</h3>
               {proj.tag && <span className="font-caveat text-[#a4302a] text-sm rotate-[3deg]">{proj.tag} →</span>}
@@ -823,21 +773,10 @@ export const FocusTerminal = React.memo(function FocusTerminal({ active, mobile 
 > status: compiling runes...`;
 
   return (
-    <div className={`w-full h-full bg-parchment-left flex flex-col overflow-hidden
-      ${mobile ? 'p-4' : 'rounded-l-md p-10 shadow-[inset_10px_0_20px_rgba(0,0,0,0.15)] border-r-2 border-[#d4c5a0]'}`}>
-      <div className={`bg-[#161210] p-6 rounded-sm border border-[#d4af6a]/25 shadow-xl flex flex-col relative overflow-hidden
-        ${mobile ? 'flex-1 my-2' : 'h-[80%] my-4 -rotate-1'}`}>
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_4px,3px_100%] pointer-events-none" />
-        <div className="flex gap-2 mb-4 bg-[#0d0b09] -mt-6 -mx-6 p-3 border-b border-[#3d2b1f] relative z-10">
-          <div className="w-2 h-2 rounded-full bg-[#413a2e]" />
-          <div className="w-2 h-2 rounded-full bg-[#413a2e]" />
-          <div className="w-2 h-2 rounded-full bg-[#413a2e]" />
-        </div>
-        <div className={`flex-1 overflow-y-auto leading-[1.65] relative z-10 font-mono
-          ${mobile ? 'text-[13px]' : 'text-[10.8px]'}`} style={{ isolation: 'isolate' }}>
-          <Typewriter text={focusText} active={active} delay={400} playSound={playSound} />
-        </div>
-      </div>
+    <div className={`w-full h-full bg-parchment-left flex flex-col justify-center ${mobile ? 'p-5 overflow-auto' : 'p-10 overflow-hidden'}`}>
+      <p className="font-cinzel text-[9px] tracking-[0.35em] uppercase text-[#8b6b4e] text-center">Chapter V</p>
+      <h2 className={`font-cinzel font-semibold text-[#1a0f05] text-center mt-1.5 mb-6 ${mobile ? 'text-xl' : 'text-[23px]'}`}>Current Focus</h2>
+      <TypedSlip text={focusText} active={active} delay={400} playSound={playSound} caption="status report" mobile={mobile} tilt={1.1} />
     </div>
   );
 });
@@ -1057,7 +996,7 @@ export function GuestBookRight({
             onMouseLeave={() => popCursor()}
           >
             <React.Suspense fallback={
-              <div className="absolute inset-0 bg-[#edeef0]/40 flex items-center justify-center">
+              <div className="absolute inset-0 bg-[#fff9e8]/25 flex items-center justify-center">
                 <span className="font-kalam text-[#8b6b4e] text-[11px] italic animate-pulse">loading…</span>
               </div>
             }>
@@ -1076,9 +1015,9 @@ export function GuestBookRight({
             aria-label="Your message"
             placeholder="Write your message…"
             autoFocus
-            className="flex-1 min-h-0 resize-none rounded-sm bg-[#edeef0]/60 px-3 py-1 font-caveat text-[20px] text-[#1a0f05] leading-[32px] outline-none placeholder:text-[#8b6b4e]/40 focus-visible:outline-2 focus-visible:outline-[#d4af6a]"
+            className="flex-1 min-h-0 resize-none rounded-sm bg-[#fff9e8]/25 px-3 py-1 font-caveat text-[20px] text-[#1a0f05] leading-[32px] outline-none placeholder:text-[#8b6b4e]/40 focus-visible:outline-2 focus-visible:outline-[#d4af6a]"
             style={{
-              backgroundImage: 'repeating-linear-gradient(180deg, transparent 0px, transparent 31px, rgba(160,160,175,0.3) 32px)',
+              backgroundImage: 'repeating-linear-gradient(180deg, transparent 0px, transparent 31px, rgba(139,107,78,0.28) 32px)',
               backgroundPosition: '0 4px',
             }}
           />

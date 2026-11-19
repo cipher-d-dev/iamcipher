@@ -82,10 +82,10 @@ export default function Typewriter({
   const showCursor = active && (isTyping || progressRef.current < text.length);
 
   return (
-    <span className="font-mono text-[#8fd694] whitespace-pre-wrap leading-relaxed">
+    <span className="font-mono whitespace-pre-wrap">
       {displayed}
       {showCursor && (
-        <span className="inline-block w-[6px] h-[11px] bg-[#8fd694] align-[-1px] animate-[pulse_1s_steps(1)_infinite] ml-[1px]" />
+        <span className="inline-block w-[6px] h-[11px] bg-[#2b2013]/70 align-[-1px] animate-[pulse_1s_steps(1)_infinite] ml-[1px]" />
       )}
     </span>
   );

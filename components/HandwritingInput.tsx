@@ -17,7 +17,7 @@ interface Stroke { points: Point[]; }
 // ── Canvas: draws ruled lines + live ink only (no text) ───────────────
 function drawRules(ctx: CanvasRenderingContext2D, w: number, h: number) {
   ctx.save();
-  ctx.strokeStyle = 'rgba(160,160,175,0.25)';
+  ctx.strokeStyle = 'rgba(139,107,78,0.28)';
   ctx.lineWidth = 1;
   for (let y = 28; y < h; y += 32) {
     ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
@@ -299,7 +299,7 @@ export default function HandwritingInput({ initialText = '', onTextChange, disab
     <div className="relative w-full h-full" style={{ touchAction: 'none' }}>
 
       {/* Parchment base — canvas draws rules + live ink on top */}
-      <div className="absolute inset-0 rounded-sm" style={{ background: '#edeef0' }} />
+      <div className="absolute inset-0 rounded-sm" style={{ background: 'rgba(255,249,232,0.25)' }} />
 
       {/* Committed recognized text — rendered as DOM so font is guaranteed */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none select-none" style={{ zIndex: 1 }}>
