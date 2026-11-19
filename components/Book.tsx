@@ -307,10 +307,17 @@ export default function Book({ ready, onStateChange, playTurnWeighted, playClick
       }, 0.5 + i * 0.15); // stagger opening
     });
     
-    // Gently fan remaining pages as it settles
+    // Gently fan remaining pages as it settles.
+    // The two phases must not overlap for any page: when they did, the last
+    // page's "lift" finished after its "settle" and it stayed tilted, poking
+    // through every page above it (a visible tear on the right-hand page).
+    // Lift top-down and settle bottom-up so a lower page is never tilted
+    // further than the pages resting on it.
     const pages = leafRefs.current.slice(3);
-    tl.to(pages, { rotateY: -10, duration: 0.4, stagger: 0.05, ease: "power1.out" }, 0.8)
-      .to(pages, { rotateY: 0, duration: 0.3, stagger: -0.05, ease: "power1.in" }, 1.2);
+    const FAN_AT = 0.8, FAN_STEP = 0.03, FAN_DUR = 0.3;
+    const settleAt = FAN_AT + FAN_STEP * (pages.length - 1) + FAN_DUR;
+    tl.to(pages, { rotateY: -10, duration: FAN_DUR, stagger: FAN_STEP, ease: "power1.out" }, FAN_AT)
+      .to(pages, { rotateY: 0, duration: FAN_DUR, stagger: { each: FAN_STEP, from: 'end' }, ease: "power1.in" }, settleAt);
   };
 
   const handleClose = () => {
