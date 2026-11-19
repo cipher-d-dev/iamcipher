@@ -8,13 +8,31 @@ import Particles from '@/components/Particles';
 import DustMotes from '@/components/DustMotes';
 import MagicalLoader from '@/components/MagicalLoader';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useReducedMotion } from '@/hooks/use-reduced-motion';
+import { PROJECTS } from '@/components/PageContents';
+import SecretSeal from '@/components/SecretSeal';
+
+const MUTE_KEY = 'grimoire:muted';
 
 export default function Home() {
   const [loaded, setLoaded] = useState(false);
   const [appState, setAppState] = useState<'closed' | 'opening' | 'reading' | 'closing' | 'summary'>('closed');
   const [muted, setMuted] = useState(false);
+  // Restore the visitor's mute choice after hydration (server can't know it)
+  useEffect(() => {
+    try { if (localStorage.getItem(MUTE_KEY) === '1') setMuted(true); } catch { /* private mode */ }
+  }, []);
+  const reduceMotion = useReducedMotion();
   const [sigilCharging, setSigilCharging] = useState(false);
   const isMobile = useIsMobile();
+
+  // Phones: a shared link like /#projects opens the reader straight away
+  useEffect(() => {
+    if (!loaded || !isMobile || appState !== 'closed') return;
+    const id = window.location.hash.slice(1);
+    if (['origin', 'experience', 'tools', 'projects', 'contact', 'guestbook'].includes(id)) setAppState('reading');
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loaded, isMobile]);
 
   // Fire a 200ms sigil charge pulse on each page turn
   const handlePageTurn = useCallback(() => {
@@ -41,7 +59,7 @@ export default function Home() {
   // so it reads as actual flame movement, not a breathing UI element
   useEffect(() => {
     const el = candleRef.current;
-    if (!el) return;
+    if (!el || reduceMotion) return;
 
     let killed = false;
     const flicker = () => {
@@ -65,7 +83,7 @@ export default function Home() {
       clearTimeout(t);
       gsap.killTweensOf(el);
     };
-  }, []);
+  }, [reduceMotion]);
 
   // Initialise audio elements once
   useEffect(() => {
@@ -114,11 +132,14 @@ export default function Home() {
   const startTheme = useCallback(() => {
     if (themePlayed.current || !themeRef.current) return;
     themePlayed.current = true;
-    themeRef.current.play().catch(() => {});
+    // If the browser blocks it (no user gesture yet, e.g. a deep link opened
+    // the book), allow the next real click to try again.
+    themeRef.current.play().catch(() => { themePlayed.current = false; });
   }, []);
 
-  // Sync mute state
+  // Sync mute state (and remember it for next visit)
   useEffect(() => {
+    try { localStorage.setItem(MUTE_KEY, muted ? '1' : '0'); } catch { /* private mode */ }
     [themeRef, turnRef, clickRef, multiRef, rustleRef, quillRef].forEach(r => {
       if (r.current) r.current.muted = muted;
     });
@@ -273,32 +294,18 @@ export default function Home() {
           <section>
             <h2 className="text-2xl font-cinzel border-b border-[#2eb36f]/30 pb-2 mb-6 text-[#f0d089]">Projects</h2>
             <ul className="space-y-8">
-              <li>
-                <a href="https://github.com/cipher-d-dev/Quellix" target="_blank" rel="noreferrer" className="text-xl text-[#2eb36f] hover:underline font-mono block mb-2">Quellix</a>
-                <p className="text-[#a8b5a8] leading-relaxed">An opinionated open-source authentication SDK designed for React.</p>
-              </li>
-              <li>
-                <div className="flex items-center gap-4 mb-2">
-                  <a href="https://github.com/cipher-d-dev/Clarion" target="_blank" rel="noreferrer" className="text-xl text-[#2eb36f] hover:underline font-mono">Clarion</a>
-                  <a href="https://clarion-schools.vercel.app" target="_blank" rel="noreferrer" className="text-xs border border-[#2eb36f] text-[#2eb36f] hover:bg-[#2eb36f]/10 px-2 py-0.5 rounded transition-colors">Live Preview</a>
-                </div>
-                <p className="text-[#a8b5a8] leading-relaxed">AI-powered complaint, report, and issue management platform.</p>
-              </li>
-              <li>
-                <a href="https://github.com/cipher-d-dev/cipher_auth" target="_blank" rel="noreferrer" className="text-xl text-[#2eb36f] hover:underline font-mono block mb-2">cipher_auth</a>
-                <p className="text-[#a8b5a8] leading-relaxed">Modern authentication infrastructure built on top of Passport for JS/TS.</p>
-              </li>
-              <li>
-                <a href="https://github.com/cipher-d-dev/Aetheris" target="_blank" rel="noreferrer" className="text-xl text-[#2eb36f] hover:underline font-mono block mb-2">Aetheris</a>
-                <p className="text-[#a8b5a8] leading-relaxed">Offline, end-to-end encrypted messenger whose messages hop phone-to-phone over Bluetooth and Wi‑Fi, with no internet or servers.</p>
-              </li>
-              <li>
-                <div className="flex items-center gap-4 mb-2">
-                  <a href="https://github.com/cipher-d-dev/isbmpa" target="_blank" rel="noreferrer" className="text-xl text-[#2eb36f] hover:underline font-mono">ISBMPA</a>
-                  <a href="https://isbmpa.com" target="_blank" rel="noreferrer" className="text-xs border border-[#2eb36f] text-[#2eb36f] hover:bg-[#2eb36f]/10 px-2 py-0.5 rounded transition-colors">Live Preview</a>
-                </div>
-                <p className="text-[#a8b5a8] leading-relaxed">Official government liaison website serving institutional media.</p>
-              </li>
+              {PROJECTS.map((proj) => (
+                <li key={proj.name}>
+                  <div className="flex items-center gap-4 mb-1 flex-wrap">
+                    <a href={proj.github} target="_blank" rel="noreferrer" className="text-xl text-[#2eb36f] hover:underline font-mono">{proj.name}</a>
+                    {proj.live && (
+                      <a href={proj.live} target="_blank" rel="noreferrer" className="text-xs border border-[#2eb36f] text-[#2eb36f] hover:bg-[#2eb36f]/10 px-2 py-0.5 rounded transition-colors">Live</a>
+                    )}
+                  </div>
+                  <p className="text-[#5c7a63] text-xs font-mono mb-2">{proj.year} · {proj.stack}</p>
+                  <p className="text-[#a8b5a8] leading-relaxed">{proj.blurb}</p>
+                </li>
+              ))}
             </ul>
           </section>
 
@@ -349,10 +356,14 @@ export default function Home() {
         <button
           onClick={() => setMuted(m => !m)}
           title={muted ? 'Unmute' : 'Mute'}
+          aria-label={muted ? 'Unmute sound' : 'Mute sound'}
+          aria-pressed={muted}
           className={`absolute ${isMobile && appState !== 'closed' ? 'top-[6px] right-16' : 'bottom-6 right-6'} z-50 w-8 h-8 flex items-center justify-center rounded-full border border-[#2eb36f]/20 bg-[#080c09]/70 text-[#2eb36f]/60 hover:text-[#2eb36f] hover:border-[#2eb36f]/50 transition-all duration-200 text-sm`}
         >
           {muted ? '🔇' : '🔊'}
         </button>
+
+        <SecretSeal onReveal={playMulti} />
 
         {isMobile ? (
           /* ── Mobile: full-screen parchment reader ── */
@@ -381,9 +392,11 @@ export default function Home() {
               />
             )}
 
-            <MagicCircle isActive={appState !== 'closed'} charging={sigilCharging} />
-            <Particles isActive={appState !== 'closed'} />
-            <DustMotes isActive={appState === 'reading'} />
+            {!reduceMotion && <>
+              <MagicCircle isActive={appState !== 'closed'} charging={sigilCharging} />
+              <Particles isActive={appState !== 'closed'} />
+              <DustMotes isActive={appState === 'reading'} />
+            </>}
 
             {appState === 'closed' && (
               <button
@@ -397,12 +410,15 @@ export default function Home() {
         ) : (
           /* ── Desktop: 3-D book ── */
           <>
-            <MagicCircle isActive={appState !== 'closed'} charging={sigilCharging} />
-            <Particles isActive={appState !== 'closed'} />
-            <DustMotes isActive={appState === 'reading'} />
+            {!reduceMotion && <>
+              <MagicCircle isActive={appState !== 'closed'} charging={sigilCharging} />
+              <Particles isActive={appState !== 'closed'} />
+              <DustMotes isActive={appState === 'reading'} />
+            </>}
 
             <div className="absolute inset-0 z-20">
               <Book
+                ready={loaded}
                 onStateChange={setAppState}
                 playTurnWeighted={playTurnWeighted}
                 playClick={playClick}

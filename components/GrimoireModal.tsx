@@ -116,7 +116,7 @@ export default function GrimoireModal({
         </h3>
 
         {/* Message */}
-        <p className="font-caveat text-[15px] text-center leading-snug text-[#a8b5a8]">
+        <p className="font-caveat text-[15px] text-center leading-snug text-[#a8b5a8] whitespace-pre-line break-words">
           {message}
         </p>
 

@@ -2,26 +2,77 @@
 import { useRef, useState, useEffect, useMemo } from 'react';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
-import { CoverFront, InnerCover, CoverBack, TitlePage, OriginLeft, OriginTerminal, ExperienceLeft, ExperienceRight, ToolsLeft, ToolsRight, ProjectsLeft, ProjectsRight, FocusTerminal, ContactRight, GuestBookLeft, GuestBookRight } from './PageContents';
+import { CoverFront, InnerCover, CoverBack, TitlePage, TableOfContents, OriginLeft, OriginTerminal, ExperienceLeft, ExperienceRight, ToolsLeft, ToolsRight, ProjectsPage, FocusTerminal, ContactRight, GuestBookLeft, GuestBookRight, type SectionId } from './PageContents';
 import GrimoireModal from './GrimoireModal';
 import { useCursor } from '@/context/CursorContext';
+import { prefersReducedMotion } from '@/hooks/use-reduced-motion';
 
 // ── Static data outside component — never recreated ──────────────────
-const CATALOGUE = [
-  { label: 'Origin',     rune: 'ᚩ', index: 3 },
-  { label: 'Experience', rune: 'ᛖ', index: 5 },
-  { label: 'Tools',      rune: 'ᛏ', index: 6 },
-  { label: 'Projects',   rune: 'ᛈ', index: 7 },
-  { label: 'Contact',    rune: 'ᛗ', index: 8 },
-  { label: 'Guestbook',  rune: 'ᛟ', index: 9 },
+// pageIndex P shows: left page = back of leaf P-1, right page = front of leaf P.
+const CONTENTS_PAGE = 3;   // Contents | Title
+const GUESTBOOK_PAGE = 10;
+export const SECTION_PAGE: Record<SectionId, number> = {
+  origin: 4,      // Origin story | Origin terminal
+  experience: 5,  // Experience I | Experience II
+  tools: 6,       // Tools I | Tools II
+  projects: 7,    // Projects I | II, then III | IV at 8
+  contact: 9,     // Current focus | Contact
+  guestbook: GUESTBOOK_PAGE,
+};
+
+const CATALOGUE: { id: SectionId; label: string; rune: string; index: number }[] = [
+  { id: 'origin',     label: 'Origin',     rune: 'ᚩ', index: SECTION_PAGE.origin },
+  { id: 'experience', label: 'Experience', rune: 'ᛖ', index: SECTION_PAGE.experience },
+  { id: 'tools',      label: 'Tools',      rune: 'ᛏ', index: SECTION_PAGE.tools },
+  { id: 'projects',   label: 'Projects',   rune: 'ᛈ', index: SECTION_PAGE.projects },
+  { id: 'contact',    label: 'Contact',    rune: 'ᛗ', index: SECTION_PAGE.contact },
+  { id: 'guestbook',  label: 'Guestbook',  rune: 'ᛟ', index: SECTION_PAGE.guestbook },
 ];
+
+const isSection = (v: string): v is SectionId => v in SECTION_PAGE;
+
+/** Shortens every GSAP duration to (almost) nothing for reduced-motion visitors. */
+const D = (seconds: number) => (prefersReducedMotion() ? 0.001 : seconds);
+
+// ── Lift-able page corner: the mouse way to turn pages ──────────────────
+function PageCorner({ side, onTurn, onHover, onLeave }: {
+  side: 'left' | 'right';
+  onTurn: () => void;
+  onHover: () => void;
+  onLeave: () => void;
+}) {
+  const right = side === 'right';
+  return (
+    <button
+      type="button"
+      aria-label={right ? 'Next page' : 'Previous page'}
+      onClick={(e) => { e.stopPropagation(); onTurn(); }}
+      onMouseEnter={onHover}
+      onMouseLeave={onLeave}
+      onFocus={onHover}
+      onBlur={onLeave}
+      className={`page-corner page-corner-${side} group absolute bottom-0 ${right ? 'right-0' : 'left-0'} w-[72px] h-[72px] z-30`}
+    >
+      {/* The folded-back flap */}
+      <span aria-hidden className="page-corner-flap" />
+      <span
+        aria-hidden
+        className={`absolute bottom-3 ${right ? 'right-[58px]' : 'left-[58px]'} whitespace-nowrap font-caveat text-[15px] text-[#8b6b4e] opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity duration-300`}
+      >
+        {right ? 'turn →' : '← back'}
+      </span>
+    </button>
+  );
+}
 
 // The book element is one page wide and its spine is its left edge. Once open,
 // the left page hangs off to the left, so shift right by half a spread
 // (one half-page = 200px at scale 1) to centre the open book on screen.
 const SPREAD_SHIFT = 200;
 
-export default function Book({ onStateChange, playTurnWeighted, playClick, playMulti, playQuill, startTheme, onPageTurn }: {
+export default function Book({ ready, onStateChange, playTurnWeighted, playClick, playMulti, playQuill, startTheme, onPageTurn }: {
+  /** False while the loader is still covering the page */
+  ready: boolean;
   onStateChange: (state: 'closed' | 'opening' | 'reading' | 'closing') => void;
   playTurnWeighted: (leafIndex: number) => void;
   playClick: () => void;
@@ -49,19 +100,25 @@ export default function Book({ onStateChange, playTurnWeighted, playClick, playM
   const containerRef = useRef<HTMLDivElement>(null);
   const bookRef = useRef<HTMLDivElement>(null);
   const leafRefs = useRef<HTMLDivElement[]>([]);
-  const bookmarkRef = useRef<HTMLDivElement>(null);
+  const bookmarkRef = useRef<HTMLButtonElement>(null);
   // Jump-sequence timers — cancelled on close or new jump
   const jumpTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+
+  // Page to land on when the opening animation finishes (set by jumpTo)
+  const openTargetRef = useRef<number | null>(null);
+  // Latest jumpTo for children rendered inside the memoised leaves
+  const jumpRef = useRef<(target: number) => void>(() => {});
 
   const leavesContent = useMemo(() => [
     { front: <CoverFront onOpen={() => { playClick(); handleOpen(); }} />, back: <InnerCover /> },
     { front: <div className="w-full h-full bg-parchment-right" />, back: <div className="w-full h-full bg-parchment-left shadow-[inset_-10px_0_20px_rgba(0,0,0,0.05)]" /> },
-    { front: <div className="w-full h-full bg-parchment-right shadow-[inset_10px_0_20px_rgba(0,0,0,0.05)]" />, back: <div className="w-full h-full bg-parchment-left shadow-[inset_-10px_0_20px_rgba(0,0,0,0.05)]" /> },
+    { front: <div className="w-full h-full bg-parchment-right shadow-[inset_10px_0_20px_rgba(0,0,0,0.05)]" />, back: <TableOfContents onJump={(id) => { playClick(); jumpRef.current(SECTION_PAGE[id]); }} /> },
     { front: <TitlePage />, back: <OriginLeft /> },
-    { front: <OriginTerminal active={pageIndex === 4} playSound={playQuill} />, back: <ExperienceLeft /> },
+    { front: <OriginTerminal active={pageIndex === SECTION_PAGE.origin} playSound={playQuill} />, back: <ExperienceLeft /> },
     { front: <ExperienceRight />, back: <ToolsLeft /> },
-    { front: <ToolsRight />, back: <ProjectsLeft /> },
-    { front: <ProjectsRight />, back: <FocusTerminal active={pageIndex === 8} playSound={playQuill} /> },
+    { front: <ToolsRight />, back: <ProjectsPage page={0} /> },
+    { front: <ProjectsPage page={1} />, back: <ProjectsPage page={2} /> },
+    { front: <ProjectsPage page={3} />, back: <FocusTerminal active={pageIndex === SECTION_PAGE.contact} playSound={playQuill} /> },
     { front: <ContactRight />, back: <GuestBookLeft /> },
     { front: <GuestBookRight onClose={() => handleClose()} onContentChange={setGuestbookHasContent} />, back: <InnerCover right={true} /> },
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -105,8 +162,8 @@ export default function Book({ onStateChange, playTurnWeighted, playClick, playM
 
   // Track mouse for 3D parallax when closed
   useGSAP(() => {
-    if (bookState !== 'closed') {
-      gsap.to(containerRef.current, { rotateX: 0, rotateY: 0, duration: 0.5, ease: "power2.out" });
+    if (bookState !== 'closed' || prefersReducedMotion()) {
+      gsap.to(containerRef.current, { rotateX: 0, rotateY: 0, duration: D(0.5), ease: "power2.out" });
       return;
     }
     
@@ -130,9 +187,9 @@ export default function Book({ onStateChange, playTurnWeighted, playClick, playM
         rotateX: 12,
         rotateY: -20,
         y: -15,
-        duration: 3,
-        yoyo: true,
-        repeat: -1,
+        duration: D(3),
+        yoyo: !prefersReducedMotion(),
+        repeat: prefersReducedMotion() ? 0 : -1,
         ease: "sine.inOut",
         overwrite: "auto"
       });
@@ -185,7 +242,7 @@ export default function Book({ onStateChange, playTurnWeighted, playClick, playM
       if (i < pageIndex) {
         gsap.to(leaf, {
           rotateY: -175,
-          duration: 0.85,
+          duration: D(0.85),
           ease: 'power2.inOut',
           zIndex: i,
           z: i * (26 / total) - 13,
@@ -195,7 +252,7 @@ export default function Book({ onStateChange, playTurnWeighted, playClick, playM
       } else {
         gsap.to(leaf, {
           rotateY: 0,
-          duration: 0.85,
+          duration: D(0.85),
           ease: 'power2.inOut',
           zIndex: (total - i) + total,
           z: (total - i) * (26 / total) - 13,
@@ -226,7 +283,9 @@ export default function Book({ onStateChange, playTurnWeighted, playClick, playM
       onComplete: () => {
         setBookState('reading');
         onStateChange('reading');
-        setPageIndex(3); // Land on TitlePage
+        // Contents | Title spread, unless a jump asked for a section
+        setPageIndex(openTargetRef.current ?? CONTENTS_PAGE);
+        openTargetRef.current = null;
       }
     });
 
@@ -234,6 +293,7 @@ export default function Book({ onStateChange, playTurnWeighted, playClick, playM
     tl.to(bookRef.current, { rotateX: 0, rotateY: 0, y: 0, x: SPREAD_SHIFT * scaleRef.current, duration: 1, ease: "power2.inOut" }, 0)
       .to(bookRef.current, { scale: scaleRef.current * 1.04, duration: 0.5, ease: 'sine.out' }, 0.3)
       .to(bookRef.current, { scale: scaleRef.current, duration: 0.4, ease: 'sine.inOut' }, 0.9);
+    if (prefersReducedMotion()) tl.timeScale(50);
       
     // Gently flip open the cover and flyleaves
     const leavesToFlip = [leafRefs.current[0], leafRefs.current[1], leafRefs.current[2]];
@@ -271,6 +331,7 @@ export default function Book({ onStateChange, playTurnWeighted, playClick, playM
         onStateChange('closed');
         
         // Start floating animation again
+        if (prefersReducedMotion()) return;
         gsap.to(bookRef.current, {
           rotateX: 12,
           rotateY: -20,
@@ -306,6 +367,7 @@ export default function Book({ onStateChange, playTurnWeighted, playClick, playM
     // Close the book cover 3D angle
     const coverCloseTime = openedLeaves.length * 0.15 + 0.3;
     tl.to(bookRef.current, { rotateX: 12, rotateY: -20, y: -15, x: 0, duration: 1.2, ease: "power2.inOut" }, coverCloseTime);
+    if (prefersReducedMotion()) tl.timeScale(50);
   };
 
   const turnNext = () => {
@@ -323,9 +385,9 @@ export default function Book({ onStateChange, playTurnWeighted, playClick, playM
     if (bookState !== 'reading') return;
     // leaf returning is pageIndex - 1
     playTurnWeighted(Math.max(0, pageIndex - 1));
-    if (pageIndex > 3) {
+    if (pageIndex > CONTENTS_PAGE) {
       setPageIndex(p => p - 1);
-    } else if (pageIndex === 3) {
+    } else if (pageIndex === CONTENTS_PAGE) {
       handleClose();
     }
   };
@@ -361,16 +423,16 @@ export default function Book({ onStateChange, playTurnWeighted, playClick, playM
   // Section catalogue
   const activeSection = CATALOGUE.reduce((best, entry) =>
     pageIndex >= entry.index ? entry : best, CATALOGUE[0]);
+  const beforeSections = pageIndex < CATALOGUE[0].index;
 
   // Ref to cancel any in-progress jump sequence (declared at top of component)
 
   const jumpTo = (target: number) => {
     if (bookState === 'closed') {
-      // Open the book, then jump directly to the target section once settled.
-      // The open animation takes ~1.4s; we wait 1.6s to be safe.
+      // Open the book; the opening timeline lands on the target section
+      // when it finishes (see openTargetRef in handleOpen).
+      openTargetRef.current = target;
       handleOpen();
-      const t = setTimeout(() => setPageIndex(target), 1600);
-      jumpTimersRef.current.push(t);
       return;
     }
     if (bookState !== 'reading') return;
@@ -392,7 +454,7 @@ export default function Book({ onStateChange, playTurnWeighted, playClick, playM
 
     // Multi-page jump: step through every page between current and target
     // Per-step delay: 180ms at 2 hops, compresses to 120ms for 5+ hops
-    const PER_STEP_MS = Math.max(120, Math.round(200 - (distance - 2) * 16));
+    const PER_STEP_MS = prefersReducedMotion() ? 0 : Math.max(120, Math.round(200 - (distance - 2) * 16));
     const direction = target > pageIndex ? 1 : -1;
 
     // Build the sequence of intermediate page indices to visit
@@ -413,6 +475,34 @@ export default function Book({ onStateChange, playTurnWeighted, playClick, playM
       jumpTimersRef.current.push(t);
     });
   };
+
+  useEffect(() => { jumpRef.current = jumpTo; });
+
+  // ── Deep links: #projects, #contact … ─────────────────────────────
+  // Opening grimoire.dev/#projects opens the book at that section once the
+  // loader is gone; reading updates the hash so the URL is always shareable.
+  const activeId = activeSection.id;
+  useEffect(() => {
+    if (!ready) return;
+    const go = () => {
+      const id = window.location.hash.slice(1);
+      if (isSection(id)) jumpRef.current(SECTION_PAGE[id]);
+    };
+    go();
+    window.addEventListener('hashchange', go);
+    return () => window.removeEventListener('hashchange', go);
+  }, [ready]);
+  const hasReadRef = useRef(false);
+  useEffect(() => {
+    if (bookState === 'reading') hasReadRef.current = true;
+    // Before the visitor has opened the book, leave an incoming #hash alone
+    // so the deep-link effect above can use it.
+    if (!hasReadRef.current || (bookState !== 'reading' && bookState !== 'closed')) return;
+    const hash = bookState === 'reading' && pageIndex >= SECTION_PAGE.origin ? `#${activeId}` : '';
+    if (window.location.hash !== hash) {
+      history.replaceState(null, '', hash || window.location.pathname + window.location.search);
+    }
+  }, [bookState, pageIndex, activeId]);
 
   // ── Page interactivity gating ─────────────────────────────────────
   // The HTML `inert` attribute is the only reliable way to block ALL interaction
@@ -558,8 +648,11 @@ export default function Book({ onStateChange, playTurnWeighted, playClick, playM
             }}
           >
             {/* Front — pointer-events toggled live by GSAP updateFace callback */}
-            <div className="absolute inset-0 backface-hidden flex" data-leaf-front>
+            <div className="absolute inset-0 backface-hidden flex isolate" data-leaf-front>
               {leaf.front}
+              {bookState === 'reading' && index >= CONTENTS_PAGE && index !== GUESTBOOK_PAGE && (
+                <PageCorner side="right" onTurn={turnNext} onHover={() => pushCursor('point')} onLeave={() => popCursor()} />
+              )}
               <div
                 data-leaf-shadow
                 className="absolute inset-0 pointer-events-none"
@@ -568,8 +661,11 @@ export default function Book({ onStateChange, playTurnWeighted, playClick, playM
             </div>
 
             {/* Back — pointer-events toggled live by GSAP updateFace callback */}
-            <div className="absolute inset-0 backface-hidden rotate-y-180 flex" data-leaf-back>
+            <div className="absolute inset-0 backface-hidden rotate-y-180 flex isolate" data-leaf-back>
               {leaf.back}
+              {bookState === 'reading' && index >= CONTENTS_PAGE - 1 && (
+                <PageCorner side="left" onTurn={turnPrev} onHover={() => pushCursor('point')} onLeave={() => popCursor()} />
+              )}
             </div>
           </div>
           );
@@ -579,7 +675,9 @@ export default function Book({ onStateChange, playTurnWeighted, playClick, playM
       </div>
 
       {/* Bookmark Close Button */}
-      <div 
+      <button
+        type="button"
+        aria-label="Close the book"
         ref={bookmarkRef}
         className={`absolute right-16 w-8 bg-[#a31a1a] shadow-lg z-40 transform hover:-translate-y-2 cursor-pointer flex flex-col items-center pt-2 transition-all duration-700 ease-in-out
           ${bookState === 'reading' ? 'top-0 h-32 translate-y-0 opacity-100 pointer-events-auto' : '-top-10 h-0 opacity-0 pointer-events-none'}`}
@@ -588,7 +686,7 @@ export default function Book({ onStateChange, playTurnWeighted, playClick, playM
         onClick={() => {
           playClick();
           // If the guestbook page is open and has unsaved content, confirm first
-          if (guestbookHasContent && pageIndex === 9) {
+          if (guestbookHasContent && pageIndex === GUESTBOOK_PAGE) {
             setCloseConfirmOpen(true);
           } else {
             handleClose();
@@ -598,7 +696,7 @@ export default function Book({ onStateChange, playTurnWeighted, playClick, playM
       >
         <div className="w-4 h-4 rounded-full border border-[#ffae00]/40 flex items-center justify-center text-[10px] text-[#ffae00] mb-1">✕</div>
         <div className="w-[1px] h-12 bg-black/20" />
-      </div>
+      </button>
 
       {/* Confirm-close modal — shown when closing with unsaved guestbook content */}
       <GrimoireModal
@@ -629,12 +727,14 @@ export default function Book({ onStateChange, playTurnWeighted, playClick, playM
         }}
       >
         {CATALOGUE.map((entry) => {
-          const isActive = activeSection.index === entry.index;
+          const isActive = !beforeSections && activeSection.index === entry.index;
           return (
             <button
               key={entry.label}
               onClick={() => jumpTo(entry.index)}
               title={entry.label}
+              aria-label={`Go to ${entry.label}`}
+              aria-current={isActive ? 'page' : undefined}
               onMouseEnter={() => pushCursor('rune')}
               onMouseLeave={() => popCursor()}
               className="group relative flex items-center transition-all duration-300 ease-in-out"
@@ -670,7 +770,7 @@ export default function Book({ onStateChange, playTurnWeighted, playClick, playM
       >
         <span className="font-cinzel text-[#d4c5a0] text-[10px] tracking-widest">← prev</span>
         <span className="text-[#8b6b4e] text-[10px]">·</span>
-        <span className="font-kalam text-[#a8b5a8] text-[11px]">arrow keys or swipe to turn pages</span>
+        <span className="font-kalam text-[#a8b5a8] text-[11px]">lift a page corner, use the arrow keys, or swipe</span>
         <span className="text-[#8b6b4e] text-[10px]">·</span>
         <span className="font-cinzel text-[#d4c5a0] text-[10px] tracking-widest">next →</span>
       </div>

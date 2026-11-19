@@ -15,8 +15,9 @@ const PHASES = [
 const PRELOAD_IMAGES = [
   '/photo1.jpg',
   '/photo2.jpg',
-  'https://www.transparenttextures.com/patterns/handmade-paper.png',
 ];
+// Never keep a visitor waiting longer than this, whatever is still loading
+const MAX_WAIT_MS = 2200;
 
 function preloadImages(urls: string[]): Promise<void[]> {
   return Promise.all(
@@ -69,7 +70,7 @@ export default function MagicalLoader({ onDone }: { onDone: () => void }) {
   // Main loading logic
   useEffect(() => {
     let prog = 0;
-    const MIN_MS = 2800; // minimum loader display time
+    const MIN_MS = 900; // long enough to read as intentional, short enough not to annoy
     const start = Date.now();
 
     // Tick progress smoothly
@@ -95,7 +96,7 @@ export default function MagicalLoader({ onDone }: { onDone: () => void }) {
           if (p >= 100) {
             clearInterval(rush);
             setExiting(true);
-            setTimeout(onDone, 900); // wait for fade-out
+            setTimeout(onDone, 500); // wait for fade-out
           }
         }, 30);
       }, remaining);
@@ -109,14 +110,15 @@ export default function MagicalLoader({ onDone }: { onDone: () => void }) {
         else window.addEventListener('load', () => resolve(), { once: true });
       }),
     ]).then(finish);
+    const cap = setTimeout(finish, MAX_WAIT_MS);
 
-    return () => clearInterval(ticker);
+    return () => { clearInterval(ticker); clearTimeout(cap); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
     <div
-      className={`fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#080c09] transition-opacity duration-700 ${exiting ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+      className={`fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#080c09] transition-opacity duration-500 ${exiting ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
     >
       {/* Ambient radial glow */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,#112b1c_0%,transparent_65%)] pointer-events-none" />

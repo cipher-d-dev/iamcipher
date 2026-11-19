@@ -11,8 +11,10 @@
 }
 
 @layer base {
-  /* Hide the native cursor everywhere — MagicCursor renders a custom one */
-  *, *::before, *::after {
+  /* Hide the native cursor only while MagicCursor is actually running (it
+     adds .magic-cursor to <html>). Touch screens, reduced-motion visitors,
+     or a JS failure all keep the normal cursor. */
+  html.magic-cursor *, html.magic-cursor *::before, html.magic-cursor *::after {
     cursor: none !important;
   }
 
@@ -190,4 +192,53 @@
 @keyframes magic-cursor-float {
   0%, 100% { transform: translateY(0px);  }
   50%       { transform: translateY(-4px); }
+}
+/* ── Page corners: hover/focus lifts the corner so it can be turned ───── */
+.page-corner-flap {
+  position: absolute;
+  bottom: 0;
+  width: 18px;
+  height: 18px;
+  transition: width 0.35s cubic-bezier(.2,.8,.2,1), height 0.35s cubic-bezier(.2,.8,.2,1), box-shadow 0.35s ease;
+  pointer-events: none;
+}
+.page-corner-right .page-corner-flap {
+  right: 0;
+  /* top-left half is the flap folded back over the page, bottom-right half is the gap it leaves */
+  background: linear-gradient(to bottom right, #f6edd2 0%, #e4d4a9 45%, #c8b383 49.5%, #0b0806 50.5%, #0b0806 100%);
+  border-top-left-radius: 2px;
+  box-shadow: -2px -2px 5px rgba(0,0,0,0.12);
+}
+.page-corner-left .page-corner-flap {
+  left: 0;
+  background: linear-gradient(to bottom left, #f6edd2 0%, #e4d4a9 45%, #c8b383 49.5%, #0b0806 50.5%, #0b0806 100%);
+  border-top-right-radius: 2px;
+  box-shadow: 2px -2px 5px rgba(0,0,0,0.12);
+}
+.page-corner:hover .page-corner-flap,
+.page-corner:focus-visible .page-corner-flap {
+  width: 54px;
+  height: 54px;
+}
+.page-corner-right:hover .page-corner-flap,
+.page-corner-right:focus-visible .page-corner-flap { box-shadow: -5px -5px 12px rgba(0,0,0,0.25); }
+.page-corner-left:hover .page-corner-flap,
+.page-corner-left:focus-visible .page-corner-flap { box-shadow: 5px -5px 12px rgba(0,0,0,0.25); }
+
+/* ── Keyboard focus: visible, on-theme outline ───────────────────────── */
+:focus-visible {
+  outline: 2px solid #d4af6a;
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+.page-corner:focus-visible { outline: none; }
+
+/* ── Reduced motion: stop decorative CSS animation ───────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }

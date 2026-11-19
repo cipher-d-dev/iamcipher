@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useSyncExternalStore } from 'react';
 import { useCursor, CursorState } from '@/context/CursorContext';
 
 // ── Config ────────────────────────────────────────────────────────────
@@ -227,8 +227,32 @@ function paintSigils(ctx: CanvasRenderingContext2D, sigils: Sigil[], now: number
 }
 
 // ── Component ─────────────────────────────────────────────────────────
+// Only take over the cursor for a real mouse, and never for visitors who
+// asked their OS for reduced motion. Everyone else keeps the native cursor.
+const FANCY_QUERY = '(pointer: fine) and (prefers-reduced-motion: no-preference)';
+function subscribeFancy(cb: () => void) {
+  const mql = window.matchMedia(FANCY_QUERY);
+  mql.addEventListener('change', cb);
+  return () => mql.removeEventListener('change', cb);
+}
+
 export default function MagicCursor() {
+  const enabled = useSyncExternalStore(
+    subscribeFancy,
+    () => window.matchMedia(FANCY_QUERY).matches,
+    () => false,
+  );
+  return enabled ? <MagicCursorInner /> : null;
+}
+
+function MagicCursorInner() {
   const { cursorState } = useCursor();
+
+  // Hide the native cursor only while this one is mounted (see globals.css)
+  useEffect(() => {
+    document.documentElement.classList.add('magic-cursor');
+    return () => document.documentElement.classList.remove('magic-cursor');
+  }, []);
 
   const sharpRef  = useRef<HTMLDivElement>(null);
   const auraRef   = useRef<HTMLDivElement>(null);

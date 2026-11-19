@@ -350,7 +350,7 @@ export const CoverBack = React.memo(function CoverBack() {
 
 export const TitlePage = React.memo(function TitlePage({ mobile = false }: { mobile?: boolean }) {
   return (
-    <div className={`w-full h-full bg-parchment-right p-6 relative overflow-auto
+    <div className={`w-full h-full bg-parchment-right p-6 relative ${mobile ? 'overflow-auto' : 'overflow-hidden'}
       ${mobile ? '' : 'rounded-r-md shadow-[inset_-10px_0_20px_rgba(0,0,0,0.1)] border-l-2 border-[#d4c5a0]'}`}>
       <span className="absolute top-6 right-6 text-[#8b6b4e] text-2xl opacity-40 font-cinzel">ᛉ</span>
       <span className="absolute bottom-6 right-6 text-[#8b6b4e] text-2xl opacity-40 font-cinzel">ᛏ</span>
@@ -373,9 +373,53 @@ export const TitlePage = React.memo(function TitlePage({ mobile = false }: { mob
   );
 });
 
+// ── Table of contents ────────────────────────────────────────────────
+// Sits on the left page of the title spread (previously blank) so the very
+// first spread already tells visitors what is inside and lets them jump.
+export const TOC_ENTRIES = [
+  { id: 'origin',     label: 'The Origin Incantation', rune: 'ᚩ' },
+  { id: 'experience', label: 'Journeys & Quests',      rune: 'ᛖ' },
+  { id: 'tools',      label: 'Runes & Tools',          rune: 'ᛏ' },
+  { id: 'projects',   label: 'Arcane Constructs',      rune: 'ᛈ' },
+  { id: 'contact',    label: 'Current Focus & Contact', rune: 'ᛗ' },
+  { id: 'guestbook',  label: 'Leave a Word',           rune: 'ᛟ' },
+] as const;
+export type SectionId = typeof TOC_ENTRIES[number]['id'];
+
+export function TableOfContents({ onJump }: { onJump: (id: SectionId) => void }) {
+  return (
+    <div className="w-full h-full bg-parchment-left rounded-l-md px-10 py-12 shadow-[inset_10px_0_20px_rgba(0,0,0,0.15)] border-r-2 border-[#d4c5a0] flex flex-col overflow-hidden">
+      <p className="font-cinzel text-[10px] tracking-[0.3em] text-[#8b6b4e] uppercase text-center">Contents</p>
+      <div className="w-10 h-[1px] bg-[#a4302a]/60 mx-auto mt-2 mb-8" />
+      <nav aria-label="Table of contents">
+        <ol className="space-y-[18px]">
+          {TOC_ENTRIES.map((e, i) => (
+            <li key={e.id}>
+              <button
+                type="button"
+                onClick={() => onJump(e.id)}
+                className="group w-full flex items-baseline gap-3 text-left font-serif text-[14px] text-[#1a0f05] hover:text-[#a4302a] transition-colors"
+              >
+                <span className="font-cinzel text-[#a4302a]/70 w-4 text-center shrink-0">{e.rune}</span>
+                <span className="shrink-0">{e.label}</span>
+                <span aria-hidden className="flex-1 border-b border-dotted border-[#8b6b4e]/50 translate-y-[-4px] group-hover:border-[#a4302a]/60" />
+                <span className="font-cinzel text-[11px] text-[#8b6b4e] shrink-0">{['i', 'ii', 'iii', 'iv', 'v', 'vi'][i]}</span>
+              </button>
+            </li>
+          ))}
+        </ol>
+      </nav>
+      <div className="mt-auto text-center space-y-1.5">
+        <p className="font-caveat text-[17px] text-[#5c4d33]">Lift a page corner to turn it,</p>
+        <p className="font-kalam text-[10.5px] text-[#8b6b4e] italic">or use ← → · Esc closes the book</p>
+      </div>
+    </div>
+  );
+}
+
 export const OriginLeft = React.memo(function OriginLeft({ mobile = false }: { mobile?: boolean }) {
   return (
-    <div className={`w-full h-full bg-parchment-left flex flex-col justify-center overflow-auto
+    <div className={`w-full h-full bg-parchment-left flex flex-col justify-center ${mobile ? 'overflow-auto' : 'overflow-hidden'}
       ${mobile ? 'p-6' : 'rounded-l-md p-10 shadow-[inset_10px_0_20px_rgba(0,0,0,0.15)] border-r-2 border-[#d4c5a0]'}`}>
       <h2 className={`font-cinzel font-semibold text-[#1a0f05] mb-6 border-b border-[#8b6b4e]/30 pb-4 inline-block self-start
         ${mobile ? 'text-xl' : 'text-2xl'}`}>
@@ -460,7 +504,7 @@ export const OriginTerminal = React.memo(function OriginTerminal({ active, mobil
 
 export const ExperienceLeft = React.memo(function ExperienceLeft({ mobile = false }: { mobile?: boolean }) {
   return (
-    <div className={`w-full h-full bg-parchment-left flex flex-col overflow-auto
+    <div className={`w-full h-full bg-parchment-left flex flex-col ${mobile ? 'overflow-auto' : 'overflow-hidden'}
       ${mobile ? 'p-6' : 'rounded-l-md p-10 shadow-[inset_10px_0_20px_rgba(0,0,0,0.15)] border-r-2 border-[#d4c5a0]'}`}>
       <div className="w-16 h-16 rounded-full border-2 border-[#a4302a] flex items-center justify-center mb-6 shrink-0 relative">
         <div className="absolute inset-1 rounded-full border border-[#d4af6a]/50 border-dashed animate-[spin_20s_linear_infinite]" />
@@ -497,7 +541,7 @@ export const ExperienceLeft = React.memo(function ExperienceLeft({ mobile = fals
 
 export const ExperienceRight = React.memo(function ExperienceRight({ mobile = false }: { mobile?: boolean }) {
   return (
-    <div className={`w-full h-full bg-parchment-right flex flex-col overflow-auto
+    <div className={`w-full h-full bg-parchment-right flex flex-col ${mobile ? 'overflow-auto' : 'overflow-hidden'}
       ${mobile ? 'p-6' : 'rounded-r-md p-10 shadow-[inset_-10px_0_20px_rgba(0,0,0,0.15)] border-l-2 border-[#d4c5a0]'}`}>
       {!mobile && <div className="w-full h-8 border-b border-[#a4302a] mb-6 opacity-0" />}
       {mobile && <h2 className="text-xl font-cinzel font-semibold text-[#1a0f05] mb-4 border-b border-[#a4302a] pb-1">Journeys &amp; Quests (cont.)</h2>}
@@ -528,12 +572,12 @@ export const ExperienceRight = React.memo(function ExperienceRight({ mobile = fa
 
 export const ToolsLeft = React.memo(function ToolsLeft({ mobile = false }: { mobile?: boolean }) {
   return (
-    <div className={`w-full h-full bg-parchment-left flex flex-col overflow-auto
+    <div className={`w-full h-full bg-parchment-left flex flex-col ${mobile ? 'overflow-auto' : 'overflow-hidden'}
       ${mobile ? 'p-6' : 'rounded-l-md p-10 shadow-[inset_10px_0_20px_rgba(0,0,0,0.15)] border-r-2 border-[#d4c5a0]'}`}>
       <h2 className={`font-cinzel font-semibold text-[#1a0f05] mb-6 border-b border-[#a4302a] pb-2 inline-block self-start
         ${mobile ? 'text-xl' : 'text-2xl'}`}>Core &amp; Frontend Runes</h2>
 
-      <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-4" style={{ isolation: 'isolate' }}>
+      <div className="flex-1 pr-2 space-y-4">
         <div className="space-y-4 text-[13px] font-serif">
           <div className="group relative border border-[#c9b783] bg-[#f4ebd0]/50 p-3 shadow-sm hover:shadow-md transition-shadow">
             <h3 className={`font-semibold font-cinzel text-[#1a0f05] mb-2 flex items-center gap-2 ${mobile ? 'text-base' : 'text-[15px]'}`}>
@@ -580,11 +624,9 @@ export const ToolsLeft = React.memo(function ToolsLeft({ mobile = false }: { mob
 
 export const ToolsRight = React.memo(function ToolsRight({ mobile = false }: { mobile?: boolean }) {
   return (
-    <div className={`w-full h-full bg-parchment-right flex flex-col overflow-auto
+    <div className={`w-full h-full bg-parchment-right flex flex-col ${mobile ? 'overflow-auto' : 'overflow-hidden'}
       ${mobile ? 'p-6' : 'rounded-r-md p-10 shadow-[inset_-10px_0_20px_rgba(0,0,0,0.15)] border-l-2 border-[#d4c5a0]'}`}>
-      {!mobile && <div className="w-full h-8 border-b border-[#a4302a] mb-6 opacity-0" />}
-
-      <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-4" style={{ isolation: 'isolate' }}>
+      <div className="flex-1 pr-2 space-y-4">
         <h2 className={`font-cinzel font-semibold text-[#1a0f05] mb-2 border-b border-[#a4302a] pb-2 inline-block self-start
           ${mobile ? 'text-xl' : 'text-2xl'}`}>Backend &amp; Systems</h2>
 
@@ -645,123 +687,130 @@ export const ToolsRight = React.memo(function ToolsRight({ mobile = false }: { m
   );
 });
 
-export const ProjectsLeft = React.memo(function ProjectsLeft({ mobile = false }: { mobile?: boolean }) {
+// ── Projects ─────────────────────────────────────────────────────────
+// Single source of truth for the book, the phone reader and the plain
+// summary page. Ordered by how much each one says about the work.
+export interface Project {
+  name: string;
+  year: string;
+  role: string;
+  stack: string;
+  blurb: string;
+  github?: string;
+  live?: string;
+  tag?: string;
+}
+
+export const PROJECTS: Project[] = [
+  {
+    name: 'Quellix', year: '2026', role: 'Creator & Lead Developer', tag: 'open-source',
+    stack: 'TS / React / Express / Prisma / PostgreSQL',
+    blurb: 'Open-source authentication SDK for React: drop-in components, hooks, sessions, MFA and organizations, backed by a self-hostable API. Clerk-grade auth without the vendor lock-in.',
+    github: 'https://github.com/cipher-d-dev/Quellix',
+  },
+  {
+    name: 'Clarion', year: '2026', role: 'Fullstack & AI Engineer',
+    stack: 'TS / React / AI Pipelines / Express / PostgreSQL',
+    blurb: 'AI-powered complaint and issue platform for tertiary institutions. Classifies tickets, routes them to the right office, and tracks them in real time with admin analytics.',
+    github: 'https://github.com/cipher-d-dev/Clarion', live: 'https://clarion-schools.vercel.app',
+  },
+  {
+    name: 'Aetheris', year: '2026', role: 'Systems & Security Developer',
+    stack: 'React Native / Kotlin / Nearby Connections / libsodium',
+    blurb: 'Offline messenger where every phone is a relay. Messages hop device-to-device over Bluetooth and Wi‑Fi along the shortest route, end-to-end encrypted, with signed route announcements so relays can\'t hijack traffic.',
+    github: 'https://github.com/cipher-d-dev/Aetheris',
+  },
+  {
+    name: 'cipher_auth', year: '2026', role: 'Backend & Security Engineer',
+    stack: 'JS / TS / Node.js / Passport.js',
+    blurb: 'Authentication infrastructure built on Passport for JS/TS apps. Secure by default, customizable by design.',
+    github: 'https://github.com/cipher-d-dev/cipher_auth',
+  },
+  {
+    name: 'ISBMPA', year: '2025 – now', role: 'Senior Fullstack Engineer',
+    stack: 'TS / React / Appwrite',
+    blurb: 'Official government liaison website for institutional media and information. Built the media gallery hosting, custom domain routing and backend tuning.',
+    github: 'https://github.com/cipher-d-dev/isbmpa', live: 'https://isbmpa.com',
+  },
+  {
+    name: 'fslens', year: '2026', role: 'Frontend Engineer',
+    stack: 'TS / React / Next.js / Tailwind CSS',
+    blurb: 'Cinematic portfolio for a professional videographer: fast media delivery, responsive galleries and motion-led layouts.',
+    github: 'https://github.com/cipher-d-dev/fslens', live: 'https://fslens.vercel.app',
+  },
+  {
+    name: 'Weft', year: '2026', role: 'Android Developer',
+    stack: 'Kotlin / Android SDK',
+    blurb: 'A working Android home-screen launcher built on a live design-token architecture.',
+    github: 'https://github.com/cipher-d-dev/Weft',
+  },
+  {
+    name: 'Hopper', year: '2026', role: 'Systems Developer',
+    stack: 'C# / C++ / Windows API',
+    blurb: 'Keyboard-driven Windows automation tool for fast navigation and quick execution.',
+    github: 'https://github.com/cipher-d-dev/Hopper',
+  },
+  {
+    name: 'Traverse Programming', year: '2025', role: 'Desktop Developer',
+    stack: 'VB.NET / Windows Forms',
+    blurb: 'Closed-traverse computation for surveying: bearings, Bowditch adjustment, coordinates, accuracy and area.',
+    github: 'https://github.com/cipher-d-dev/Tranverse-Programming-Surverying',
+  },
+];
+
+// How the projects are laid out across the book's pages (no page scrolls).
+export const PROJECT_PAGES: Project[][] = [
+  PROJECTS.slice(0, 2),
+  PROJECTS.slice(2, 4),
+  PROJECTS.slice(4, 6),
+  PROJECTS.slice(6, 9),
+];
+const NUMERALS = ['I', 'II', 'III', 'IV'];
+
+export const ProjectsPage = React.memo(function ProjectsPage({
+  page, mobile = false,
+}: { page: number; mobile?: boolean }) {
+  const side: 'left' | 'right' = page % 2 === 0 ? 'left' : 'right';
+  const items = PROJECT_PAGES[page];
+  const compact = items.length > 2;
   const linkClass = `inline-block font-kalam text-[#2f5d8a] hover:text-[#1a0f05] border-b border-dashed border-[#2f5d8a] transition-colors relative z-10 ${mobile ? 'text-sm' : 'text-[12.5px]'}`;
-  const metaClass = `text-[#5c4d33] font-mono tracking-[0.03em] mb-2 ${mobile ? 'text-[11px]' : 'text-[9px]'}`;
-  const bodyClass = `text-[#1a0f05] leading-[1.62] mb-2 font-serif ${mobile ? 'text-sm' : 'text-[13.5px]'}`;
-  const titleClass = `font-semibold font-cinzel text-[#1a0f05] mb-1 ${mobile ? 'text-lg' : 'text-[17px]'}`;
+  const metaClass = `text-[#5c4d33] font-mono tracking-[0.03em] mb-1.5 ${mobile ? 'text-[11px]' : 'text-[9px]'}`;
+  const bodyClass = `text-[#1a0f05] mb-1.5 font-serif ${mobile ? 'text-sm leading-[1.6]' : compact ? 'text-[12.5px] leading-[1.5]' : 'text-[13px] leading-[1.58]'}`;
+  const titleClass = `font-semibold font-cinzel text-[#1a0f05] mb-0.5 ${mobile ? 'text-lg' : 'text-[17px]'}`;
+  const frame = side === 'left'
+    ? 'bg-parchment-left rounded-l-md shadow-[inset_10px_0_20px_rgba(0,0,0,0.15)] border-r-2 border-[#d4c5a0]'
+    : 'bg-parchment-right rounded-r-md shadow-[inset_-10px_0_20px_rgba(0,0,0,0.15)] border-l-2 border-[#d4c5a0]';
 
   return (
-    <div className={`w-full h-full bg-parchment-left flex flex-col overflow-auto
-      ${mobile ? 'p-6' : 'rounded-l-md p-10 shadow-[inset_10px_0_20px_rgba(0,0,0,0.15)] border-r-2 border-[#d4c5a0]'}`}>
-      <h2 className={`font-cinzel font-semibold text-[#1a0f05] mb-6 border-b border-[#a4302a] pb-2 inline-block self-start
-        ${mobile ? 'text-xl' : 'text-2xl'}`}>Arcane Constructs (I)</h2>
-
-      <div className="flex-1 overflow-y-auto pr-4 custom-scrollbar space-y-6 pb-8" style={{ isolation: 'isolate' }}>
-        <div className="group relative">
-          <div className="flex items-center justify-between mb-1">
-            <h3 className={titleClass}>Quellix</h3>
-            <span className="font-caveat text-[#a4302a] text-sm rotate-[3deg]">open-source →</span>
-          </div>
-          <p className={metaClass}>2026 · Creator &amp; Lead Developer · TS / React / Express / Prisma / PostgreSQL</p>
-          <p className={bodyClass}>An opinionated open-source authentication SDK designed for React, providing drop-in UI components, custom hooks, and a pre-configured backend. Eliminates auth setup overhead for developers.</p>
-          <div className="flex gap-4">
-            <a href="https://github.com/cipher-d-dev/Quellix" target="_blank" rel="noreferrer" className={linkClass}>→ GitHub</a>
-          </div>
-        </div>
-
-        <div className="group relative">
-          <h3 className={titleClass}>Clarion</h3>
-          <p className={metaClass}>2026 · Fullstack &amp; AI Engineer · TS / React / AI Pipelines / Express / PostgreSQL</p>
-          <p className={bodyClass}>An AI-powered complaint, report, and issue management platform for tertiary institutions. Automates ticket classification, intelligent routing, and real-time tracking with administrative analytics.</p>
-          <div className="flex gap-4">
-            <a href="https://github.com/cipher-d-dev/Clarion" target="_blank" rel="noreferrer" className={linkClass}>→ GitHub</a>
-            <a href="https://clarion-schools.vercel.app" target="_blank" rel="noreferrer" className={linkClass}>→ Live</a>
-          </div>
-        </div>
-
-        <div className="group relative">
-          <h3 className={titleClass}>cipher_auth</h3>
-          <p className={metaClass}>2026 · Backend &amp; Security Engineer · JS / TS / Node.js / Passport.js</p>
-          <p className={bodyClass}>Modern authentication infrastructure built on top of Passport for JS/TS applications. Engineered to be secure by default and customizable by design.</p>
-          <div className="flex gap-4">
-            <a href="https://github.com/cipher-d-dev/cipher_auth" target="_blank" rel="noreferrer" className={linkClass}>→ GitHub</a>
-          </div>
-        </div>
-
-        <div className="group relative">
-          <h3 className={titleClass}>Aetheris</h3>
-          <p className={metaClass}>2026 · Systems &amp; Security Developer · React Native / Kotlin / Nearby Connections / libsodium</p>
-          <p className={bodyClass}>Offline messenger where every phone is a relay. Messages hop device-to-device over Bluetooth and Wi‑Fi along the shortest route, wait and re-route when people walk away, and stay end-to-end encrypted, with signed route announcements so relays can&apos;t hijack traffic.</p>
-          <div className="flex gap-4">
-            <a href="https://github.com/cipher-d-dev/Aetheris" target="_blank" rel="noreferrer" className={linkClass}>→ GitHub</a>
-          </div>
-        </div>
-
-        <div className="group relative">
-          <h3 className={titleClass}>ISBMPA</h3>
-          <p className={metaClass}>2025 – Present · Senior Fullstack Engineer · TS / React / Appwrite</p>
-          <p className={bodyClass}>Official government liaison website serving institutional media and information. Architected media gallery hosting, configured custom domain routing, and optimized backend limits.</p>
-          <div className="flex gap-4">
-            <a href="https://github.com/cipher-d-dev/isbmpa" target="_blank" rel="noreferrer" className={linkClass}>→ GitHub</a>
-            <a href="https://isbmpa.com" target="_blank" rel="noreferrer" className={linkClass}>→ Live</a>
-          </div>
-        </div>
+    <div className={`w-full h-full flex flex-col ${mobile ? `${side === 'left' ? 'bg-parchment-left' : 'bg-parchment-right'} p-6 overflow-auto` : `${frame} px-10 py-9 overflow-hidden`}`}>
+      <div className="flex items-baseline justify-between mb-5 border-b border-[#a4302a] pb-2">
+        <h2 className={`font-cinzel font-semibold text-[#1a0f05] ${mobile ? 'text-xl' : 'text-2xl'}`}>
+          Arcane Constructs <span className="text-[#a4302a]">{NUMERALS[page]}</span>
+        </h2>
+        <span className="font-mono text-[9px] text-[#8b6b4e]">{page + 1}/{PROJECT_PAGES.length}</span>
       </div>
-    </div>
-  );
-});
-
-export const ProjectsRight = React.memo(function ProjectsRight({ mobile = false }: { mobile?: boolean }) {
-  const linkClass = `inline-block font-kalam text-[#2f5d8a] hover:text-[#1a0f05] border-b border-dashed border-[#2f5d8a] transition-colors relative z-10 ${mobile ? 'text-sm' : 'text-[12.5px]'}`;
-  const metaClass = `text-[#5c4d33] font-mono tracking-[0.03em] mb-2 ${mobile ? 'text-[11px]' : 'text-[9px]'}`;
-  const bodyClass = `text-[#1a0f05] leading-[1.62] mb-2 font-serif ${mobile ? 'text-sm' : 'text-[13.5px]'}`;
-  const titleClass = `font-semibold font-cinzel text-[#1a0f05] mb-1 ${mobile ? 'text-lg' : 'text-[17px]'}`;
-
-  return (
-    <div className={`w-full h-full bg-parchment-right flex flex-col overflow-auto
-      ${mobile ? 'p-6' : 'rounded-r-md p-10 shadow-[inset_-10px_0_20px_rgba(0,0,0,0.15)] border-l-2 border-[#d4c5a0]'}`}>
-      <h2 className={`font-cinzel font-semibold text-[#1a0f05] mb-6 border-b border-[#a4302a] pb-2 inline-block self-start
-        ${mobile ? 'text-xl' : 'text-2xl'}`}>Arcane Constructs (II)</h2>
-
-      <div className="flex-1 overflow-y-auto pr-4 custom-scrollbar space-y-6 pb-8" style={{ isolation: 'isolate' }}>
-        <div className="group relative">
-          <h3 className={titleClass}>Weft</h3>
-          <p className={metaClass}>2026 · Android Developer · Kotlin / Android SDK / System Architecture</p>
-          <p className={bodyClass}>A functional Android home screen launcher demonstrating a live design token architecture. Designed to showcase dynamic UI state management and custom system-level customization.</p>
-          <div className="flex gap-4">
-            <a href="https://github.com/cipher-d-dev/Weft" target="_blank" rel="noreferrer" className={linkClass}>→ GitHub</a>
-          </div>
-        </div>
-
-        <div className="group relative">
-          <h3 className={titleClass}>Hopper</h3>
-          <p className={metaClass}>2026 · Systems Developer · C# / C++ / Windows API</p>
-          <p className={bodyClass}>A lightweight Windows automation tool built for keyboard-driven productivity workflows, streamlining system navigation and quick execution tasks for power users.</p>
-          <div className="flex gap-4">
-            <a href="https://github.com/cipher-d-dev/Hopper" target="_blank" rel="noreferrer" className={linkClass}>→ GitHub</a>
-          </div>
-        </div>
-
-        <div className="group relative">
-          <h3 className={titleClass}>fslens</h3>
-          <p className={metaClass}>2026 · Frontend Engineer · TS / React / Next.js / Tailwind CSS</p>
-          <p className={bodyClass}>A cinematic portfolio website developed for a professional videographer, featuring high-performance media delivery, responsive galleries, and dynamic visual layouts.</p>
-          <div className="flex gap-4">
-            <a href="https://github.com/cipher-d-dev/fslens" target="_blank" rel="noreferrer" className={linkClass}>→ GitHub</a>
-            <a href="https://fslens.vercel.app" target="_blank" rel="noreferrer" className={linkClass}>→ Live</a>
-          </div>
-        </div>
-
-        <div className="group relative">
-          <h3 className={titleClass}>Traverse Programming</h3>
-          <p className={metaClass}>2025 · Desktop Developer · VB.NET / Windows Forms / Algorithmic Comp.</p>
-          <p className={bodyClass}>A closed-traverse computation program for Surveying (SVY 323). Computes forward/back bearings, Bowditch adjustments, final coordinates, linear accuracy, and enclosed areas.</p>
-          <div className="flex gap-4">
-            <a href="https://github.com/cipher-d-dev/Tranverse-Programming-Surverying" target="_blank" rel="noreferrer" className={linkClass}>→ GitHub</a>
-          </div>
-        </div>
+      <div className={compact ? 'space-y-4' : 'space-y-6'}>
+        {items.map((proj) => (
+          <article key={proj.name} className="relative">
+            <div className="flex items-center justify-between">
+              <h3 className={titleClass}>{proj.name}</h3>
+              {proj.tag && <span className="font-caveat text-[#a4302a] text-sm rotate-[3deg]">{proj.tag} →</span>}
+            </div>
+            <p className={metaClass}>{proj.year} · {proj.role} · {proj.stack}</p>
+            <p className={bodyClass}>{proj.blurb}</p>
+            <div className="flex gap-4">
+              {proj.github && <a href={proj.github} target="_blank" rel="noreferrer" className={linkClass} aria-label={`${proj.name} on GitHub`}>→ GitHub</a>}
+              {proj.live && <a href={proj.live} target="_blank" rel="noreferrer" className={linkClass} aria-label={`${proj.name} live site`}>→ Live</a>}
+            </div>
+          </article>
+        ))}
       </div>
+      {page === PROJECT_PAGES.length - 1 && (
+        <p className={`mt-auto pt-4 font-caveat text-[#5c4d33] text-center ${mobile ? 'text-base' : 'text-[16px]'}`}>
+          more experiments live on{' '}
+          <a href="https://github.com/cipher-d-dev" target="_blank" rel="noreferrer" className="text-[#2f5d8a] border-b border-dashed border-[#2f5d8a]">github</a>
+        </p>
+      )}
     </div>
   );
 });
@@ -799,7 +848,7 @@ export const ContactRight = React.memo(function ContactRight({ mobile = false }:
   const linkClass = 'text-[#1a0f05] hover:text-[#2f5d8a] transition-colors relative z-10';
 
   return (
-    <div className={`w-full h-full bg-parchment-right flex flex-col justify-center overflow-auto
+    <div className={`w-full h-full bg-parchment-right flex flex-col justify-center ${mobile ? 'overflow-auto' : 'overflow-hidden'}
       ${mobile ? 'p-6' : 'rounded-r-md p-10 shadow-[inset_-10px_0_20px_rgba(0,0,0,0.15)] border-l-2 border-[#d4c5a0]'}`}
       style={{ isolation: 'isolate' }}>
       <span className="absolute top-6 right-6 text-[#8b6b4e] text-2xl opacity-40 font-cinzel">ᛃ</span>
@@ -927,6 +976,9 @@ export function GuestBookRight({
   const [message, setMessage] = React.useState('');
   const [status, setStatus] = React.useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
   const [modalOpen, setModalOpen] = React.useState(false);
+  // Handwriting is the signature touch; typing is always one click away
+  // for keyboard, screen-reader and trackpad users.
+  const [mode, setMode] = React.useState<'hand' | 'type'>('hand');
   const { pushCursor, popCursor } = useCursor();
 
   const handleTextChange = (text: string) => {
@@ -981,27 +1033,61 @@ export function GuestBookRight({
           />
         </div>
 
-        {/* Handwriting canvas — fills the writing area, IS the page */}
-        <div className="flex-1 min-h-0 relative overflow-hidden"
-          onMouseEnter={() => pushCursor('brush')}
-          onMouseLeave={() => popCursor()}
-        >
-          <React.Suspense fallback={
-            <div className="absolute inset-0 bg-[#edeef0]/40 flex items-center justify-center">
-              <span className="font-kalam text-[#8b6b4e] text-[11px] italic animate-pulse">loading…</span>
-            </div>
-          }>
-            <HandwritingInputLazy
-              onTextChange={handleTextChange}
+        {/* Write / type switch */}
+        <div className="relative z-20 flex items-center gap-3 shrink-0 -mt-1" role="radiogroup" aria-label="How to write your message">
+          {(['hand', 'type'] as const).map((m) => (
+            <button
+              key={m}
+              type="button"
+              role="radio"
+              aria-checked={mode === m}
               disabled={status !== 'idle'}
-            />
-          </React.Suspense>
+              onClick={() => setMode(m)}
+              className={`font-kalam text-[11px] transition-colors ${mode === m ? 'text-[#a4302a] underline underline-offset-4 decoration-dashed' : 'text-[#8b6b4e]/70 hover:text-[#1a0f05]'}`}
+            >
+              {m === 'hand' ? '✎ write by hand' : 'Aa type instead'}
+            </button>
+          ))}
         </div>
+
+        {mode === 'hand' ? (
+          /* Handwriting canvas — fills the writing area, IS the page */
+          <div className="flex-1 min-h-0 relative overflow-hidden"
+            onMouseEnter={() => pushCursor('brush')}
+            onMouseLeave={() => popCursor()}
+          >
+            <React.Suspense fallback={
+              <div className="absolute inset-0 bg-[#edeef0]/40 flex items-center justify-center">
+                <span className="font-kalam text-[#8b6b4e] text-[11px] italic animate-pulse">loading…</span>
+              </div>
+            }>
+              <HandwritingInputLazy
+                initialText={message}
+                onTextChange={handleTextChange}
+                disabled={status !== 'idle'}
+              />
+            </React.Suspense>
+          </div>
+        ) : (
+          <textarea
+            value={message}
+            onChange={(e) => handleTextChange(e.target.value.slice(0, 1000))}
+            disabled={status !== 'idle'}
+            aria-label="Your message"
+            placeholder="Write your message…"
+            autoFocus
+            className="flex-1 min-h-0 resize-none rounded-sm bg-[#edeef0]/60 px-3 py-1 font-caveat text-[20px] text-[#1a0f05] leading-[32px] outline-none placeholder:text-[#8b6b4e]/40 focus-visible:outline-2 focus-visible:outline-[#d4af6a]"
+            style={{
+              backgroundImage: 'repeating-linear-gradient(180deg, transparent 0px, transparent 31px, rgba(160,160,175,0.3) 32px)',
+              backgroundPosition: '0 4px',
+            }}
+          />
+        )}
 
         {/* Footer */}
         <div className="relative z-20 flex items-center justify-between pt-2 border-t border-[#c9b783]/40 shrink-0">
           <span className="font-mono text-[9px] text-[#8b6b4e]/40">
-            {message ? `"${message.slice(0, 28)}${message.length > 28 ? '…' : ''}"` : 'draw to compose'}
+            {message ? `"${message.slice(0, 28)}${message.length > 28 ? '…' : ''}"` : mode === 'hand' ? 'draw to compose' : 'type to compose'}
           </span>
 
           {status === 'sent' ? (
@@ -1035,7 +1121,7 @@ export function GuestBookRight({
         variant="alert"
         rune="ᚹ"
         title="The page is blank"
-        message="Your quill has not yet touched the parchment. Draw your message before sealing it."
+        message="Your quill has not yet touched the parchment. Write your message before sealing it."
         confirmLabel="I shall write"
         onConfirm={() => setModalOpen(false)}
       />

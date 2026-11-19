@@ -2,6 +2,8 @@
 import { useRef, useEffect, useCallback, useState } from 'react';
 
 interface HandwritingInputProps {
+  /** Text already composed (e.g. typed before switching back to the pen) */
+  initialText?: string;
   onTextChange: (text: string) => void;
   disabled?: boolean;
 }
@@ -61,7 +63,7 @@ async function recognizeStrokes(
 }
 
 // ─────────────────────────────────────────────────────────────────────
-export default function HandwritingInput({ onTextChange, disabled = false }: HandwritingInputProps) {
+export default function HandwritingInput({ initialText = '', onTextChange, disabled = false }: HandwritingInputProps) {
   const canvasRef    = useRef<HTMLCanvasElement>(null);
   const isDown       = useRef(false);
   const strokesRef   = useRef<Stroke[]>([]);
@@ -77,7 +79,7 @@ export default function HandwritingInput({ onTextChange, disabled = false }: Han
 
   const [recognizing, setRecognizing] = useState(false);
   const [failed,      setFailed]      = useState(false);
-  const [text,        setText]        = useState('');
+  const [text,        setText]        = useState(initialText);
   // Undo: store previous text snapshots
   const undoStack = useRef<string[]>([]);
   const redoStack = useRef<string[]>([]);

@@ -1,10 +1,10 @@
 'use client';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
   TitlePage, OriginLeft, OriginTerminal,
   ExperienceLeft, ExperienceRight,
   ToolsLeft, ToolsRight,
-  ProjectsLeft, ProjectsRight,
+  ProjectsPage, PROJECT_PAGES, type SectionId,
   FocusTerminal, ContactRight,
   GuestBookLeft, GuestBookRight,
   InnerCover,
@@ -19,8 +19,7 @@ const PAGES: { label: string; rune: string; node: React.ReactNode }[] = [
   { label: 'Experience',  rune: 'ᛖ', node: <ExperienceRight mobile /> },
   { label: 'Tools',       rune: 'ᛏ', node: <ToolsLeft mobile /> },
   { label: 'Tools',       rune: 'ᛏ', node: <ToolsRight mobile /> },
-  { label: 'Projects',    rune: 'ᛈ', node: <ProjectsLeft mobile /> },
-  { label: 'Projects',    rune: 'ᛈ', node: <ProjectsRight mobile /> },
+  ...PROJECT_PAGES.map((_, i) => ({ label: 'Projects', rune: 'ᛈ', node: <ProjectsPage page={i} mobile /> })),
   { label: 'Focus',       rune: 'ᛇ', node: <FocusTerminal active={true} mobile /> },
   { label: 'Contact',     rune: 'ᛗ', node: <ContactRight mobile /> },
   { label: 'Guestbook',   rune: 'ᛟ', node: <GuestBookLeft mobile /> },
@@ -28,14 +27,23 @@ const PAGES: { label: string; rune: string; node: React.ReactNode }[] = [
   { label: 'End',         rune: 'ᛟ', node: <InnerCover right={true} /> },
 ];
 
-const CATALOGUE = [
-  { label: 'Origin',     rune: 'ᚩ', pageIndex: 1 },
-  { label: 'Experience', rune: 'ᛖ', pageIndex: 3 },
-  { label: 'Tools',      rune: 'ᛏ', pageIndex: 5 },
-  { label: 'Projects',   rune: 'ᛈ', pageIndex: 7 },
-  { label: 'Contact',    rune: 'ᛗ', pageIndex: 10 },
-  { label: 'Guestbook',  rune: 'ᛟ', pageIndex: 11 },
+const firstPage = (label: string) => PAGES.findIndex(p => p.label === label);
+
+const CATALOGUE: { id: SectionId; label: string; rune: string; pageIndex: number }[] = [
+  { id: 'origin',     label: 'Origin',     rune: 'ᚩ', pageIndex: firstPage('Origin') },
+  { id: 'experience', label: 'Experience', rune: 'ᛖ', pageIndex: firstPage('Experience') },
+  { id: 'tools',      label: 'Tools',      rune: 'ᛏ', pageIndex: firstPage('Tools') },
+  { id: 'projects',   label: 'Projects',   rune: 'ᛈ', pageIndex: firstPage('Projects') },
+  { id: 'contact',    label: 'Contact',    rune: 'ᛗ', pageIndex: firstPage('Focus') },
+  { id: 'guestbook',  label: 'Guestbook',  rune: 'ᛟ', pageIndex: firstPage('Guestbook') },
 ];
+
+// Deep link support: /#projects opens the reader at that section
+function pageFromHash(): number {
+  if (typeof window === 'undefined') return 0;
+  const id = window.location.hash.slice(1);
+  return CATALOGUE.find(c => c.id === id)?.pageIndex ?? 0;
+}
 
 export default function MobileReader({
   onClose,
@@ -50,7 +58,7 @@ export default function MobileReader({
   playClick: () => void;
   playMulti: () => void;
 }) {
-  const [index, setIndex] = useState(0);
+  const [index, setIndex] = useState(pageFromHash);
   const [dir, setDir] = useState<'left' | 'right' | null>(null);
   const [animating, setAnimating] = useState(false);
   const touchStart = useRef(0);
@@ -94,6 +102,13 @@ export default function MobileReader({
   // Which catalogue tab is active
   const activeCat = [...CATALOGUE].reverse().find(c => index >= c.pageIndex) ?? CATALOGUE[0];
 
+  // Keep the URL shareable: #section while reading, cleared on close
+  useEffect(() => {
+    const hash = index >= CATALOGUE[0].pageIndex ? `#${activeCat.id}` : '';
+    if (window.location.hash !== hash) history.replaceState(null, '', hash || window.location.pathname);
+  }, [index, activeCat.id]);
+  useEffect(() => () => { history.replaceState(null, '', window.location.pathname); }, []);
+
   const slideClass = dir === 'left'
     ? 'translate-x-[-100%] opacity-0'
     : dir === 'right'
@@ -113,6 +128,7 @@ export default function MobileReader({
         </span>
         <button
           onClick={() => { playClick(); onStateChange('closing'); onClose(); }}
+          aria-label="Close the book"
           className="font-cinzel text-[#a31a1a] text-[11px] tracking-widest border border-[#a31a1a]/30 px-2 py-0.5 rounded-sm"
         >
           ✕
@@ -140,6 +156,8 @@ export default function MobileReader({
               <button
                 key={entry.label}
                 onClick={() => jumpTo(entry.pageIndex)}
+                aria-label={`Go to ${entry.label}`}
+                aria-current={isActive ? 'page' : undefined}
                 className={`flex flex-col items-center gap-0.5 px-2 py-1 rounded transition-all duration-200 ${
                   isActive ? 'opacity-100' : 'opacity-40 hover:opacity-70'
                 }`}
@@ -164,13 +182,14 @@ export default function MobileReader({
           <button
             onClick={() => navigate('prev')}
             disabled={animating}
+            aria-label="Previous page"
             className="flex items-center gap-1.5 font-cinzel text-[#d4c5a0]/60 text-[11px] tracking-widest hover:text-[#d4c5a0] transition-colors disabled:opacity-30"
           >
             ← <span>prev</span>
           </button>
 
           {/* Page dots */}
-          <div className="flex gap-1">
+          <div className="flex gap-1" aria-hidden>
             {PAGES.map((_, i) => (
               <div
                 key={i}
@@ -186,6 +205,7 @@ export default function MobileReader({
           <button
             onClick={() => navigate('next')}
             disabled={animating}
+            aria-label="Next page"
             className="flex items-center gap-1.5 font-cinzel text-[#d4c5a0]/60 text-[11px] tracking-widest hover:text-[#d4c5a0] transition-colors disabled:opacity-30"
           >
             <span>next</span> →
