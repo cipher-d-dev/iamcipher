@@ -31,7 +31,6 @@ export function CursorProvider({ children }: { children: React.ReactNode }) {
   const pushCursor = useCallback((state: CursorState) => {
     stackRef.current.push(cursorState);
     setCursorState(state);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cursorState]);
 
   const popCursor = useCallback(() => {

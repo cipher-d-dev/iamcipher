@@ -28,10 +28,10 @@ export default function Home() {
   const clickRef  = useRef<HTMLAudioElement | null>(null);
   const multiRef  = useRef<HTMLAudioElement | null>(null);
   // Rustle ambience — looping parchment bed, active only while reading
-  // Drop /public/rustle.wav to activate (silent stub until then)
+  // Synthesised parchment rustle, /public/rustle.mp3
   const rustleRef = useRef<HTMLAudioElement | null>(null);
   // Quill scratch — sparse SFX for Typewriter reveals
-  // Drop /public/quill.wav to activate (silent stub until then)
+  // Synthesised quill scratch, /public/quill.mp3
   const quillRef  = useRef<HTMLAudioElement | null>(null);
 
   // ── Candlelight flicker ref ──────────────────────────────────
@@ -71,10 +71,12 @@ export default function Home() {
   useEffect(() => {
     const theme = new Audio('/fantasythemesong.mp3');
     theme.loop   = true;
+    // 2.5 MB — don't download it until the visitor actually opens the book
+    theme.preload = 'none';
     theme.volume = 0.35;
     themeRef.current = theme;
 
-    const turn = new Audio('/turnpage.wav');
+    const turn = new Audio('/turnpage.mp3');
     turn.volume = 0.7;
     turnRef.current = turn;
 
@@ -82,18 +84,18 @@ export default function Home() {
     click.volume = 0.6;
     clickRef.current = click;
 
-    const multi = new Audio('/multiplepages.wav');
+    const multi = new Audio('/multiplepages.mp3');
     multi.volume = 0.7;
     multiRef.current = multi;
 
     // Rustle ambience — looping, very low volume, fades in/out with reading state
-    const rustle = new Audio('/rustle.wav');
+    const rustle = new Audio('/rustle.mp3');
     rustle.loop   = true;
     rustle.volume = 0;   // starts silent; ramped up when reading begins
     rustleRef.current = rustle;
 
     // Quill scratch — very short SFX, played throttled during Typewriter
-    const quill = new Audio('/quill.wav');
+    const quill = new Audio('/quill.mp3');
     quill.volume = 0.35;
     quillRef.current = quill;
 
@@ -124,7 +126,7 @@ export default function Home() {
 
   // ── Sound helpers (stable refs so children don't re-render) ──
 
-  // Weighted page turn — pitch-shifts the single turnpage.wav via playbackRate:
+  // Weighted page turn — pitch-shifts the single turnpage.mp3 via playbackRate:
   //   leafIndex 0        = cover (heavy leather thud)   → rate 0.72
   //   leafIndex 1–2      = flyleaves (medium swish)     → rate 0.88
   //   leafIndex 3+       = interior pages (crisp paper) → rate 1.08
@@ -272,27 +274,27 @@ export default function Home() {
             <h2 className="text-2xl font-cinzel border-b border-[#2eb36f]/30 pb-2 mb-6 text-[#f0d089]">Projects</h2>
             <ul className="space-y-8">
               <li>
-                <a href="https://github.com/cipher-d-dev/quillex.git" target="_blank" rel="noreferrer" className="text-xl text-[#2eb36f] hover:underline font-mono block mb-2">Quillex</a>
+                <a href="https://github.com/cipher-d-dev/Quellix" target="_blank" rel="noreferrer" className="text-xl text-[#2eb36f] hover:underline font-mono block mb-2">Quellix</a>
                 <p className="text-[#a8b5a8] leading-relaxed">An opinionated open-source authentication SDK designed for React.</p>
               </li>
               <li>
                 <div className="flex items-center gap-4 mb-2">
-                  <a href="https://github.com/cipher-d-dev/clarion.git" target="_blank" rel="noreferrer" className="text-xl text-[#2eb36f] hover:underline font-mono">Clarion</a>
+                  <a href="https://github.com/cipher-d-dev/Clarion" target="_blank" rel="noreferrer" className="text-xl text-[#2eb36f] hover:underline font-mono">Clarion</a>
                   <a href="https://clarion-schools.vercel.app" target="_blank" rel="noreferrer" className="text-xs border border-[#2eb36f] text-[#2eb36f] hover:bg-[#2eb36f]/10 px-2 py-0.5 rounded transition-colors">Live Preview</a>
                 </div>
                 <p className="text-[#a8b5a8] leading-relaxed">AI-powered complaint, report, and issue management platform.</p>
               </li>
               <li>
-                <a href="https://github.com/cipher-d-dev/cipher_auth.git" target="_blank" rel="noreferrer" className="text-xl text-[#2eb36f] hover:underline font-mono block mb-2">cipher_auth</a>
+                <a href="https://github.com/cipher-d-dev/cipher_auth" target="_blank" rel="noreferrer" className="text-xl text-[#2eb36f] hover:underline font-mono block mb-2">cipher_auth</a>
                 <p className="text-[#a8b5a8] leading-relaxed">Modern authentication infrastructure built on top of Passport for JS/TS.</p>
               </li>
               <li>
-                <a href="https://github.com/cipher-d-dev/Aetheris.git" target="_blank" rel="noreferrer" className="text-xl text-[#2eb36f] hover:underline font-mono block mb-2">Aetheris</a>
-                <p className="text-[#a8b5a8] leading-relaxed">Encrypted messaging platform using local peer-to-peer mesh network discovery.</p>
+                <a href="https://github.com/cipher-d-dev/Aetheris" target="_blank" rel="noreferrer" className="text-xl text-[#2eb36f] hover:underline font-mono block mb-2">Aetheris</a>
+                <p className="text-[#a8b5a8] leading-relaxed">Offline, end-to-end encrypted messenger whose messages hop phone-to-phone over Bluetooth and Wi‑Fi, with no internet or servers.</p>
               </li>
               <li>
                 <div className="flex items-center gap-4 mb-2">
-                  <a href="https://github.com/cipher-d-dev/isbmpa.git" target="_blank" rel="noreferrer" className="text-xl text-[#2eb36f] hover:underline font-mono">ISBMPA</a>
+                  <a href="https://github.com/cipher-d-dev/isbmpa" target="_blank" rel="noreferrer" className="text-xl text-[#2eb36f] hover:underline font-mono">ISBMPA</a>
                   <a href="https://isbmpa.com" target="_blank" rel="noreferrer" className="text-xs border border-[#2eb36f] text-[#2eb36f] hover:bg-[#2eb36f]/10 px-2 py-0.5 rounded transition-colors">Live Preview</a>
                 </div>
                 <p className="text-[#a8b5a8] leading-relaxed">Official government liaison website serving institutional media.</p>
@@ -347,7 +349,7 @@ export default function Home() {
         <button
           onClick={() => setMuted(m => !m)}
           title={muted ? 'Unmute' : 'Mute'}
-          className="absolute bottom-6 right-6 z-50 w-8 h-8 flex items-center justify-center rounded-full border border-[#2eb36f]/20 bg-[#080c09]/70 text-[#2eb36f]/60 hover:text-[#2eb36f] hover:border-[#2eb36f]/50 transition-all duration-200 text-sm"
+          className={`absolute ${isMobile && appState !== 'closed' ? 'top-[6px] right-16' : 'bottom-6 right-6'} z-50 w-8 h-8 flex items-center justify-center rounded-full border border-[#2eb36f]/20 bg-[#080c09]/70 text-[#2eb36f]/60 hover:text-[#2eb36f] hover:border-[#2eb36f]/50 transition-all duration-200 text-sm`}
         >
           {muted ? '🔇' : '🔊'}
         </button>
@@ -401,8 +403,7 @@ export default function Home() {
 
             <div className="absolute inset-0 z-20">
               <Book
-                isActive={appState !== 'closed'}
-                onStateChange={(state) => setAppState(state as any)}
+                onStateChange={setAppState}
                 playTurnWeighted={playTurnWeighted}
                 playClick={playClick}
                 playMulti={playMulti}

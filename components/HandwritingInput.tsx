@@ -76,6 +76,7 @@ export default function HandwritingInput({ onTextChange, disabled = false }: Han
   const IDLE_MS = 900;
 
   const [recognizing, setRecognizing] = useState(false);
+  const [failed,      setFailed]      = useState(false);
   const [text,        setText]        = useState('');
   // Undo: store previous text snapshots
   const undoStack = useRef<string[]>([]);
@@ -171,9 +172,10 @@ export default function HandwritingInput({ onTextChange, disabled = false }: Han
     const h = canvas.offsetHeight;
 
     setRecognizing(true);
+    setFailed(false);
     recognizeStrokes(strokes, w, h)
       .then(word => {
-        if (!word) return;
+        if (!word) { setFailed(true); return; }
         pushUndo();
         // Append the new word to whatever was already there
         const next = textRef.current
@@ -185,7 +187,7 @@ export default function HandwritingInput({ onTextChange, disabled = false }: Han
         strokesRef.current = [];
         clearToBackground(canvas);
       })
-      .catch(err => console.error('Recognition error:', err))
+      .catch(err => { console.error('Recognition error:', err); setFailed(true); })
       .finally(() => setRecognizing(false));
   }, [onTextChange, pushUndo]);
 
@@ -282,6 +284,7 @@ export default function HandwritingInput({ onTextChange, disabled = false }: Han
     pushUndo();
     strokesRef.current = [];
     setText('');
+    setFailed(false);
     onTextChange('');
     const c = canvasRef.current;
     if (c) clearToBackground(c);
@@ -335,7 +338,13 @@ export default function HandwritingInput({ onTextChange, disabled = false }: Han
         </div>
       )}
 
-      {!text && !recognizing && (
+      {failed && !recognizing && (
+        <div className="absolute top-2 right-3 pointer-events-none" style={{ zIndex: 3 }}>
+          <span className="font-kalam text-[#a4302a]/70 text-[10px] italic">the ink would not speak. try again, or clear</span>
+        </div>
+      )}
+
+      {!text && !recognizing && !failed && (
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none select-none gap-1" style={{ zIndex: 3 }}>
           <span className="font-caveat text-[#8b6b4e]/30 text-[18px]">Write here…</span>
           <span className="font-kalam text-[#8b6b4e]/20 text-[10px] italic">pause to translate</span>

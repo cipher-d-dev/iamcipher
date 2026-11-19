@@ -10,7 +10,7 @@ export default function Particles({ isActive }: { isActive: boolean }) {
     if (!containerRef.current) return;
     const particles = Array.from(containerRef.current.children);
     
-    particles.forEach((p, i) => {
+    particles.forEach((p) => {
       gsap.set(p, {
         x: "random(-500, 500)",
         y: "random(-400, 400)",

@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { letterPaths, fallbackPath, LetterPath } from './letterPaths';
 
 // ── Layout constants ──────────────────────────────────────────────────
@@ -89,9 +89,7 @@ function AnimatedPath({ d, delay }: AnimatedPathProps) {
     el.style.strokeDashoffset = `${length}`;
 
     let rafId: number;
-    let timeoutId: ReturnType<typeof setTimeout>;
-
-    timeoutId = setTimeout(() => {
+    const timeoutId = setTimeout(() => {
       const start = performance.now();
       const animate = (now: number) => {
         const elapsed = now - start;

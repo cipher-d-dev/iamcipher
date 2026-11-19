@@ -31,7 +31,7 @@ export default function DustMotes({ isActive }: { isActive: boolean }) {
     tweensRef.current.forEach(t => t.kill());
     tweensRef.current = [];
 
-    motes.forEach((mote, i) => {
+    motes.forEach((mote) => {
       // Initial scatter — constrained to ±220px x / ±260px y around center
       const startX = (rand() - 0.5) * 440;
       const startY = (rand() - 0.5) * 520;

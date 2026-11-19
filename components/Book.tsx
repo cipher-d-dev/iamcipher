@@ -16,8 +16,12 @@ const CATALOGUE = [
   { label: 'Guestbook',  rune: 'ᛟ', index: 9 },
 ];
 
-export default function Book({ isActive, onStateChange, playTurnWeighted, playClick, playMulti, playQuill, startTheme, onPageTurn }: {
-  isActive: boolean;
+// The book element is one page wide and its spine is its left edge. Once open,
+// the left page hangs off to the left, so shift right by half a spread
+// (one half-page = 200px at scale 1) to centre the open book on screen.
+const SPREAD_SHIFT = 200;
+
+export default function Book({ onStateChange, playTurnWeighted, playClick, playMulti, playQuill, startTheme, onPageTurn }: {
   onStateChange: (state: 'closed' | 'opening' | 'reading' | 'closing') => void;
   playTurnWeighted: (leafIndex: number) => void;
   playClick: () => void;
@@ -27,6 +31,8 @@ export default function Book({ isActive, onStateChange, playTurnWeighted, playCl
   onPageTurn?: () => void;
 }) {
   const [bookState, setBookState] = useState<'closed' | 'opening' | 'reading' | 'closing'>('closed');
+  const bookStateRef = useRef(bookState);
+  bookStateRef.current = bookState;
   const [pageIndex, setPageIndex] = useState(0);
   const [scale, setScale] = useState(1);
   const scaleRef = useRef(1); // mirrors scale state — read by GSAP to avoid stale closure
@@ -70,21 +76,15 @@ export default function Book({ isActive, onStateChange, playTurnWeighted, playCl
       const BOOK_W = 800; // 400px * 2 (spread = two pages side-by-side visually)
       const BOOK_H = 600; // 600px height
 
-      // Fixed chrome that must always fit around the book:
-      //   • Catalogue tabs on the right: ~130px wide, don't need extra gap
-      //   • Bookmark ribbon at the top:  ~0px (it overlaps the book corner, not below it)
-      //   • Nav hint below the book:     ~36px text + 16px gap from book bottom
-      //   • General breathing room on each side: 20px
-      const PAD_LEFT   = 20;
-      const PAD_RIGHT  = 150; // catalogue tabs (≈130px) + 20px gap
+      // The open spread is centred on screen (see SPREAD_SHIFT), so each half
+      // of the viewport must hold one page plus, on the right, the catalogue
+      // tabs (~120px) and a little breathing room.
+      const TABS_W     = 140;
       const PAD_TOP    = 20;
       const PAD_BOTTOM = 60;  // nav hint height (≈36px) + 24px gap
 
-      const availW = vw - PAD_LEFT - PAD_RIGHT;
-      const availH = vh - PAD_TOP  - PAD_BOTTOM;
-
-      const scaleW = availW / BOOK_W;
-      const scaleH = availH / BOOK_H;
+      const scaleW = (vw / 2 - TABS_W) / (BOOK_W / 2 + 10);
+      const scaleH = (vh - PAD_TOP - PAD_BOTTOM) / BOOK_H;
 
       // Never exceed 1.2 so the book doesn't become grotesquely large on big monitors,
       // and never go below 0.4 so it stays legible on very small windows.
@@ -93,6 +93,10 @@ export default function Book({ isActive, onStateChange, playTurnWeighted, playCl
 
       setScale(clamped);
       scaleRef.current = clamped;
+      // GSAP owns the book's transform (rotations, float, x-shift), so scale
+      // goes through GSAP too — a React style string would wipe the others.
+      const reading = bookStateRef.current === 'reading';
+      gsap.set(bookRef.current, { scale: clamped, x: reading ? SPREAD_SHIFT * clamped : 0 });
     };
     handleResize();
     window.addEventListener('resize', handleResize);
@@ -227,7 +231,7 @@ export default function Book({ isActive, onStateChange, playTurnWeighted, playCl
     });
 
     // Animate book flat to the center
-    tl.to(bookRef.current, { rotateX: 0, rotateY: 0, y: 0, duration: 1, ease: "power2.inOut" }, 0)
+    tl.to(bookRef.current, { rotateX: 0, rotateY: 0, y: 0, x: SPREAD_SHIFT * scaleRef.current, duration: 1, ease: "power2.inOut" }, 0)
       .to(bookRef.current, { scale: scaleRef.current * 1.04, duration: 0.5, ease: 'sine.out' }, 0.3)
       .to(bookRef.current, { scale: scaleRef.current, duration: 0.4, ease: 'sine.inOut' }, 0.9);
       
@@ -301,7 +305,7 @@ export default function Book({ isActive, onStateChange, playTurnWeighted, playCl
 
     // Close the book cover 3D angle
     const coverCloseTime = openedLeaves.length * 0.15 + 0.3;
-    tl.to(bookRef.current, { rotateX: 12, rotateY: -20, y: -15, duration: 1.2, ease: "power2.inOut" }, coverCloseTime);
+    tl.to(bookRef.current, { rotateX: 12, rotateY: -20, y: -15, x: 0, duration: 1.2, ease: "power2.inOut" }, coverCloseTime);
   };
 
   const turnNext = () => {
@@ -472,16 +476,22 @@ export default function Book({ isActive, onStateChange, playTurnWeighted, playCl
   }, [bookState]);
 
   return (
-    <div 
-      ref={containerRef} 
+    <div
+      ref={containerRef}
       className="book-interactive relative flex items-center justify-center w-full h-full perspective-2000 preserve-3d"
+      // The container and book wrapper share the 3-D rendering context with the
+      // leaves and sit at z = 0. Leaves further into the stack have a negative
+      // translateZ (page thickness), so without this the wrappers' own boxes
+      // sit *in front* of those pages and swallow every click, scroll and pen
+      // stroke from the Experience spread onward. Only the leaves take input.
+      style={{ pointerEvents: 'none' }}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      <div 
+      <div
         ref={bookRef}
-        className="relative preserve-3d transition-transform duration-300"
-        style={{ width: '400px', height: '600px', transform: `scale(${scale})` }}
+        className="relative preserve-3d"
+        style={{ width: '400px', height: '600px', pointerEvents: 'none' }}
       >
         {/* Spine */}
         <div 
@@ -539,6 +549,7 @@ export default function Book({ isActive, onStateChange, playTurnWeighted, playCl
             style={{
               zIndex: initialZIndex,
               transform: `translateZ(${initialZ}px)`,
+              pointerEvents: 'auto',
             }}
             onMouseEnter={() => { if (bookState === 'closed') pushCursor('lock'); }}
             onMouseLeave={() => { if (bookState === 'closed') popCursor(); }}
@@ -571,7 +582,7 @@ export default function Book({ isActive, onStateChange, playTurnWeighted, playCl
       <div 
         ref={bookmarkRef}
         className={`absolute right-16 w-8 bg-[#a31a1a] shadow-lg z-40 transform hover:-translate-y-2 cursor-pointer flex flex-col items-center pt-2 transition-all duration-700 ease-in-out
-          ${bookState === 'reading' ? 'top-0 h-32 translate-y-0 opacity-100' : '-top-10 h-0 opacity-0 pointer-events-none'}`}
+          ${bookState === 'reading' ? 'top-0 h-32 translate-y-0 opacity-100 pointer-events-auto' : '-top-10 h-0 opacity-0 pointer-events-none'}`}
         onMouseEnter={() => pushCursor('point')}
         onMouseLeave={() => popCursor()}
         onClick={() => {
@@ -610,7 +621,7 @@ export default function Book({ isActive, onStateChange, playTurnWeighted, playCl
       <div
         className="absolute flex flex-col gap-1 z-50 transition-all duration-700 ease-in-out"
         style={{
-          left: `calc(50% + ${210 * scale}px)`,
+          left: `calc(50% + ${(SPREAD_SHIFT + 210) * scale}px)`,
           top: '50%',
           transform: 'translateY(-50%)',
           opacity: bookState === 'reading' ? 1 : 0,

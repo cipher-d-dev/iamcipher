@@ -1,5 +1,4 @@
 import React from 'react';
-import { Mail, Github, Linkedin, FileText, ArrowRight } from 'lucide-react';
 import Typewriter from './Typewriter';
 import GrimoireModal from './GrimoireModal';
 import { useCursor } from '@/context/CursorContext';
@@ -337,7 +336,7 @@ export const CoverBack = React.memo(function CoverBack() {
       <div className="absolute bottom-16 left-0 right-0 flex flex-col items-center gap-3 px-10 text-center pointer-events-none">
         <div className="w-12 h-[1px] bg-[#2eb36f]/20 mb-1" />
         <p className="font-caveat text-[#849c89] text-[15px] leading-relaxed max-w-[260px] drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
-          You've reached the end — for now.
+          You&apos;ve reached the end — for now.
         </p>
         <p className="font-kalam text-[#5a7a60] text-[12px] leading-relaxed max-w-[240px] italic">
           Come back later to see where this journey goes. The grimoire is never truly finished.
@@ -542,17 +541,17 @@ export const ToolsLeft = React.memo(function ToolsLeft({ mobile = false }: { mob
             </h3>
             <div className="flex flex-wrap gap-2">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/typescript/typescript-original.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="TypeScript" title="TypeScript" />
+              <img src="https://cdn.jsdelivr.net/npm/devicon@2.17.0/icons/typescript/typescript-original.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="TypeScript" title="TypeScript" />
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/javascript/javascript-original.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="JavaScript" title="JavaScript" />
+              <img src="https://cdn.jsdelivr.net/npm/devicon@2.17.0/icons/javascript/javascript-original.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="JavaScript" title="JavaScript" />
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/python/python-original.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="Python" title="Python" />
+              <img src="https://cdn.jsdelivr.net/npm/devicon@2.17.0/icons/python/python-original.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="Python" title="Python" />
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/go/go-original.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="Go" title="Go" />
+              <img src="https://cdn.jsdelivr.net/npm/devicon@2.17.0/icons/go/go-original.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="Go" title="Go" />
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/java/java-original.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="Java" title="Java" />
+              <img src="https://cdn.jsdelivr.net/npm/devicon@2.17.0/icons/java/java-original.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="Java" title="Java" />
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/kotlin/kotlin-original.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="Kotlin" title="Kotlin" />
+              <img src="https://cdn.jsdelivr.net/npm/devicon@2.17.0/icons/kotlin/kotlin-original.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="Kotlin" title="Kotlin" />
             </div>
             <p className={`text-[#5c4d33] leading-relaxed mt-2 ${mobile ? 'text-sm' : 'text-xs'}`}>Primary incantations: TypeScript, JavaScript, Python. Systems: Go, Java, Kotlin.</p>
           </div>
@@ -563,13 +562,13 @@ export const ToolsLeft = React.memo(function ToolsLeft({ mobile = false }: { mob
             </h3>
             <div className="flex flex-wrap gap-2">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/react/react-original.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="React" title="React" />
+              <img src="https://cdn.jsdelivr.net/npm/devicon@2.17.0/icons/react/react-original.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="React" title="React" />
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/vitejs/vitejs-original.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="Vite" title="Vite" />
+              <img src="https://cdn.jsdelivr.net/npm/devicon@2.17.0/icons/vitejs/vitejs-original.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="Vite" title="Vite" />
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/tailwindcss/tailwindcss-original.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="Tailwind" title="Tailwind CSS" />
+              <img src="https://cdn.jsdelivr.net/npm/devicon@2.17.0/icons/tailwindcss/tailwindcss-original.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="Tailwind" title="Tailwind CSS" />
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/androidstudio/androidstudio-original.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="Android Studio" title="Android Studio" />
+              <img src="https://cdn.jsdelivr.net/npm/devicon@2.17.0/icons/androidstudio/androidstudio-original.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="Android Studio" title="Android Studio" />
             </div>
             <p className={`text-[#5c4d33] leading-relaxed mt-2 ${mobile ? 'text-sm' : 'text-xs'}`}>Visual manifestation: React, React Native, Vite, Tailwind CSS, Android Studio.</p>
           </div>
@@ -596,15 +595,15 @@ export const ToolsRight = React.memo(function ToolsRight({ mobile = false }: { m
             </h3>
             <div className="flex flex-wrap gap-2 mb-2">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/nodejs/nodejs-original.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="Node" title="Node.js" />
+              <img src="https://cdn.jsdelivr.net/npm/devicon@2.17.0/icons/nodejs/nodejs-original.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="Node" title="Node.js" />
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/express/express-original.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="Express" title="Express.js" />
+              <img src="https://cdn.jsdelivr.net/npm/devicon@2.17.0/icons/express/express-original.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="Express" title="Express.js" />
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/appwrite/appwrite-original.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="Appwrite" title="Appwrite" />
+              <img src="https://cdn.jsdelivr.net/npm/devicon@2.17.0/icons/appwrite/appwrite-original.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="Appwrite" title="Appwrite" />
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/firebase/firebase-plain.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="Firebase" title="Firebase" />
+              <img src="https://cdn.jsdelivr.net/npm/devicon@2.17.0/icons/firebase/firebase-plain.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="Firebase" title="Firebase" />
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/supabase/supabase-original.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="Supabase" title="Supabase" />
+              <img src="https://cdn.jsdelivr.net/npm/devicon@2.17.0/icons/supabase/supabase-original.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="Supabase" title="Supabase" />
             </div>
             <p className={`text-[#5c4d33] leading-relaxed ${mobile ? 'text-sm' : 'text-xs'}`}>Distributed Systems, Zero-Trust Architecture, REST APIs, Microservices, P2P / Mesh Networking.</p>
           </div>
@@ -615,13 +614,13 @@ export const ToolsRight = React.memo(function ToolsRight({ mobile = false }: { m
             </h3>
             <div className="flex flex-wrap gap-2 mb-2">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/postgresql/postgresql-original.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="PostgreSQL" title="PostgreSQL" />
+              <img src="https://cdn.jsdelivr.net/npm/devicon@2.17.0/icons/postgresql/postgresql-original.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="PostgreSQL" title="PostgreSQL" />
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/mysql/mysql-original.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="MySQL" title="MySQL" />
+              <img src="https://cdn.jsdelivr.net/npm/devicon@2.17.0/icons/mysql/mysql-original.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="MySQL" title="MySQL" />
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/redis/redis-original.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="Redis" title="Redis" />
+              <img src="https://cdn.jsdelivr.net/npm/devicon@2.17.0/icons/redis/redis-original.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="Redis" title="Redis" />
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/prisma/prisma-original.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="Prisma" title="Prisma" />
+              <img src="https://cdn.jsdelivr.net/npm/devicon@2.17.0/icons/prisma/prisma-original.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="Prisma" title="Prisma" />
             </div>
             <p className={`text-[#5c4d33] leading-relaxed ${mobile ? 'text-sm' : 'text-xs'}`}>Relational DBs, ORMs, and AI Data Layers (pgvector, Qdrant).</p>
           </div>
@@ -632,11 +631,11 @@ export const ToolsRight = React.memo(function ToolsRight({ mobile = false }: { m
             </h3>
             <div className="flex flex-wrap gap-2 mb-2">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/docker/docker-original.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="Docker" title="Docker" />
+              <img src="https://cdn.jsdelivr.net/npm/devicon@2.17.0/icons/docker/docker-original.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="Docker" title="Docker" />
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/githubactions/githubactions-original.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="GitHub Actions" title="GitHub Actions" />
+              <img src="https://cdn.jsdelivr.net/npm/devicon@2.17.0/icons/githubactions/githubactions-original.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="GitHub Actions" title="GitHub Actions" />
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/linux/linux-original.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="Linux" title="Linux" />
+              <img src="https://cdn.jsdelivr.net/npm/devicon@2.17.0/icons/linux/linux-original.svg" className="w-6 h-6 grayscale-[30%] sepia-[50%] opacity-80 mix-blend-multiply" alt="Linux" title="Linux" />
             </div>
             <p className={`text-[#5c4d33] leading-relaxed ${mobile ? 'text-sm' : 'text-xs'}`}>CI/CD, Cryptographic libraries, Token Rotation/mTLS, Pentesting &amp; Local LLMs.</p>
           </div>
@@ -661,13 +660,13 @@ export const ProjectsLeft = React.memo(function ProjectsLeft({ mobile = false }:
       <div className="flex-1 overflow-y-auto pr-4 custom-scrollbar space-y-6 pb-8" style={{ isolation: 'isolate' }}>
         <div className="group relative">
           <div className="flex items-center justify-between mb-1">
-            <h3 className={titleClass}>Quillex</h3>
+            <h3 className={titleClass}>Quellix</h3>
             <span className="font-caveat text-[#a4302a] text-sm rotate-[3deg]">open-source →</span>
           </div>
           <p className={metaClass}>2026 · Creator &amp; Lead Developer · TS / React / Express / Prisma / PostgreSQL</p>
           <p className={bodyClass}>An opinionated open-source authentication SDK designed for React, providing drop-in UI components, custom hooks, and a pre-configured backend. Eliminates auth setup overhead for developers.</p>
           <div className="flex gap-4">
-            <a href="https://github.com/cipher-d-dev/quillex.git" target="_blank" rel="noreferrer" className={linkClass}>→ GitHub</a>
+            <a href="https://github.com/cipher-d-dev/Quellix" target="_blank" rel="noreferrer" className={linkClass}>→ GitHub</a>
           </div>
         </div>
 
@@ -676,7 +675,7 @@ export const ProjectsLeft = React.memo(function ProjectsLeft({ mobile = false }:
           <p className={metaClass}>2026 · Fullstack &amp; AI Engineer · TS / React / AI Pipelines / Express / PostgreSQL</p>
           <p className={bodyClass}>An AI-powered complaint, report, and issue management platform for tertiary institutions. Automates ticket classification, intelligent routing, and real-time tracking with administrative analytics.</p>
           <div className="flex gap-4">
-            <a href="https://github.com/cipher-d-dev/clarion.git" target="_blank" rel="noreferrer" className={linkClass}>→ GitHub</a>
+            <a href="https://github.com/cipher-d-dev/Clarion" target="_blank" rel="noreferrer" className={linkClass}>→ GitHub</a>
             <a href="https://clarion-schools.vercel.app" target="_blank" rel="noreferrer" className={linkClass}>→ Live</a>
           </div>
         </div>
@@ -686,16 +685,16 @@ export const ProjectsLeft = React.memo(function ProjectsLeft({ mobile = false }:
           <p className={metaClass}>2026 · Backend &amp; Security Engineer · JS / TS / Node.js / Passport.js</p>
           <p className={bodyClass}>Modern authentication infrastructure built on top of Passport for JS/TS applications. Engineered to be secure by default and customizable by design.</p>
           <div className="flex gap-4">
-            <a href="https://github.com/cipher-d-dev/cipher_auth.git" target="_blank" rel="noreferrer" className={linkClass}>→ GitHub</a>
+            <a href="https://github.com/cipher-d-dev/cipher_auth" target="_blank" rel="noreferrer" className={linkClass}>→ GitHub</a>
           </div>
         </div>
 
         <div className="group relative">
           <h3 className={titleClass}>Aetheris</h3>
-          <p className={metaClass}>2026 · Systems &amp; Security Developer · TS / Crypto / P2P Mesh Protocols</p>
-          <p className={bodyClass}>An encrypted messaging platform enabling secure data transfers over local peer-to-peer mesh network discovery without requiring internet connectivity. Features E2E encryption.</p>
+          <p className={metaClass}>2026 · Systems &amp; Security Developer · React Native / Kotlin / Nearby Connections / libsodium</p>
+          <p className={bodyClass}>Offline messenger where every phone is a relay. Messages hop device-to-device over Bluetooth and Wi‑Fi along the shortest route, wait and re-route when people walk away, and stay end-to-end encrypted, with signed route announcements so relays can&apos;t hijack traffic.</p>
           <div className="flex gap-4">
-            <a href="https://github.com/cipher-d-dev/Aetheris.git" target="_blank" rel="noreferrer" className={linkClass}>→ GitHub</a>
+            <a href="https://github.com/cipher-d-dev/Aetheris" target="_blank" rel="noreferrer" className={linkClass}>→ GitHub</a>
           </div>
         </div>
 
@@ -704,7 +703,7 @@ export const ProjectsLeft = React.memo(function ProjectsLeft({ mobile = false }:
           <p className={metaClass}>2025 – Present · Senior Fullstack Engineer · TS / React / Appwrite</p>
           <p className={bodyClass}>Official government liaison website serving institutional media and information. Architected media gallery hosting, configured custom domain routing, and optimized backend limits.</p>
           <div className="flex gap-4">
-            <a href="https://github.com/cipher-d-dev/isbmpa.git" target="_blank" rel="noreferrer" className={linkClass}>→ GitHub</a>
+            <a href="https://github.com/cipher-d-dev/isbmpa" target="_blank" rel="noreferrer" className={linkClass}>→ GitHub</a>
             <a href="https://isbmpa.com" target="_blank" rel="noreferrer" className={linkClass}>→ Live</a>
           </div>
         </div>
@@ -731,7 +730,7 @@ export const ProjectsRight = React.memo(function ProjectsRight({ mobile = false 
           <p className={metaClass}>2026 · Android Developer · Kotlin / Android SDK / System Architecture</p>
           <p className={bodyClass}>A functional Android home screen launcher demonstrating a live design token architecture. Designed to showcase dynamic UI state management and custom system-level customization.</p>
           <div className="flex gap-4">
-            <a href="https://github.com/cipher-d-dev/weft.git" target="_blank" rel="noreferrer" className={linkClass}>→ GitHub</a>
+            <a href="https://github.com/cipher-d-dev/Weft" target="_blank" rel="noreferrer" className={linkClass}>→ GitHub</a>
           </div>
         </div>
 
@@ -740,7 +739,7 @@ export const ProjectsRight = React.memo(function ProjectsRight({ mobile = false 
           <p className={metaClass}>2026 · Systems Developer · C# / C++ / Windows API</p>
           <p className={bodyClass}>A lightweight Windows automation tool built for keyboard-driven productivity workflows, streamlining system navigation and quick execution tasks for power users.</p>
           <div className="flex gap-4">
-            <a href="https://github.com/cipher-d-dev/hopper.git" target="_blank" rel="noreferrer" className={linkClass}>→ GitHub</a>
+            <a href="https://github.com/cipher-d-dev/Hopper" target="_blank" rel="noreferrer" className={linkClass}>→ GitHub</a>
           </div>
         </div>
 
@@ -749,7 +748,7 @@ export const ProjectsRight = React.memo(function ProjectsRight({ mobile = false 
           <p className={metaClass}>2026 · Frontend Engineer · TS / React / Next.js / Tailwind CSS</p>
           <p className={bodyClass}>A cinematic portfolio website developed for a professional videographer, featuring high-performance media delivery, responsive galleries, and dynamic visual layouts.</p>
           <div className="flex gap-4">
-            <a href="https://github.com/cipher-d-dev/fslens.git" target="_blank" rel="noreferrer" className={linkClass}>→ GitHub</a>
+            <a href="https://github.com/cipher-d-dev/fslens" target="_blank" rel="noreferrer" className={linkClass}>→ GitHub</a>
             <a href="https://fslens.vercel.app" target="_blank" rel="noreferrer" className={linkClass}>→ Live</a>
           </div>
         </div>
@@ -759,7 +758,7 @@ export const ProjectsRight = React.memo(function ProjectsRight({ mobile = false 
           <p className={metaClass}>2025 · Desktop Developer · VB.NET / Windows Forms / Algorithmic Comp.</p>
           <p className={bodyClass}>A closed-traverse computation program for Surveying (SVY 323). Computes forward/back bearings, Bowditch adjustments, final coordinates, linear accuracy, and enclosed areas.</p>
           <div className="flex gap-4">
-            <a href="https://github.com/cipher-d-dev/Tranverse-Programming-Surverying.git" target="_blank" rel="noreferrer" className={linkClass}>→ GitHub</a>
+            <a href="https://github.com/cipher-d-dev/Tranverse-Programming-Surverying" target="_blank" rel="noreferrer" className={linkClass}>→ GitHub</a>
           </div>
         </div>
       </div>
@@ -891,7 +890,7 @@ export const GuestBookLeft = React.memo(function GuestBookLeft({ mobile = false 
           </h2>
           <div className="w-16 h-[1px] bg-[#a4302a]/40 mx-auto" />
           <p className={`font-caveat text-[#3d2b1f] leading-relaxed max-w-[220px] mx-auto ${mobile ? 'text-base' : 'text-lg'}`}>
-            "Leave a word before you go. The grimoire remembers."
+            &ldquo;Leave a word before you go. The grimoire remembers.&rdquo;
           </p>
         </div>
 

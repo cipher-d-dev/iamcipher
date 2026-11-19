@@ -204,7 +204,6 @@ function paintSigils(ctx: CanvasRenderingContext2D, sigils: Sigil[], now: number
     const t     = (now - s.born) / SIGIL_LIFE_MS;
     if (t >= 1) continue;
     const alpha = 1 - t;
-    const ai    = Math.min(99, Math.floor(alpha * 100));
 
     ctx.translate(s.x, s.y);
 

@@ -67,7 +67,7 @@ export default function GrimoireModal({
   return (
     <div
       ref={backdropRef}
-      className="fixed inset-0 z-[9999] flex items-center justify-center"
+      className="fixed inset-0 z-[9999] flex items-center justify-center pointer-events-auto"
       style={{ background: 'rgba(8,12,9,0.72)', backdropFilter: 'blur(2px)' }}
       onClick={() => { if (variant === 'alert') dismiss(onConfirm); }}
     >
