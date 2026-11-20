@@ -198,8 +198,11 @@ export default function Book({ ready, onStateChange, playTurnWeighted, playClick
   useEffect(() => {
     const book = bookRef.current;
     if (!book) return;
-    // Development only: lets tests slow animations down to inspect a turn
-    if (process.env.NODE_ENV !== 'production') (window as Window & { __gsap?: typeof gsap }).__gsap = gsap;
+    // Test hook: dev builds, or a local build made with NEXT_PUBLIC_EXPOSE_GSAP=1,
+    // let tests pause and scrub a page turn. Deployed builds never set it.
+    if (process.env.NODE_ENV !== 'production' || process.env.NEXT_PUBLIC_EXPOSE_GSAP === '1') {
+      (window as Window & { __gsap?: typeof gsap }).__gsap = gsap;
+    }
     snapshotsRef.current = new SnapshotCache();
     // Two renderers so a quick second turn can curl while the first lands
     curlersRef.current = [new CurlRenderer(book), new CurlRenderer(book)];
@@ -401,12 +404,17 @@ export default function Book({ ready, onStateChange, playTurnWeighted, playClick
         const faces = [frontEl, backEl];
         curler.begin(front, back, gsap.getProperty(leaf, 'z') as number, flipped);
         faces.forEach(f => { if (f) f.style.visibility = 'hidden'; });
-        const draw = () => curler.render(-(gsap.getProperty(leaf, 'rotateY') as number), gsap.getProperty(leaf, 'z') as number);
+        let tween: gsap.core.Tween | null = null;
+        const draw = () => curler.render(
+          -(gsap.getProperty(leaf, 'rotateY') as number),
+          gsap.getProperty(leaf, 'z') as number,
+          tween ? tween.progress() : 0,
+        );
         draw();
-        gsap.to(leaf, {
+        tween = gsap.to(leaf, {
           rotateY: target,
-          duration: 1.15,
-          ease: curlEase, // lift, sweep, land just past rest and settle back
+          duration: 1.3,
+          ease: curlEase, // lift, sweep, land, then the free edge settles
           zIndex: flipped ? i : (total - i) + total,
           z: zTarget,
           overwrite: 'auto',

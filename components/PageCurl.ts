@@ -23,6 +23,10 @@ const STRIP_W = PAGE_W / STRIPS;
 const MAX_BEND = 78;
 /** The page's resting angle on the left (leaves rest at -175°, not -180°) */
 const REST = 175;
+/** Fraction of the turn's time spent travelling; the rest is the settle */
+const LAND = 0.82;
+/** How far (degrees of bend) the free edge lifts as the page settles */
+const SETTLE_LIFT = 16;
 
 const TRANSPARENT_PX = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
 
@@ -128,11 +132,13 @@ export class CurlRenderer {
     });
     this.root = root;
 
-    let parentEl: HTMLElement = root;
+    // Strips are flat siblings, each placed absolutely along the curve.
+    // (Nesting each strip inside the previous one is simpler maths but
+    // builds an 18-deep chain of 3D contexts that is very costly to draw.)
     for (let k = 0; k < STRIPS; k++) {
       const hinge = document.createElement('div');
       Object.assign(hinge.style, {
-        position: 'absolute', left: k === 0 ? '0' : `${STRIP_W}px`, top: '0',
+        position: 'absolute', left: '0', top: '0',
         width: `${STRIP_W}px`, height: `${PAGE_H}px`,
         transformStyle: 'preserve-3d', transformOrigin: '0 50%',
       });
@@ -153,8 +159,7 @@ export class CurlRenderer {
       };
       const fr = mkFace(false), bk = mkFace(true);
       hinge.append(fr.f, bk.f);
-      parentEl.appendChild(hinge);
-      parentEl = hinge;
+      root.appendChild(hinge);
       this.strips.push({ hinge, front: fr.f, back: bk.f, frontShade: fr.shade, backShade: bk.shade });
     }
     parent.appendChild(root);
@@ -179,29 +184,41 @@ export class CurlRenderer {
 
   /**
    * Draw the leaf at turn angle `a` (0 = lying on the right, REST = lying on
-   * the left). `a` may overshoot a little at the end for the settle wobble.
+   * the left) at `progress` (0–1) through the turn's timeline.
    */
-  render(a: number, z: number) {
-    const t = a / REST;                          // 0 → 1 across the turn
-    const bend = MAX_BEND * Math.sin(Math.PI * t); // goes slightly negative on overshoot → wobble
+  render(a: number, z: number, progress: number) {
+    const t = Math.min(1, Math.max(0, a / REST)); // 0 → 1 across the turn
+    const travel = MAX_BEND * Math.sin(Math.PI * t);
+    let bend = travel;
+    // Settle: once the page has landed its free edge lifts off the stack and
+    // drops back a couple of times, smaller each time. The angle at the spine
+    // never passes rest, so the page always lands on top of the stack.
+    if (progress > LAND) {
+      const u = (progress - LAND) / (1 - LAND);
+      bend += SETTLE_LIFT * Math.abs(Math.sin(u * Math.PI * 2)) * (1 - u) ** 1.5;
+    }
     // The free edge trails the motion: turning forward the outer strips stay
     // behind (less rotated); turning back they trail the other way.
     const dir = this.forward ? 1 : -1;
     // The spine leads by half the bend so the page's middle tracks `a`.
-    const lead = Math.min(179, Math.max(0, a + dir * bend * 0.5));
+    // (Only the travel bend shifts the spine; the settle lift moves the free
+    // edge alone, so the spine stays exactly at rest while it settles.)
+    const lead = Math.min(REST, Math.max(0, a + dir * travel * 0.5));
     this.root.style.transform = `translateZ(${z}px)`;
 
-    // Bend grows toward the free edge: paper curls most where it isn't held
+    // Bend grows toward the free edge: paper curls most where it isn't held.
+    // Walk along the page from the spine: each strip starts where the last
+    // ended, in the x–z plane (z toward the viewer).
     const weightSum = (STRIPS - 1) * STRIPS / 2;
-    let abs = lead;
+    let angle = lead, x = 0, zz = 0;
     for (let k = 0; k < STRIPS; k++) {
       const s = this.strips[k];
-      const step = k === 0 ? lead : -dir * bend * (k / weightSum);
-      if (k > 0) abs += step;
-      s.hinge.style.transform = k === 0
-        ? `rotateY(${-lead}deg)`
-        : `rotateY(${-step}deg)`;
-      this.light(s, abs);
+      if (k > 0) angle += -dir * bend * (k / weightSum);
+      s.hinge.style.transform = `translate3d(${x.toFixed(2)}px, 0, ${zz.toFixed(2)}px) rotateY(${(-angle).toFixed(2)}deg)`;
+      this.light(s, angle);
+      const r = (angle * Math.PI) / 180;
+      x += STRIP_W * Math.cos(r);
+      zz += STRIP_W * Math.sin(r);
     }
   }
 
@@ -225,15 +242,12 @@ export class CurlRenderer {
 }
 
 /**
- * Ease for a curled turn: a slow lift, a quick sweep, then the paper lands
- * slightly past its rest and settles back with a small, damped wobble.
+ * Ease for a curled turn: a slow lift and a quick sweep that lands exactly
+ * at rest by LAND; the remaining time is the settle wobble, which the
+ * renderer draws as the free edge lifting (see render).
  */
 export function curlEase(t: number): number {
-  const LAND = 0.84;
-  if (t < LAND) {
-    const u = t / LAND;
-    return u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2; // cubic in-out
-  }
-  const u = (t - LAND) / (1 - LAND);
-  return 1 + 0.035 * Math.sin(u * Math.PI * 2) * (1 - u);
+  if (t >= LAND) return 1;
+  const u = t / LAND;
+  return u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2; // cubic in-out
 }
