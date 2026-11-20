@@ -11,6 +11,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useReducedMotion } from '@/hooks/use-reduced-motion';
 import { PROJECTS } from '@/components/PageContents';
 import SecretSeal from '@/components/SecretSeal';
+import { useGraphics, setGraphics } from '@/lib/graphics';
 
 const MUTE_KEY = 'grimoire:muted';
 
@@ -23,6 +24,9 @@ export default function Home() {
     try { if (localStorage.getItem(MUTE_KEY) === '1') setMuted(true); } catch { /* private mode */ }
   }, []);
   const reduceMotion = useReducedMotion();
+  const graphics = useGraphics();
+  // Decorative motion and light: only in full graphics, never for reduced motion
+  const fancy = graphics === 'full' && !reduceMotion;
   const [sigilCharging, setSigilCharging] = useState(false);
   const isMobile = useIsMobile();
 
@@ -62,7 +66,7 @@ export default function Home() {
   useEffect(() => {
     const el = candleRef.current;
     const light = candleLightRef.current;
-    if (!el || reduceMotion) return;
+    if (!el || !fancy) return;
 
     let killed = false;
     const flicker = () => {
@@ -89,7 +93,7 @@ export default function Home() {
       gsap.killTweensOf(el);
       if (light) gsap.killTweensOf(light);
     };
-  }, [reduceMotion]);
+  }, [fancy]);
 
   // Initialise audio elements once
   useEffect(() => {
@@ -358,6 +362,20 @@ export default function Home() {
           }}
         />
 
+        {/* Graphics quality switch (desktop; the phone reader is already light) */}
+        {!isMobile && (
+          <button
+            type="button"
+            onClick={() => setGraphics(graphics === 'full' ? 'lite' : 'full')}
+            title={graphics === 'full' ? 'Switch to lite graphics (faster)' : 'Switch to full graphics'}
+            aria-label={graphics === 'full' ? 'Graphics: full. Switch to lite' : 'Graphics: lite. Switch to full'}
+            className="absolute bottom-6 right-16 z-50 h-8 px-3 flex items-center gap-1.5 rounded-full border border-[#2eb36f]/20 bg-[#080c09]/70 text-[#2eb36f]/60 hover:text-[#2eb36f] hover:border-[#2eb36f]/50 transition-all duration-200 font-mono text-[11px] tracking-wider"
+          >
+            <span aria-hidden>{graphics === 'full' ? '✦' : '◇'}</span>
+            {graphics === 'full' ? 'full' : 'lite'}
+          </button>
+        )}
+
         {/* Mute toggle */}
         <button
           onClick={() => setMuted(m => !m)}
@@ -398,7 +416,7 @@ export default function Home() {
               />
             )}
 
-            {!reduceMotion && <>
+            {fancy && <>
               <MagicCircle isActive={appState !== 'closed'} charging={sigilCharging} />
               <Particles isActive={appState !== 'closed'} />
               <DustMotes isActive={appState === 'reading'} />
@@ -416,14 +434,14 @@ export default function Home() {
         ) : (
           /* ── Desktop: 3-D book ── */
           <>
-            {!reduceMotion && <>
+            {fancy && <>
               <MagicCircle isActive={appState !== 'closed'} charging={sigilCharging} />
               <Particles isActive={appState !== 'closed'} />
               <DustMotes isActive={appState === 'reading'} />
             </>}
 
             {/* Candlelight falling across the open book from the upper left */}
-            <div
+            {fancy && <div
               aria-hidden
               className="absolute inset-0 z-30 pointer-events-none transition-opacity duration-700"
               style={{ opacity: appState === 'reading' ? 1 : 0, mixBlendMode: 'soft-light' }}
@@ -436,7 +454,7 @@ export default function Home() {
                   background: 'radial-gradient(ellipse 55% 60% at 34% 30%, rgba(255,196,120,.85) 0%, rgba(255,170,90,.35) 40%, rgba(0,0,0,.35) 100%)',
                 }}
               />
-            </div>
+            </div>}
 
             <div className="absolute inset-0 z-20">
               <Book

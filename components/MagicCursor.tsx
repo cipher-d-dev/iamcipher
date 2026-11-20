@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useRef, useSyncExternalStore } from 'react';
 import { useCursor, CursorState } from '@/context/CursorContext';
+import { useGraphics } from '@/lib/graphics';
 
 // ── Config ────────────────────────────────────────────────────────────
 const AURA_LERP      = 0.20;   // aura spring — higher = tighter
@@ -242,7 +243,8 @@ export default function MagicCursor() {
     () => window.matchMedia(FANCY_QUERY).matches,
     () => false,
   );
-  return enabled ? <MagicCursorInner /> : null;
+  const graphics = useGraphics();
+  return enabled && graphics === 'full' ? <MagicCursorInner /> : null;
 }
 
 function MagicCursorInner() {

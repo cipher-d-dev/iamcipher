@@ -6,6 +6,8 @@ import { CoverFront, InnerCover, CoverBack, TitlePage, TableOfContents, OriginLe
 import GrimoireModal from './GrimoireModal';
 import { useCursor } from '@/context/CursorContext';
 import { prefersReducedMotion } from '@/hooks/use-reduced-motion';
+import { useGraphics } from '@/lib/graphics';
+import { SnapshotCache, CurlRenderer, curlEase } from './PageCurl';
 
 // ── Static data outside component — never recreated ──────────────────
 // pageIndex P shows: left page = back of leaf P-1, right page = front of leaf P.
@@ -103,7 +105,7 @@ function PaperLayers({ leaf, side }: { leaf: number; side: 'front' | 'back' }) {
   return (
     <>
       <div aria-hidden className={`page-layer page-ghost page-ghost-${lr}`} />
-      <div aria-hidden className="page-layer" style={age} />
+      <div aria-hidden className="page-layer page-age" style={age} />
       <div aria-hidden className={`page-layer page-curve-${lr}`} />
       <div aria-hidden className="page-layer page-shade" data-leaf-shade />
       <div aria-hidden className="page-layer page-cast" data-leaf-cast />
@@ -182,6 +184,31 @@ export default function Book({ ready, onStateChange, playTurnWeighted, playClick
   const leafRefs = useRef<HTMLDivElement[]>([]);
   // Jump-sequence timers — cancelled on close or new jump
   const jumpTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+
+  // ── Curling turns ──────────────────────────────────────────────────
+  const graphics = useGraphics();
+  const curlOn = graphics === 'full';
+  const curlOnRef = useRef(curlOn);
+  curlOnRef.current = curlOn;
+  const snapshotsRef = useRef<SnapshotCache | null>(null);
+  const curlersRef = useRef<CurlRenderer[]>([]);
+  // 'single' = one page turned by hand (curls); 'riffle' = a multi-page jump
+  const turnKindRef = useRef<'single' | 'riffle'>('riffle');
+
+  useEffect(() => {
+    const book = bookRef.current;
+    if (!book) return;
+    // Development only: lets tests slow animations down to inspect a turn
+    if (process.env.NODE_ENV !== 'production') (window as Window & { __gsap?: typeof gsap }).__gsap = gsap;
+    snapshotsRef.current = new SnapshotCache();
+    // Two renderers so a quick second turn can curl while the first lands
+    curlersRef.current = [new CurlRenderer(book), new CurlRenderer(book)];
+    return () => {
+      snapshotsRef.current?.dispose();
+      curlersRef.current.forEach(c => c.destroy());
+      curlersRef.current = [];
+    };
+  }, []);
 
   // Page to land on when the opening animation finishes (set by jumpTo)
   const openTargetRef = useRef<number | null>(null);
@@ -290,6 +317,7 @@ export default function Book({ ready, onStateChange, playTurnWeighted, playClick
     const total = leafRefs.current.length;
 
     onPageTurn?.();
+    snapshotsRef.current?.hold(1500); // no captures while pages are moving
     const q = (i: number, sel: string) => leafRefs.current[i]?.querySelector<HTMLElement>(sel) ?? null;
 
     leafRefs.current.forEach((leaf, i) => {
@@ -356,32 +384,61 @@ export default function Book({ ready, onStateChange, playTurnWeighted, playClick
       // (leaves already at their target), so we must initialise the state now.
       updateFace();
 
-      if (i < pageIndex) {
+      const flipped = i < pageIndex;
+      const target = flipped ? -175 : 0;
+      const zTarget = flipped ? i * (26 / total) - 13 : (total - i) * (26 / total) - 13;
+      const turning = Math.abs((gsap.getProperty(leaf, 'rotateY') as number) - target) > 1;
+
+      // A hand-turned paper page (not the rigid cover) curls if both its
+      // faces have been captured and a renderer is free.
+      const front = snapshotsRef.current?.get(`${i}F`);
+      const back = snapshotsRef.current?.get(`${i}B`);
+      const curler = curlersRef.current.find(c => !c.busy);
+      const curl = turning && i >= 1 && turnKindRef.current === 'single' && curlOnRef.current
+        && !prefersReducedMotion() && front && back && curler;
+
+      if (curl) {
+        const faces = [frontEl, backEl];
+        curler.begin(front, back, gsap.getProperty(leaf, 'z') as number, flipped);
+        faces.forEach(f => { if (f) f.style.visibility = 'hidden'; });
+        const draw = () => curler.render(-(gsap.getProperty(leaf, 'rotateY') as number), gsap.getProperty(leaf, 'z') as number);
+        draw();
         gsap.to(leaf, {
-          rotateY: -175,
-          duration: D(0.9),
-          ease: 'power3.inOut', // slow lift, quick fall, soft landing
-          zIndex: i,
-          z: i * (26 / total) - 13,
-          onUpdate: updateFace,
-          onComplete: updateFace,
+          rotateY: target,
+          duration: 1.15,
+          ease: curlEase, // lift, sweep, land just past rest and settle back
+          zIndex: flipped ? i : (total - i) + total,
+          z: zTarget,
+          overwrite: 'auto',
+          onUpdate: () => { updateFace(); draw(); },
+          onComplete: () => {
+            updateFace();
+            curler.end();
+            faces.forEach(f => { if (f) f.style.visibility = ''; });
+          },
+          onInterrupt: () => {
+            curler.end();
+            faces.forEach(f => { if (f) f.style.visibility = ''; });
+          },
         });
-      } else {
-        gsap.to(leaf, {
-          rotateY: 0,
-          duration: D(0.9),
-          ease: 'power3.inOut',
-          zIndex: (total - i) + total,
-          z: (total - i) * (26 / total) - 13,
-          onUpdate: updateFace,
-          onComplete: updateFace,
-        });
+        return;
       }
+
+      gsap.to(leaf, {
+        rotateY: target,
+        duration: D(0.9),
+        ease: 'power3.inOut', // slow lift, quick fall, soft landing
+        zIndex: flipped ? i : (total - i) + total,
+        z: zTarget,
+        onUpdate: updateFace,
+        onComplete: updateFace,
+      });
     });
   }, [pageIndex, bookState]);
 
   const handleOpen = () => {
     if (bookState !== 'closed') return;
+    turnKindRef.current = 'riffle';
     setBookState('opening');
     onStateChange('opening');
     startTheme();
@@ -439,6 +496,9 @@ export default function Book({ ready, onStateChange, playTurnWeighted, playClick
 
   const handleClose = () => {
     if (bookState !== 'reading') return;
+    // Put any page that is mid-curl back to its live faces before closing
+    curlersRef.current.forEach(c => c.end());
+    leafRefs.current.forEach(l => l.querySelectorAll<HTMLElement>('[data-leaf-front],[data-leaf-back]').forEach(f => { f.style.visibility = ''; }));
     jumpTimersRef.current.forEach(clearTimeout);
     jumpTimersRef.current = [];
     setGuestbookHasContent(false);
@@ -498,6 +558,7 @@ export default function Book({ ready, onStateChange, playTurnWeighted, playClick
     if (bookState !== 'reading') return;
     // pageIndex is the leaf about to flip — pass it for weight tier
     playTurnWeighted(pageIndex);
+    turnKindRef.current = 'single';
     if (pageIndex < leavesContent.length) {
       setPageIndex(p => p + 1);
     } else if (pageIndex === leavesContent.length) {
@@ -509,6 +570,7 @@ export default function Book({ ready, onStateChange, playTurnWeighted, playClick
     if (bookState !== 'reading') return;
     // leaf returning is pageIndex - 1
     playTurnWeighted(Math.max(0, pageIndex - 1));
+    turnKindRef.current = 'single';
     if (pageIndex > CONTENTS_PAGE) {
       setPageIndex(p => p - 1);
     } else if (pageIndex === CONTENTS_PAGE) {
@@ -578,6 +640,7 @@ export default function Book({ ready, onStateChange, playTurnWeighted, playClick
     if (distance === 1) {
       // Single page flip — use the weighted turn sound
       playTurnWeighted(pageIndex);
+      turnKindRef.current = 'single';
       setPageIndex(target);
       return;
     }
@@ -596,6 +659,7 @@ export default function Book({ ready, onStateChange, playTurnWeighted, playClick
 
     // Play multi sound once immediately for the whole sequence
     playMulti();
+    turnKindRef.current = 'riffle'; // flick through rigidly, like riffling pages
 
     steps.forEach((stepIndex, i) => {
       const t = setTimeout(() => {
@@ -633,6 +697,35 @@ export default function Book({ ready, onStateChange, playTurnWeighted, playClick
       history.replaceState(null, '', hash || window.location.pathname + window.location.search);
     }
   }, [bookState, pageIndex, activeId]);
+
+  // ── Snapshots for curling ─────────────────────────────────────────
+  // Capture every page in idle time once the book is open (nearest first),
+  // then refresh the visible spread after the reader settles on it, since
+  // typewriter notes and the guestbook change what's on the page.
+  const faceEl = (leaf: number, side: 'F' | 'B') =>
+    leafRefs.current[leaf]?.querySelector<HTMLElement>(side === 'F' ? '[data-leaf-front]' : '[data-leaf-back]') ?? null;
+  const capturedAllRef = useRef(false);
+  useEffect(() => {
+    const cache = snapshotsRef.current;
+    if (!cache || bookState !== 'reading' || !curlOn || prefersReducedMotion()) return;
+    const total = leafRefs.current.length;
+    if (!capturedAllRef.current) {
+      capturedAllRef.current = true;
+      const order = Array.from({ length: total - 1 }, (_, k) => k + 1)
+        .sort((a, b) => Math.abs(a - pageIndex) - Math.abs(b - pageIndex));
+      cache.request(order.flatMap(i => [
+        { key: `${i}F`, el: faceEl(i, 'F') },
+        { key: `${i}B`, el: faceEl(i, 'B') },
+      ]));
+    }
+    const refreshVisible = () => cache.request([
+      { key: `${pageIndex}F`, el: pageIndex < total ? faceEl(pageIndex, 'F') : null },
+      { key: `${pageIndex - 1}B`, el: pageIndex - 1 >= 1 ? faceEl(pageIndex - 1, 'B') : null },
+    ], true);
+    const t1 = setTimeout(refreshVisible, 1100);
+    const t2 = setTimeout(refreshVisible, 4500);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, [bookState, pageIndex, curlOn]);
 
   // ── Page interactivity gating ─────────────────────────────────────
   // The HTML `inert` attribute is the only reliable way to block ALL interaction
@@ -719,7 +812,7 @@ export default function Book({ ready, onStateChange, playTurnWeighted, playClick
         {/* Surface shadow: the open book rests on something */}
         <div
           aria-hidden
-          className="absolute transition-opacity duration-700"
+          className="book-surface-shadow absolute transition-opacity duration-700"
           style={{
             left: -440, right: -40, top: -8, bottom: -30,
             transform: 'translateZ(-40px)',
