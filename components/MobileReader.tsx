@@ -12,6 +12,16 @@ import {
 } from './PageContents';
 import { ageStyle } from '@/lib/paper';
 import { prefersReducedMotion } from '@/hooks/use-reduced-motion';
+import { coverScale } from './MobileCover';
+
+/** Where the cover's first page sits on the closed-book screen (used when
+ *  the reader was opened by a deep link, so no cover was measured). */
+function predictedCoverRect() {
+  const s = coverScale();
+  const w = 400 * s, h = 600 * s;
+  const column = h + 24 + 28; // page + gap + "tap the cover" line
+  return { left: (window.innerWidth - w) / 2, top: (window.innerHeight - column) / 2, width: w, height: h };
+}
 
 // ── The pages, in reading order ──────────────────────────────────────
 const PAGES: { label: string; head: string; rune: string; node: React.ReactNode; paper: boolean }[] = [
@@ -75,8 +85,11 @@ export default function MobileReader({
   playTurn,
   playClick,
   playMulti,
+  fromRect,
 }: {
   onClose: () => void;
+  /** Where the cover's first page was on screen: the book grows from there */
+  fromRect?: { left: number; top: number; width: number; height: number } | null;
   onStateChange: (state: 'reading' | 'closing') => void;
   playTurn: () => void;
   playClick: () => void;
@@ -94,6 +107,49 @@ export default function MobileReader({
   turnRef.current = turn;
   const autoFinish = useRef(false);
   const busy = useRef(false);
+
+  // ── Growing out of the cover, and shrinking back into it ───────────
+  const boardRef = useRef<HTMLDivElement>(null);
+  const chromeRefs = useRef<HTMLElement[]>([]);
+  const chrome = (el: HTMLElement | null) => { if (el && !chromeRefs.current.includes(el)) chromeRefs.current.push(el); };
+  const closing = useRef(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  // Map the board's own box onto a target rectangle (top-left origin)
+  const toRect = (r: { left: number; top: number; width: number; height: number }) => {
+    const b = boardRef.current!.getBoundingClientRect();
+    return { x: r.left - b.left, y: r.top - b.top, scaleX: r.width / b.width, scaleY: r.height / b.height };
+  };
+
+  useLayoutEffect(() => {
+    const board = boardRef.current;
+    if (!board || prefersReducedMotion()) return;
+    const from = fromRect ?? predictedCoverRect();
+    gsap.fromTo(board, { ...toRect(from), transformOrigin: '0 0' },
+      { x: 0, y: 0, scaleX: 1, scaleY: 1, duration: 0.7, ease: 'power3.inOut', clearProps: 'transform' });
+    gsap.fromTo(chromeRefs.current, { opacity: 0 }, { opacity: 1, duration: 0.45, delay: 0.4, ease: 'power1.out' });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  /** Shrink back to where the cover sits, then hand over to the cover. */
+  const closeBook = () => {
+    if (closing.current) return;
+    closing.current = true;
+    onStateChange('closing');
+    const board = boardRef.current;
+    if (!board || prefersReducedMotion()) { onClose(); return; }
+    // The open cover is already waiting underneath (page.tsx mounts it on
+    // 'closing'): clear the backdrop, land on it, and fade into it.
+    gsap.to(chromeRefs.current, { opacity: 0, duration: 0.25, ease: 'power1.in' });
+    if (rootRef.current) gsap.to(rootRef.current, { backgroundColor: 'rgba(8,12,9,0)', duration: 0.3 });
+    gsap.to(board, {
+      ...toRect(fromRect ?? predictedCoverRect()),
+      transformOrigin: '0 0',
+      duration: 0.6,
+      ease: 'power3.inOut',
+    });
+    gsap.to(board, { opacity: 0, duration: 0.18, delay: 0.5, onComplete: onClose });
+  };
 
   // ── Drawing a turn at progress p (0 → 1) ──────────────────────────
   // The turning page hinges at the spine (left edge). Going forward the
@@ -154,8 +210,8 @@ export default function MobileReader({
   // ── Buttons, tabs, keys ───────────────────────────────────────────
   const navigate = (direction: 'next' | 'prev') => {
     if (busy.current || turn) return;
-    if (direction === 'next' && index >= PAGES.length - 1) { playTurn(); onClose(); return; }
-    if (direction === 'prev' && index <= 0) { playTurn(); onClose(); return; }
+    if (direction === 'next' && index >= PAGES.length - 1) { playTurn(); closeBook(); return; }
+    if (direction === 'prev' && index <= 0) { playTurn(); closeBook(); return; }
     playTurn();
     begin(direction, direction === 'next' ? index + 1 : index - 1, true);
   };
@@ -233,13 +289,13 @@ export default function MobileReader({
   const pagesLeft = PAGES.length - 1 - index;
 
   return (
-    <div className="fixed inset-0 z-30 flex flex-col bg-[#080c09]">
+    <div ref={rootRef} className="fixed inset-0 z-30 flex flex-col bg-[#080c09]">
 
       {/* Top bar */}
-      <div className="flex items-center justify-between px-4 h-11 shrink-0">
+      <div ref={chrome} className="flex items-center justify-between px-4 h-11 shrink-0">
         <span className="font-cinzel text-[#d4af6a]/70 text-[10px] tracking-[0.3em] uppercase">The Grimoire of Cipher</span>
         <button
-          onClick={() => { playClick(); onStateChange('closing'); onClose(); }}
+          onClick={() => { playClick(); closeBook(); }}
           aria-label="Close the book"
           className="font-cinzel text-[#d4c5a0]/70 text-[11px] tracking-widest border border-[#d4c5a0]/25 w-8 h-8 rounded-full flex items-center justify-center"
         >
@@ -249,7 +305,7 @@ export default function MobileReader({
 
       {/* The book: a leather board with the open page on it */}
       <div className="flex-1 min-h-0 px-2 pb-0 pt-1">
-        <div className="relative h-full rounded-[3px_8px_0_0] bg-cover-texture pl-[11px] pr-[10px] pt-[9px] shadow-[0_10px_30px_rgba(0,0,0,0.6)]">
+        <div ref={boardRef} className="relative h-full rounded-[3px_8px_0_0] bg-cover-texture pl-[11px] pr-[10px] pt-[9px] shadow-[0_10px_30px_rgba(0,0,0,0.6)]">
           {/* Spine edge where the page is bound */}
           <div aria-hidden className="absolute left-0 top-0 bottom-0 w-[11px] rounded-l-[3px] bg-[linear-gradient(90deg,#070a08,#1c2620_60%,#0d120f)]" />
           {/* Fore-edge: the pages still to read */}
@@ -285,7 +341,7 @@ export default function MobileReader({
       </div>
 
       {/* Leather tabs glued to the foot of the page block */}
-      <nav aria-label="Sections" className="shrink-0 px-2">
+      <nav ref={chrome} aria-label="Sections" className="shrink-0 px-2">
         <div className="flex gap-[3px] px-[11px] -mt-px">
           {CATALOGUE.map((entry) => {
             const isActive = !beforeSections && activeCat.id === entry.id;
@@ -306,7 +362,7 @@ export default function MobileReader({
       </nav>
 
       {/* Page controls */}
-      <div className="shrink-0 flex items-center justify-between px-5 h-12">
+      <div ref={chrome} className="shrink-0 flex items-center justify-between px-5 h-12">
         <button
           onClick={() => navigate('prev')}
           aria-label="Previous page"

@@ -30,6 +30,10 @@ export default function Home() {
   const fancy = graphics === 'full' && !reduceMotion;
   const [sigilCharging, setSigilCharging] = useState(false);
   const isMobile = useIsMobile();
+  // Phone: where the cover's first page sits, so the reader can grow out of
+  // it and shrink back into it; and whether the cover should swing shut
+  const coverRectRef = useRef<DOMRect | null>(null);
+  const [coverStartsOpen, setCoverStartsOpen] = useState(false);
 
   // Phones: a shared link like /#projects opens the reader straight away
   useEffect(() => {
@@ -393,14 +397,25 @@ export default function Home() {
         {isMobile ? (
           /* ── Mobile: full-screen parchment reader ── */
           <>
-            {appState === 'closed' && (
-              <MobileCover onTap={() => { startTheme(); playClick(); }} onOpen={() => setAppState('reading')} />
+            {(appState === 'closed' || appState === 'closing') && (
+              <MobileCover
+                onTap={() => { startTheme(); playClick(); }}
+                onOpen={(rect) => { coverRectRef.current = rect; setAppState('reading'); }}
+                startOpen={coverStartsOpen}
+                holdOpen={appState === 'closing'}
+                onSettled={() => setCoverStartsOpen(false)}
+              />
             )}
 
             {(appState === 'reading' || appState === 'opening' || appState === 'closing') && (
               <MobileReader
+                fromRect={coverRectRef.current}
                 onClose={() => setAppState('closed')}
-                onStateChange={(state) => setAppState(state)}
+                onStateChange={(state) => {
+                  // Closing: put the open cover in place underneath first
+                  if (state === 'closing') setCoverStartsOpen(true);
+                  setAppState(state);
+                }}
                 playTurn={() => playTurnWeighted(3)}
                 playClick={playClick}
                 playMulti={playMulti}
