@@ -2,13 +2,13 @@
 import { useSyncExternalStore } from 'react';
 
 /**
- * Graphics quality: "full" is the textured, curling grimoire; "lite" is the
- * plainer book (no paper textures, ageing, candlelight, particles, custom
- * cursor or curling pages) for slower devices.
+ * Graphics quality: "full" is the textured grimoire; "lite" is the plainer
+ * book (no paper textures, ageing, candlelight, particles or custom cursor)
+ * for slower devices.
  *
  * The choice lives on <html data-graphics="…"> so CSS can react to it, and in
- * localStorage once the visitor picks one. Until then it is chosen from the
- * device: little memory, few cores, or an OS request for reduced motion → lite.
+ * localStorage once the visitor picks one. Full is the default; visitors who
+ * ask their OS for reduced motion still get no decorative motion either way.
  */
 export type Graphics = 'full' | 'lite';
 
@@ -21,11 +21,7 @@ function detect(): Graphics {
     const saved = localStorage.getItem(KEY);
     if (saved === 'full' || saved === 'lite') return saved;
   } catch { /* private mode */ }
-  const nav = navigator as Navigator & { deviceMemory?: number };
-  const lowMemory = typeof nav.deviceMemory === 'number' && nav.deviceMemory <= 4;
-  const fewCores = typeof nav.hardwareConcurrency === 'number' && nav.hardwareConcurrency <= 4;
-  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  return lowMemory || fewCores || reducedMotion ? 'lite' : 'full';
+  return 'full';
 }
 
 function apply(mode: Graphics) {
