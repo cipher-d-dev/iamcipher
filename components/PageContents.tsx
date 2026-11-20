@@ -784,7 +784,8 @@ export const FocusTerminal = React.memo(function FocusTerminal({ active, mobile 
 export const ContactRight = React.memo(function ContactRight({ mobile = false }: { mobile?: boolean }) {
   const rowClass = `flex items-center gap-3 py-3 border-b border-dashed border-[#c9b783] font-mono ${mobile ? 'text-sm' : 'text-[11.5px]'}`;
   const labelClass = `text-[#5c4d33] ${mobile ? 'w-20' : 'min-w-[68px]'}`;
-  const linkClass = 'text-[#1a0f05] hover:text-[#2f5d8a] transition-colors relative z-10';
+  // overflow-wrap:anywhere lets a long email break on the narrowest phones
+  const linkClass = 'min-w-0 [overflow-wrap:anywhere] text-[#1a0f05] hover:text-[#2f5d8a] transition-colors relative z-10';
 
   return (
     <div className={`w-full h-full bg-parchment-right flex flex-col justify-center ${mobile ? 'overflow-auto' : 'overflow-hidden'}
@@ -838,7 +839,7 @@ export const ContactRight = React.memo(function ContactRight({ mobile = false }:
         </div>
         <div className={rowClass}>
           <span className={labelClass}>linkedin</span>
-          <a href="https://www.linkedin.com/in/fave-ejiofor-a05bab260" target="_blank" rel="noreferrer" className={`${linkClass} ${mobile ? 'truncate' : ''}`}>
+          <a href="https://www.linkedin.com/in/fave-ejiofor-a05bab260" target="_blank" rel="noreferrer" className={linkClass}>
             {mobile ? 'linkedin/fave-ejiofor' : 'linkedin.com/in/fave-ejiofor-a05bab260'}
           </a>
         </div>

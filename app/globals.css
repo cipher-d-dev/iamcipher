@@ -352,6 +352,15 @@
   transition: opacity .5s ease, filter .3s ease;
 }
 .ribbon-btn:hover .ribbon, .ribbon-btn:focus-visible .ribbon { filter: drop-shadow(1px 0 1.5px rgba(0,0,0,.45)) brightness(1.18); }
+/* Only the tail shows: narrow, hanging from the spine with a slight lie,
+   and it sways a little when you reach for it */
+.ribbon-tail .ribbon {
+  left: 9px; right: 9px;
+  transform-origin: top center;
+  transform: rotate(4deg);
+  transition: transform .35s ease, filter .3s ease;
+}
+.ribbon-tail:hover .ribbon, .ribbon-tail:focus-visible .ribbon { transform: rotate(-3deg); }
 
 /* Section tabs glued to the edge of a leaf */
 .leaf-tab {
@@ -441,3 +450,40 @@ html[data-graphics="lite"] .typed-slip { background: #efe5c9; }
 html[data-graphics="lite"] .page-ghost,
 html[data-graphics="lite"] .page-age,
 html[data-graphics="lite"] .book-surface-shadow { display: none; }
+
+/* ══════════════════════════════════════════════════════════════════════
+   PHONE READER: one page of the book at a time
+   ══════════════════════════════════════════════════════════════════════ */
+.m-head {
+  height: 30px; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 2px;
+  font-family: var(--font-cinzel), serif; font-size: 8px; letter-spacing: .32em; text-transform: uppercase;
+  color: rgba(92,67,40,.72);
+}
+.m-folio {
+  height: 26px; display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-source-serif), serif; font-style: italic; font-size: 11px; color: rgba(92,67,40,.8);
+}
+/* The page components bring their own paper; inside the frame they only
+   need a little less padding at the top and bottom. */
+.m-page > .relative > div { padding-top: 10px !important; padding-bottom: 12px !important; }
+
+/* Vellum tabs hanging from the foot of the page block */
+.m-tab {
+  background:
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url%28%23n%29' opacity='0.25'/%3E%3C/svg%3E"),
+    linear-gradient(180deg, #a9905c 0%, #cdb784 30%, #c2aa74 100%);
+  color: #4a3720;
+  box-shadow: 0 2px 4px rgba(0,0,0,.5), inset 0 0 0 .5px rgba(60,40,15,.4);
+}
+.m-tab-active {
+  background:
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url%28%23n%29' opacity='0.25'/%3E%3C/svg%3E"),
+    linear-gradient(180deg, #5a0e0e 0%, #9b2020 35%, #861818 100%);
+  color: #f0d089;
+}
+html[data-graphics="lite"] .m-tab { background: #c4ad78; }
+html[data-graphics="lite"] .m-tab-active { background: #8a1a1a; }
+/* Narrowest phones (≈320px): tab labels must fit without clipping */
+@media (max-width: 370px) {
+  .m-tab span:last-child { font-size: 6px; letter-spacing: 0; }
+}

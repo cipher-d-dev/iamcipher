@@ -3,6 +3,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import gsap from 'gsap';
 import Book from '@/components/Book';
 import MobileReader from '@/components/MobileReader';
+import MobileCover from '@/components/MobileCover';
 import MagicCircle from '@/components/MagicCircle';
 import Particles from '@/components/Particles';
 import DustMotes from '@/components/DustMotes';
@@ -393,17 +394,7 @@ export default function Home() {
           /* ── Mobile: full-screen parchment reader ── */
           <>
             {appState === 'closed' && (
-              <div className="relative z-20 flex flex-col items-center justify-center gap-6 px-8 text-center">
-                <span className="text-5xl text-[#2eb36f]" style={{ textShadow: '0 0 20px rgba(46,179,111,0.7)' }}>✧</span>
-                <h1 className="font-cinzel text-[#f0d089] text-2xl tracking-widest">Favour Ejiofor</h1>
-                <p className="font-kalam text-[#a8b5a8] text-base italic">software engineer · systems designer</p>
-                <button
-                  onClick={() => { startTheme(); playClick(); setAppState('reading'); }}
-                  className="mt-4 font-caveat text-[#2eb36f] text-xl border border-[#2eb36f]/40 px-6 py-3 rounded-sm hover:bg-[#2eb36f]/10 transition-colors"
-                >
-                  open grimoire
-                </button>
-              </div>
+              <MobileCover onTap={() => { startTheme(); playClick(); }} onOpen={() => setAppState('reading')} />
             )}
 
             {(appState === 'reading' || appState === 'opening' || appState === 'closing') && (
